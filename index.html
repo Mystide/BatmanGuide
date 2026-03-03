@@ -10,6 +10,176 @@
   <style>
     :root {
       --bg: #0b1020;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #f3f4f6;
+      --muted: #b7bfd1;
+      --accent: #facc15;
+      --border: #334155;
+      --danger: #ef4444;
+      --shadow: 0 14px 36px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 500px at 20% -10%, #1e293b 0%, transparent 60%), linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+    }
+    .container { max-width: 1040px; margin: 0 auto; padding: 16px; }
+    .card {
+      background: color-mix(in srgb, var(--panel) 92%, black 8%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); background: rgba(11,16,32,.82); border-bottom: 1px solid var(--border); }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .space { justify-content: space-between; }
+    h1 { margin: 0; font-size: 22px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .btn, .input, .select {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 14px;
+    }
+    .btn { cursor: pointer; font-weight: 700; box-shadow: var(--shadow); }
+    .btn.primary { border-color: #7c640f; background: linear-gradient(180deg, #4a3c17, #332b14); color: #fde68a; }
+    .btn.warn { border-color: #7f1d1d; background: #3a1010; color: #fecaca; }
+    .input, .select { min-width: 150px; }
+    .input.full { width: 100%; }
+    .status { font-size: 12px; color: var(--muted); }
+    .progress-wrap { margin-top: 10px; }
+    .progress-track { height: 10px; background: #1f2937; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
+    .era { margin-top: 14px; }
+    details {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(18, 26, 47, .7);
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 11px 12px;
+      background: rgba(25, 35, 65, .65);
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    .items { padding: 10px; }
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: rgba(15, 23, 42, .78);
+    }
+    .item.done { opacity: .72; }
+    .title { font-weight: 650; }
+    .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .tag { font-size: 12px; color: #fde68a; border: 1px solid #725f0a; border-radius: 999px; padding: 1px 8px; }
+    .stack { display: grid; gap: 8px; }
+    .hidden { display: none; }
+    .tools { margin-top: 14px; }
+    .error {
+      margin-top: 10px;
+      border: 1px solid #7f1d1d;
+      background: rgba(127, 29, 29, .25);
+      color: #fecaca;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 13px;
+    }
+    a { color: #93c5fd; text-underline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="container stack">
+      <div class="row space">
+        <div>
+          <h1>Batman Guide</h1>
+          <div class="muted">Track Batman comics, keep notes, and sync progress across devices.</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnNext">Next unread</button>
+          <button class="btn" id="btnContinue">Continue</button>
+          <button class="btn" id="btnTop">Top</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <input id="search" class="input" placeholder="Search titles..." />
+        <select id="typeFilter" class="select">
+          <option value="">All types</option>
+          <option value="book">Books</option>
+          <option value="collection">Collections</option>
+          <option value="series">Series</option>
+        </select>
+        <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
+        <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
+        <button class="btn" id="btnClearFilters">Clear filters</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <div class="row space" style="margin-top:6px;">
+          <div id="progressText" class="muted">Loading...</div>
+          <div id="nextText" class="muted">Next: -</div>
+          <div id="continueText" class="muted">Continue: -</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="errorBox" class="error hidden"></div>
+    <div id="main"></div>
+
+    <section class="tools card">
+      <h2 style="margin:0 0 8px 0;font-size:18px;">Sync</h2>
+      <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices.</p>
+      <div class="stack">
+        <input id="gistId" class="input full" placeholder="Gist ID" />
+        <input id="gistFile" class="input full" placeholder="File name in gist (ex: batman_guide_progress.json)" />
+        <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" />
+        <label class="row muted"><input type="checkbox" id="autoSync" /> Auto-sync</label>
+        <div class="row">
+          <button id="gistPull" class="btn">Pull</button>
+          <button id="gistPush" class="btn">Push</button>
+          <button id="gistSync" class="btn primary">Sync</button>
+          <button id="resetState" class="btn warn">Reset local progress</button>
+        </div>
+        <div id="syncStatus" class="status">Sync not configured.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="list.js"></script>
+  <script src="app.js"></script>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111827" />
+  <title>Batman Guide</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #0b1020;
       --panel: #121a2f;
       --panel-2: #192341;
       --text: #f3f4f6;
