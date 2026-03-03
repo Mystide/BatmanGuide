@@ -74,7 +74,7 @@
     <div class="row space">
       <div class="row">
         <span class="tag">BATCOMPUTER</span>
-        <span class="pill">Build: <span id="buildId" style="color:var(--text);font-weight:950">2026-03-03.2-debug</span></span>
+        <span class="pill">Build: <span id="buildId" style="color:var(--text);font-weight:950">2026-03-03.3-debug</span></span>
         <span class="pill">Keys: N / C / /</span>
       </div>
       <div class="row">
@@ -213,10 +213,10 @@
     }
     window.addEventListener("error", (e)=>{
       const stack = e && e.error && e.error.stack ? "\n\n" + e.error.stack : "";
-      show("2026-03-03.2-debug\n\n" + (e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || "") + stack);
+      show("2026-03-03.3-debug\n\n" + (e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || "") + stack);
     });
     window.addEventListener("unhandledrejection", (e)=>{
-      show("2026-03-03.2-debug\n\nUnhandled promise rejection:\n" + String(e.reason || e));
+      show("2026-03-03.3-debug\n\nUnhandled promise rejection:\n" + String(e.reason || e));
     });
     close && close.addEventListener("click", ()=> box.style.display = "none");
   })();
