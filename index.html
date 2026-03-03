@@ -74,7 +74,7 @@
     <div class="row space">
       <div class="row">
         <span class="tag">BATCOMPUTER</span>
-        <span class="pill">Build: <span id="buildId" style="color:var(--text);font-weight:950">2026-03-03.7-auto</span></span>
+        <span class="pill">Build: <span id="buildId" style="color:var(--text);font-weight:950">2026-03-03.8-stable-sync</span></span>
         <span class="pill">Keys: N / C / /</span>
       </div>
       <div class="row">
@@ -142,7 +142,7 @@
 
     <div class="h1">Sync (any device)</div>
     <div class="hint">
-      Works like a shared save file in a GitHub Gist.<br>
+      Works like a shared save file in a GitHub Gist.<br><b>With auto‑sync on:</b> it pulls when you open/return to the page, and pushes after you change something.<br>
       On a new device: open this same URL → Tools → paste the same Gist ID + file + token → press <b>Pull</b> once.
     </div>
 
@@ -213,10 +213,10 @@
     }
     window.addEventListener("error", (e)=>{
       const stack = e && e.error && e.error.stack ? "\n\n" + e.error.stack : "";
-      show("2026-03-03.7-auto\n\n" + (e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || "") + stack);
+      show("2026-03-03.8-stable-sync\n\n" + (e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || "") + stack);
     });
     window.addEventListener("unhandledrejection", (e)=>{
-      show("2026-03-03.7-auto\n\nUnhandled promise rejection:\n" + String(e.reason || e));
+      show("2026-03-03.8-stable-sync\n\nUnhandled promise rejection:\n" + String(e.reason || e));
     });
     close && close.addEventListener("click", ()=> box.style.display = "none");
   })();
