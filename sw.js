@@ -1,5 +1,5 @@
-/* BATCOMPUTER SW — build 2026-03-03.3-debug */
-const CACHE = "batcomputer-cache-2026-03-03.3-debug";
+/* BATCOMPUTER SW — build 2026-03-03.4-auto */
+const CACHE = "batcomputer-cache-2026-03-03.4-auto";
 const ASSETS = [
   "./",
   "./index.html",
