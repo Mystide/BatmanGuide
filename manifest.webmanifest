@@ -1,11 +1,11 @@
 {
-  "name": "BATCOMPUTER \u2014 Batman Checklist",
-  "short_name": "BATCOMPUTER",
+  "name": "Batman Guide",
+  "short_name": "Batman Guide",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#05060a",
-  "theme_color": "#05060a",
+  "background_color": "#0b1020",
+  "theme_color": "#111827",
   "icons": [
     {
       "src": "icon.svg",
