@@ -1,5 +1,5 @@
 /* BATCOMPUTER simple offline cache */
-const CACHE = "batcomputer-cache-v2";
+const CACHE = "batcomputer-cache-v1";
 const ASSETS = ["./","./index.html","./manifest.webmanifest","./icon.svg","./sw.js"];
 
 self.addEventListener("install", (event) => {
