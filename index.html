@@ -225,3 +225,230 @@
 <script src="app.js"></script>
 </body>
 </html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#05060a" />
+  <title>BATCOMPUTER — Batman Checklist</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg:#05060a; --panel:#0b0d14; --text:#f2f4ff; --muted:#9aa3c7;
+      --yellow:#f4c400; --border:#2a3557; --shadow: 0 18px 48px rgba(0,0,0,.55); --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:var(--sans); color:var(--text); background:linear-gradient(180deg,#05060a,#070912,#05060a);}
+    header{position:sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: rgba(5,6,10,.86); border-bottom:1px solid rgba(42,53,87,.45);}
+    .wrap{max-width:1100px; margin:0 auto; padding:14px 16px;}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .space{justify-content:space-between}
+    .tag{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+      color: rgba(244,196,0,.92); border:1px solid rgba(244,196,0,.35); background: rgba(244,196,0,.08);
+      padding:4px 8px; border-radius: 999px;}
+    .btn{appearance:none; border:1px solid rgba(42,53,87,.75); background: rgba(10,12,18,.75);
+      color:var(--text); padding:9px 12px; border-radius:12px; cursor:pointer; font-weight:850; font-size:12px; letter-spacing:.06em; text-transform:uppercase;}
+    .btn.primary{border-color: rgba(244,196,0,.55); background: linear-gradient(180deg, rgba(244,196,0,.16), rgba(244,196,0,.08));}
+    .btn:active{transform: translateY(1px)}
+    .inp, select, textarea{width:100%; border-radius:12px; border:1px solid rgba(42,53,87,.75);
+      background: rgba(7,9,14,.50); color: var(--text); padding:10px 12px; font-size:14px;}
+    .inp::placeholder{color: rgba(154,163,199,.6)}
+    main{max-width:1100px; margin:0 auto; padding:18px 16px 40px}
+    .era{border:1px solid rgba(42,53,87,.55); border-radius:var(--radius); overflow:hidden; margin:14px 0; box-shadow:0 10px 34px rgba(0,0,0,.45);}
+    .eraHead{padding:14px; background: rgba(10,12,18,.70); border-bottom:1px solid rgba(42,53,87,.45); display:flex; justify-content:space-between; gap:12px; align-items:center; cursor:pointer;}
+    .eraTitle{font-weight:950; letter-spacing:.08em; text-transform:uppercase; font-size:13px}
+    .eraSub{color:var(--muted); font-size:12px}
+    .list{padding:10px 10px 14px; background: rgba(7,9,14,.35)}
+    .item{border:1px solid rgba(42,53,87,.55); background: rgba(10,12,18,.45); border-radius: 14px;
+      padding:12px; margin:10px 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.40);}
+    .item.done{opacity:.72}
+    .itemhead{display:flex; gap:10px; align-items:flex-start}
+    .check{margin-top:3px; transform: scale(1.15); accent-color: var(--yellow);}
+    .title{font-weight:950; font-size:14.5px; line-height:1.25}
+    .meta2{margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+    .badge{font-size:11px; color: rgba(244,196,0,.92); border:1px solid rgba(244,196,0,.35);
+      padding:3px 8px; border-radius:999px; background: rgba(244,196,0,.08); font-family: var(--mono); letter-spacing:.04em;}
+    .mini{font-size:12px; color:var(--muted)}
+    .inline{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .smallbtn{padding:7px 10px; border-radius:10px; font-size:11px}
+    .bar{height:10px; border-radius:999px; background: rgba(27,33,53,.75); overflow:hidden; border:1px solid rgba(42,53,87,.65);}
+    .bar > div{height:100%; background: linear-gradient(90deg, rgba(244,196,0,.95), rgba(255,214,90,.85)); width:0%}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border-radius:999px;
+      border:1px solid rgba(42,53,87,.65); background: rgba(7,9,14,.40); color:var(--muted); font-size:12px;}
+    .overlay{position:fixed; inset:0; z-index:1000; display:none; background: rgba(0,0,0,.62); backdrop-filter: blur(10px); padding:16px; overflow:auto;}
+    .overlay.open{display:block}
+    .card{background: linear-gradient(180deg, rgba(11,13,20,.96), rgba(10,12,18,.92));
+      border:1px solid rgba(42,53,87,.55); border-radius: var(--radius); box-shadow: var(--shadow); padding:14px; max-width:860px; margin:48px auto 24px;}
+    .h1{font-size:14px; font-weight:950; letter-spacing:.12em; text-transform:uppercase; margin:0 0 8px;}
+    .hint{font-size:12px; color:var(--muted); line-height:1.45}
+    .divider{height:1px; background:rgba(42,53,87,.45); margin:12px 0}
+    .fab{position:fixed; right:16px; bottom:16px; z-index:999; width:54px; height:54px; border-radius:18px;
+      border:1px solid rgba(42,53,87,.75); background: rgba(10,12,18,.78); color: rgba(244,196,0,.95);
+      font-size:20px; font-weight:950; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow: var(--shadow);}
+    .err{position:fixed; left:12px; right:12px; bottom:86px; z-index:2000; display:none;
+      border:1px solid rgba(251,113,133,.55); background: rgba(251,113,133,.10); color:var(--text);
+      border-radius:16px; padding:12px; box-shadow: var(--shadow);}
+    .err pre{white-space:pre-wrap; word-break:break-word; font-family:var(--mono); font-size:12px; margin:8px 0 0; color:#ffd1d9}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row space">
+      <div class="row">
+        <span class="tag">BATCOMPUTER</span>
+        <span class="pill">Build: <span id="buildId" style="color:var(--text);font-weight:950">2026-03-03.8-stable-sync</span></span>
+        <span class="pill">Keys: N / C / /</span>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="btnContinue">Continue</button>
+        <button class="btn" id="btnNext">Next unread</button>
+        <button class="btn" id="btnTop">Top</button>
+        <button class="btn" id="btnTools">Tools</button>
+      </div>
+    </div>
+
+    <div style="margin-top:10px" class="row space">
+      <div class="pill">Continue: <span id="continueText" style="color:var(--text); font-weight:950">—</span></div>
+      <div class="pill">Next unread: <span id="nextText" style="color:var(--text); font-weight:950">—</span></div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="bar"><div id="progressBar"></div></div>
+      <div class="row space" style="margin-top:8px">
+        <div class="mini" id="progressText">Loading…</div>
+        <div class="row" style="flex:1; justify-content:flex-end">
+          <label class="pill" style="cursor:pointer; user-select:none">
+            <input type="checkbox" id="onlyRemaining" style="margin:0 6px 0 0; accent-color: var(--yellow)"> only remaining
+          </label>
+          <label class="pill" style="cursor:pointer; user-select:none">
+            <input type="checkbox" id="hideOptional" style="margin:0 6px 0 0; accent-color: var(--yellow)"> hide optional
+          </label>
+          <select id="typeFilter" style="max-width:180px">
+            <option value="">All types</option>
+            <option value="book">Books</option>
+            <option value="collection">Collections</option>
+            <option value="series">Series</option>
+          </select>
+          <input class="inp" id="search" placeholder="Search titles…" style="max-width:320px">
+          <select id="jumpEra" style="max-width:260px">
+            <option value="">Jump to era…</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="err" id="errBox">
+  <div class="row space">
+    <div style="font-weight:950">JavaScript error (tell me what you see here)</div>
+    <button class="btn" id="errClose">Close</button>
+  </div>
+  <pre id="errText"></pre>
+</div>
+
+<main>
+  <div id="bootMsg" class="pill" style="max-width:720px">
+    Loading checklist… If this never disappears, JavaScript is blocked or broken.
+  </div>
+  <div id="main"></div>
+</main>
+
+<div class="overlay" id="toolsOverlay" aria-hidden="true">
+  <div class="card">
+    <div class="row space">
+      <div class="h1" style="margin:0">Tools</div>
+      <button class="btn" id="btnCloseTools">Close</button>
+    </div>
+    <div class="divider"></div>
+
+    <div class="h1">Sync (any device)</div>
+    <div class="hint">
+      Works like a shared save file in a GitHub Gist.<br><b>With auto‑sync on:</b> it pulls when you open/return to the page, and pushes after you change something.<br>
+      On a new device: open this same URL → Tools → paste the same Gist ID + file + token → press <b>Pull</b> once.
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row space">
+      <div style="flex:1">
+        <div class="mini">Site URL (open on every device)</div>
+        <input class="inp" id="siteUrl" readonly />
+      </div>
+      <div>
+        <button class="btn" id="copySiteUrl">Copy</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row" style="gap:10px; align-items:stretch">
+      <div style="flex:1">
+        <div class="mini">Gist ID</div>
+        <input class="inp" id="gistId" placeholder="e.g., 1a2b3c4d5e..." />
+      </div>
+      <div style="flex:1">
+        <div class="mini">Gist file name</div>
+        <input class="inp" id="gistFile" placeholder="batcomputer_progress.json" />
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <div class="mini">GitHub token (Gist read/write)</div>
+      <input class="inp" id="gistToken" type="password" placeholder="Paste token (kept locally)" />
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="gistSync">Sync</button>
+      <button class="btn" id="gistPull">Pull</button>
+      <button class="btn" id="gistPush">Push</button>
+      <label class="pill" style="cursor:pointer; user-select:none">
+        <input type="checkbox" id="autoSync" style="margin:0 6px 0 0; accent-color: var(--yellow)"> auto‑sync
+      </label>
+      <span class="pill" id="syncStatus">Sync not configured</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="h1">PWA</div>
+    <div class="hint">Install works best on Chrome/Edge/Safari. Firefox support varies by platform.</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="installBtn" style="display:none">Install</button>
+      <span class="pill" id="installStatus">Install not available</span>
+    </div>
+  </div>
+</div>
+
+<button class="fab" id="fabTools" title="Tools">⚙</button>
+
+<script>
+  // Error capture that works even if app.js crashes later.
+  (function(){
+    const box = document.getElementById("errBox");
+    const text = document.getElementById("errText");
+    const close = document.getElementById("errClose");
+    function show(msg){
+      try{
+        text.textContent = String(msg || "Unknown error");
+        box.style.display = "block";
+      }catch{}
+    }
+    window.addEventListener("error", (e)=>{
+      const stack = e && e.error && e.error.stack ? "\n\n" + e.error.stack : "";
+      show("2026-03-03.8-stable-sync\n\n" + (e.message || "Error") + "\n" + (e.filename || "") + ":" + (e.lineno || "") + ":" + (e.colno || "") + stack);
+    });
+    window.addEventListener("unhandledrejection", (e)=>{
+      show("2026-03-03.8-stable-sync\n\nUnhandled promise rejection:\n" + String(e.reason || e));
+    });
+    close && close.addEventListener("click", ()=> box.style.display = "none");
+  })();
+</script>
+
+<script src="app.js"></script>
+</body>
+</html>
