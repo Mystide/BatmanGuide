@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#05060a"/>
+  <defs>
+    <radialGradient id="g" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#141a2a"/>
+      <stop offset="100%" stop-color="#05060a"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
   <ellipse cx="256" cy="256" rx="190" ry="135" fill="#f4c400" opacity="0.95"/>
-  <text x="256" y="418" text-anchor="middle"
-        font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
-        font-size="36" letter-spacing="6"
-        fill="#f2f4ff" opacity="0.9">BAT</text>
+  <path d="M256 165
+           C232 190 202 198 168 193
+           C180 214 178 238 163 261
+           C198 260 222 273 238 292
+           C244 270 250 256 256 248
+           C262 256 268 270 274 292
+           C290 273 314 260 349 261
+           C334 238 332 214 344 193
+           C310 198 280 190 256 165 Z"
+        fill="#05060a" opacity="0.92"/>
 </svg>
