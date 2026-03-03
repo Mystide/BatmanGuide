@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#05060a"/>
+  <ellipse cx="256" cy="256" rx="190" ry="135" fill="#f4c400" opacity="0.95"/>
+  <text x="256" y="418" text-anchor="middle"
+        font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
+        font-size="36" letter-spacing="6"
+        fill="#f2f4ff" opacity="0.9">BAT</text>
+</svg>
