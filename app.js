@@ -841,6 +841,60 @@
     }
   }
 
+
+  function bindAdaptiveHeader() {
+    const header = document.querySelector(".top");
+    const advanced = $("advancedControls");
+    const toggle = $("btnToggleAdvanced");
+    if (!header || !advanced || !toggle) return;
+
+    const syncToggleLabel = () => {
+      const compact = header.classList.contains("compact");
+      const open = !advanced.classList.contains("hidden");
+      toggle.setAttribute("aria-expanded", String(open));
+      if (compact) {
+        toggle.textContent = open ? "Close" : "Filters";
+      } else {
+        toggle.textContent = open ? "Less filters" : "More filters";
+      }
+    };
+
+    toggle.addEventListener("click", () => {
+      advanced.classList.toggle("hidden");
+      syncToggleLabel();
+    });
+
+    let lastY = window.scrollY;
+    const updateCompactMode = () => {
+      const y = window.scrollY;
+      const scrollingDown = y > lastY;
+      const scrollingUp = y < lastY;
+      lastY = y;
+
+      const isCompact = header.classList.contains("compact");
+      const enterCompact = y > 84 && (scrollingDown || y > 140);
+      const leaveCompact = y < 26 && scrollingUp;
+      const shouldCompact = enterCompact || (isCompact && !leaveCompact);
+
+      header.classList.toggle("compact", shouldCompact);
+      if (shouldCompact) advanced.classList.add("hidden");
+      syncToggleLabel();
+    };
+
+    let raf = 0;
+    const queueUpdate = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        updateCompactMode();
+      });
+    };
+
+    window.addEventListener("scroll", queueUpdate, { passive: true });
+    window.addEventListener("resize", queueUpdate);
+    updateCompactMode();
+  }
+
   function bindUI() {
     const savedFilters = readFilters();
 
@@ -1022,6 +1076,7 @@
 
   try {
     bindUI();
+    bindAdaptiveHeader();
     applyBrand();
     startAutoSync();
     initPWA();
