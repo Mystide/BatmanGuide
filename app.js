@@ -872,8 +872,6 @@
       syncHeaderToggle();
     });
 
-    let lastScrollY = window.scrollY;
-
     const updateCompactMode = () => {
       const y = window.scrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
@@ -890,7 +888,6 @@
       }
       syncToggleLabel();
       syncHeaderToggle();
-      lastScrollY = y;
     };
 
     let raf = 0;
