@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-04.02-faster-sync";
+const CACHE = "batman-guide-cache-stable";
 const APP_SHELL = [
   "./",
   "./index.html",
