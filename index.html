@@ -153,14 +153,10 @@
         <input id="gistId" class="input full" placeholder="Gist ID" />
         <input id="gistFile" class="input full" placeholder="File name in gist (ex: batman_guide_progress.json)" />
         <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" />
-        <label class="row muted"><input type="checkbox" id="autoSync" /> Auto-sync</label>
         <div class="row">
-          <button id="gistPull" class="btn">Pull</button>
-          <button id="gistPush" class="btn">Push</button>
-          <button id="gistSync" class="btn primary">Sync</button>
           <button id="resetState" class="btn warn">Reset local progress</button>
         </div>
-        <div id="syncStatus" class="status">Sync not configured.</div>
+        <div id="syncStatus" class="status">Auto-sync is off until Gist ID, file, and token are filled.</div>
       </div>
     </section>
   </main>
