@@ -45,6 +45,8 @@
     h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
     .hero { display: grid; gap: 6px; }
+    .hero-brand { display:flex; gap:12px; align-items:center; }
+    .hero-logo { width:144px; height:52px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
@@ -94,17 +96,19 @@
     .items { padding: 12px; }
     .item {
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 10px;
-      margin-bottom: 8px;
-      background: rgba(15, 23, 42, .78);
+      margin-bottom: 10px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, .88), rgba(10, 17, 34, .88));
       transition: border-color .16s ease, transform .16s ease, background .2s ease;
     }
-    .item:hover { border-color: #4f6288; transform: translateY(-1px); background: rgba(19, 31, 57, .8); }
+    .item-grid { display:grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: start; }
+    .cover { width: 60px; height: 84px; border-radius: 8px; border:1px solid rgba(255,255,255,.2); display:grid; place-items:center; text-align:center; font-size:10px; font-weight:800; letter-spacing:.45px; color:#fff; text-transform:uppercase; box-shadow: 0 8px 16px rgba(0,0,0,.35); }
+    .cover img { width:100%; height:100%; object-fit:cover; border-radius:8px; display:block; }
+    .cover small { display:block; font-size:9px; opacity:.85; }
+    .item:hover { border-color: #6f86b1; transform: translateY(-1px); background: rgba(19, 31, 57, .86); }
     .item.done { opacity: .72; border-style: dashed; }
     .title { font-weight: 700; line-height: 1.25; }
-    .item.done { opacity: .72; }
-    .title { font-weight: 650; }
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 12px; color: #fde68a; border: 1px solid #725f0a; border-radius: 999px; padding: 1px 8px; }
     .stack { display: grid; gap: 8px; }
@@ -130,11 +134,18 @@
       font-size: 13px;
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
+
+    .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:8px; margin-top: 8px; }
+    .meta-card { border:1px solid var(--border); border-radius: 12px; padding: 8px 10px; background: rgba(15, 23, 42, .55); }
+    .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .35px; }
+    .meta-value { margin-top: 2px; font-weight: 700; font-size: 16px; }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 12px; }
       .btn, .input, .select { width: 100%; }
-      .row.space { align-items: flex-start; }
+       .row.space { align-items: flex-start; }
+      .item-grid { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: 54px; border-radius: 10px; }
     }
   </style>
 </head>
@@ -143,8 +154,13 @@
     <div class="container stack">
       <div class="row space">
         <div class="hero">
-          <span class="badge">Gotham Reading Tracker</span>
-          <h1>Batman Guide</h1>
+          <div class="hero-brand">
+            <img id="heroLogo" src="icon.svg" alt="Batman logo" class="hero-logo" />
+            <div>
+              <span class="badge">Gotham Reading Tracker</span>
+              <h1>Batman Guide</h1>
+            </div>
+          </div>
           <div class="muted">Track Batman comics, keep notes, and sync progress across devices.</div>
         </div>
         <div class="row">
@@ -169,6 +185,9 @@
           <option value="title">Title A → Z</option>
           <option value="progress">Least progress first</option>
         </select>
+        <select id="eraJump" class="select">
+          <option value="">Jump to era…</option>
+        </select>
         <button class="btn" id="btnExpandAll">Expand all</button>
         <button class="btn" id="btnCollapseAll">Collapse all</button>
         <button class="btn" id="btnClearFilters">Clear filters</button>
@@ -182,6 +201,13 @@
           <div id="nextText" class="muted">Next: -</div>
           <div id="continueText" class="muted">Continue: -</div>
         </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-card"><div class="meta-label">Visible entries</div><div id="statVisible" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Completed</div><div id="statDone" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Remaining</div><div id="statRemaining" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Required left</div><div id="statRequired" class="meta-value">-</div></div>
       </div>
     </div>
   </header>
@@ -202,6 +228,11 @@
           <button id="gistPush" class="btn">Push</button>
           <button id="gistSync" class="btn">Sync now</button>
           <button id="resetState" class="btn warn">Reset local progress</button>
+        </div>
+        <div class="row">
+          <button id="exportState" class="btn">Export local backup</button>
+          <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
+          <input id="importStateFile" type="file" accept="application/json" class="hidden" />
         </div>
         <div id="syncStatus" class="status">Auto-sync is off until Gist ID and token are filled.</div>
       </div>
