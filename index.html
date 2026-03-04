@@ -31,7 +31,7 @@
         radial-gradient(900px 500px at 95% -15%, rgba(59, 130, 246, .14) 0%, transparent 60%),
         linear-gradient(180deg, #070b16 0%, #0b1224 100%);
     }
-    .container { max-width: 1120px; margin: 0 auto; padding: 16px; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 12px 16px; }
     .card {
       background: linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.82));
       border: 1px solid var(--border);
@@ -39,22 +39,26 @@
       padding: 14px;
       box-shadow: var(--shadow-soft);
     }
-    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); }
-    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); transition: padding .18s ease, background .18s ease; }
+    .top.compact .hero-logo { width: 94px; height: 32px; }
+    .top.compact h1 { font-size: 20px; }
+    .top.compact .controls-hint,
+    .top.compact .meta-grid { display: none; }
+    .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
-    h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
+    h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
     .hero { display: grid; gap: 6px; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
-    .hero-logo { width:144px; height:52px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
       background: var(--panel-2);
       color: var(--text);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 14px;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
     }
     .btn {
       cursor: pointer;
@@ -69,7 +73,7 @@
     .input, .select { min-width: 150px; }
     .input.full { width: 100%; }
     .status { font-size: 12px; color: var(--muted); }
-    .progress-wrap { margin-top: 12px; padding: 10px; border: 1px solid rgba(71,85,105,.35); border-radius: 14px; background: rgba(15,23,42,.45); }
+    .progress-wrap { margin-top: 8px; padding: 8px; border: 1px solid rgba(71,85,105,.35); border-radius: 12px; background: rgba(15,23,42,.45); }
     .progress-track { height: 10px; background: #162132; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
     .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
     .era { margin-top: 14px; }
@@ -128,7 +132,7 @@
       background: #0f172a;
     }
     .hidden { display: none; }
-    .tools { margin-top: 14px; }
+    .tools { margin-top: 10px; }
     .error {
       margin-top: 10px;
       border: 1px solid #7f1d1d;
@@ -140,15 +144,25 @@
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
 
-    .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:8px; margin-top: 8px; }
-    .meta-card { border:1px solid var(--border); border-radius: 12px; padding: 8px 10px; background: rgba(15, 23, 42, .55); }
+    .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap:6px; margin-top: 6px; }
+    .meta-card { border:1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: rgba(15, 23, 42, .55); }
     .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .35px; }
-    .meta-value { margin-top: 2px; font-weight: 700; font-size: 16px; }
+    .meta-value { margin-top: 1px; font-weight: 700; font-size: 14px; }
+    .filters { display: grid; grid-template-columns: minmax(190px, 1.4fr) minmax(130px, .9fr) auto auto minmax(160px, 1fr) auto; gap: 6px; align-items: center; }
+    .advanced-controls { display:flex; gap:6px; flex-wrap:wrap; margin-top: 6px; }
+    .advanced-controls .select { min-width: 180px; }
+    .filters .input,
+    .filters .select,
+    .filters .btn { width: 100%; }
+    .controls-hint { margin-top: 2px; }
+    .compact-toggle { white-space: nowrap; }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
-      .container { padding: 12px; }
+      .container { padding: 10px 12px; }
       .btn, .input, .select { width: 100%; }
-       .row.space { align-items: flex-start; }
+      .filters { display: flex; }
+      .advanced-controls { margin-top: 4px; }
+      .row.space { align-items: flex-start; }
       .item-grid { grid-template-columns: 1fr; }
       .cover { width: 100%; height: 54px; border-radius: 10px; }
       .item-head { flex-direction: column; align-items: stretch; gap: 6px; }
@@ -176,7 +190,7 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row filters">
         <input id="search" class="input" placeholder="Search titles..." />
         <select id="typeFilter" class="select">
           <option value="">All types</option>
@@ -191,6 +205,9 @@
           <option value="title">Title A → Z</option>
           <option value="progress">Least progress first</option>
         </select>
+        <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
+      </div>
+      <div class="row advanced-controls hidden" id="advancedControls">
         <select id="eraJump" class="select">
           <option value="">Jump to era…</option>
         </select>
@@ -198,7 +215,7 @@
         <button class="btn" id="btnCollapseAll">Collapse all</button>
         <button class="btn" id="btnClearFilters">Clear filters</button>
       </div>
-      <div class="muted">Tip: press <span class="kbd">/</span> to jump to search.</div>
+      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> to jump to search.</div>
 
       <div class="progress-wrap">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
