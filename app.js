@@ -10,8 +10,8 @@
     syncCfg: "batman-guide:sync:v3"
   };
 
-  const AUTO_PULL_INTERVAL_MS = 15000;
-  const AUTO_PUSH_DEBOUNCE_MS = 900;
+  const AUTO_PULL_INTERVAL_MS = 2000;
+  const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
 
   const $ = (id) => document.getElementById(id);
@@ -29,7 +29,6 @@
 
   const defaultCfg = () => ({
     gistId: "",
-    gistFile: "batman_guide_progress.json",
     gistToken: "",
     auto: true
   });
@@ -101,7 +100,7 @@
   }
 
   function syncReady(cfg) {
-    return !!(cfg.gistId && cfg.gistFile && cfg.gistToken);
+    return !!(cfg.gistId && cfg.gistToken);
   }
 
   function setSyncStatus(text) {
@@ -328,6 +327,8 @@
     }
   }
 
+  const GIST_FILE = "batmanguide_progress.json";
+
   async function gistFetch(cfg) {
     const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
       headers: {
@@ -341,8 +342,8 @@
 
   async function gistGetText(cfg) {
     const gist = await gistFetch(cfg);
-    const file = gist.files?.[cfg.gistFile];
-    if (!file) throw new Error(`File ${cfg.gistFile} not found in gist`);
+    const file = gist.files?.[GIST_FILE];
+    if (!file) throw new Error(`File ${GIST_FILE} not found in gist`);
     if (typeof file.content === "string") return file.content;
     if (file.raw_url) {
       const rr = await fetch(file.raw_url, {
@@ -357,7 +358,7 @@
   async function gistPush(cfg) {
     const body = {
       files: {
-        [cfg.gistFile]: {
+        [GIST_FILE]: {
           content: exportPayload()
         }
       }
@@ -527,23 +528,21 @@
 
     const cfg = getCfg();
     $("gistId").value = cfg.gistId;
-    $("gistFile").value = cfg.gistFile;
     $("gistToken").value = cfg.gistToken;
     const saveCfgFromUI = () => {
       const nextCfg = {
         gistId: $("gistId").value.trim(),
-        gistFile: $("gistFile").value.trim(),
         gistToken: $("gistToken").value.trim(),
         auto: true
       };
       setCfg(nextCfg);
       startAutoSync();
-      setSyncStatus(syncReady(nextCfg) ? "Auto-sync configured." : "Auto-sync is off until Gist ID, file, and token are filled.");
+      setSyncStatus(syncReady(nextCfg) ? "Auto-sync active." : "Auto-sync is off until Gist ID and token are filled.");
       if (syncReady(nextCfg)) void runAutoSync("settings");
       return nextCfg;
     };
 
-    for (const id of ["gistId", "gistFile", "gistToken"]) {
+    for (const id of ["gistId", "gistToken"]) {
       $(id).addEventListener("change", saveCfgFromUI);
     }
 
