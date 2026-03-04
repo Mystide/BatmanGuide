@@ -841,6 +841,47 @@
     }
   }
 
+
+  function bindAdaptiveHeader() {
+    const header = document.querySelector(".top");
+    const advanced = $("advancedControls");
+    const toggle = $("btnToggleAdvanced");
+    if (!header || !advanced || !toggle) return;
+
+    const syncToggleLabel = () => {
+      const open = !advanced.classList.contains("hidden");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.textContent = open ? "Less" : "More";
+    };
+
+    toggle.addEventListener("click", () => {
+      advanced.classList.toggle("hidden");
+      syncToggleLabel();
+    });
+
+    const updateCompactMode = () => {
+      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
+      header.classList.toggle("compact", shouldCompact);
+      if (shouldCompact && window.scrollY > 24) {
+        advanced.classList.add("hidden");
+      }
+      syncToggleLabel();
+    };
+
+    let raf = 0;
+    const queueUpdate = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        updateCompactMode();
+      });
+    };
+
+    window.addEventListener("scroll", queueUpdate, { passive: true });
+    window.addEventListener("resize", queueUpdate);
+    updateCompactMode();
+  }
+
   function bindUI() {
     const savedFilters = readFilters();
 
@@ -1022,6 +1063,7 @@
 
   try {
     bindUI();
+    bindAdaptiveHeader();
     applyBrand();
     startAutoSync();
     initPWA();
