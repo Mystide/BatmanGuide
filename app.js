@@ -846,7 +846,8 @@
     const header = document.querySelector(".top");
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
-    if (!header || !advanced || !toggle) return;
+    const headerToggle = $("btnHeaderToggle");
+    if (!header || !advanced || !toggle || !headerToggle) return;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -854,18 +855,53 @@
       toggle.textContent = open ? "Less" : "More";
     };
 
+    const syncHeaderToggle = () => {
+      const open = header.classList.contains("header-expanded");
+      headerToggle.setAttribute("aria-expanded", String(open));
+      headerToggle.textContent = open ? "Hide filters" : "Filters";
+    };
+
     toggle.addEventListener("click", () => {
       advanced.classList.toggle("hidden");
       syncToggleLabel();
     });
 
+    headerToggle.addEventListener("click", () => {
+      if (!header.classList.contains("compact")) return;
+      header.classList.toggle("header-expanded");
+      syncHeaderToggle();
+    });
+
+    const HIDE_AFTER_Y = 180;
+    const SHOW_AT_Y = 110;
+    const DIRECTION_DELTA = 6;
+    let lastY = window.scrollY;
+
     const updateCompactMode = () => {
-      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
+      const y = window.scrollY;
+      const shouldCompact = y > 24 || window.innerHeight < 860;
+      const isExpanded = header.classList.contains("header-expanded");
+      const scrollingDown = y - lastY > DIRECTION_DELTA;
+      const scrollingUp = lastY - y > DIRECTION_DELTA;
+
       header.classList.toggle("compact", shouldCompact);
-      if (shouldCompact && window.scrollY > 24) {
+
+      if (!shouldCompact) {
+        header.classList.remove("header-hidden");
+        header.classList.remove("header-expanded");
+      } else if (isExpanded || y <= SHOW_AT_Y || scrollingUp) {
+        header.classList.remove("header-hidden");
+      } else if (y >= HIDE_AFTER_Y && scrollingDown) {
+        header.classList.add("header-hidden");
+      }
+
+      if (shouldCompact && y > 24) {
         advanced.classList.add("hidden");
       }
+
       syncToggleLabel();
+      syncHeaderToggle();
+      lastY = y;
     };
 
     let raf = 0;
