@@ -347,60 +347,23 @@
       .trim();
   }
 
-  function coverQueryCandidates(title) {
-    const raw = String(title || "").trim();
-    const clean = titleToCoverQuery(raw);
-    const trimmed = clean
-      .replace(/\b(deluxe|edition|anniversary|complete|collection|saga)\b/gi, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    return [...new Set([clean, trimmed, raw].filter(Boolean))];
-  }
-
-  async function fetchOpenLibraryCover(title) {
-    for (const q of coverQueryCandidates(title)) {
-      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const docs = Array.isArray(data?.docs) ? data.docs : [];
-      const preferred = docs.find(
-        (d) => Number.isFinite(d?.cover_i) && String(d?.title || "").toLowerCase().includes("batman")
-      );
-      const fallback = docs.find((d) => Number.isFinite(d?.cover_i));
-      const coverId = preferred?.cover_i || fallback?.cover_i;
-      if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-    }
-    return "";
-  }
-
-  async function fetchGoogleBooksCover(title) {
-    for (const q of coverQueryCandidates(title)) {
-      const query = `intitle:${q} batman`;
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5&printType=books`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      for (const item of items) {
-        const links = item?.volumeInfo?.imageLinks || {};
-        const url = links.thumbnail || links.smallThumbnail || "";
-        if (url) return url.replace(/^http:/, "https:");
-      }
-    }
-    return "";
-  }
-
-  async function resolveCoverArtwork(entry) {
+  async function resolveOpenLibraryCover(entry) {
     const id = entry.id;
     if (!id || REAL_COVERS[id] || coverCache[id] || coverFetchInFlight.has(id)) return;
     coverFetchInFlight.add(id);
     try {
-      const fromOpenLibrary = await fetchOpenLibraryCover(entry.title);
-      const coverUrl = fromOpenLibrary || await fetchGoogleBooksCover(entry.title);
-      if (!coverUrl) return;
-      coverCache[id] = coverUrl;
+      const query = titleToCoverQuery(entry.title);
+      if (!query) return;
+      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const docs = Array.isArray(data?.docs) ? data.docs : [];
+      const doc = docs.find((d) => Number.isFinite(d?.cover_i));
+      if (!doc?.cover_i) return;
+      coverCache[id] = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
       saveJSON(KEYS.coverCache, coverCache);
       const card = document.querySelector(`.item[data-id="${id}"] .cover`);
-      if (card) applyCoverImage(card, entry, coverUrl);
+      if (card) applyCoverImage(card, entry, coverCache[id]);
     } catch {
       // Ignore network failures and keep fallback artwork.
     } finally {
@@ -486,7 +449,7 @@
           applyCoverImage(cover, entry, coverUrl);
         } else {
           cover.innerHTML = entryCoverFallback(entry);
-          void resolveCoverArtwork(entry);
+          void resolveOpenLibraryCover(entry);
         }
 
         const content = document.createElement("div");
