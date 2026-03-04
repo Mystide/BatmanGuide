@@ -130,6 +130,11 @@
       font-size: 13px;
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
+
+    .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:8px; margin-top: 8px; }
+    .meta-card { border:1px solid var(--border); border-radius: 12px; padding: 8px 10px; background: rgba(15, 23, 42, .55); }
+    .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .35px; }
+    .meta-value { margin-top: 2px; font-weight: 700; font-size: 16px; }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 12px; }
@@ -169,6 +174,9 @@
           <option value="title">Title A → Z</option>
           <option value="progress">Least progress first</option>
         </select>
+        <select id="eraJump" class="select">
+          <option value="">Jump to era…</option>
+        </select>
         <button class="btn" id="btnExpandAll">Expand all</button>
         <button class="btn" id="btnCollapseAll">Collapse all</button>
         <button class="btn" id="btnClearFilters">Clear filters</button>
@@ -182,6 +190,13 @@
           <div id="nextText" class="muted">Next: -</div>
           <div id="continueText" class="muted">Continue: -</div>
         </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-card"><div class="meta-label">Visible entries</div><div id="statVisible" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Completed</div><div id="statDone" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Remaining</div><div id="statRemaining" class="meta-value">-</div></div>
+        <div class="meta-card"><div class="meta-label">Required left</div><div id="statRequired" class="meta-value">-</div></div>
       </div>
     </div>
   </header>
@@ -202,6 +217,11 @@
           <button id="gistPush" class="btn">Push</button>
           <button id="gistSync" class="btn">Sync now</button>
           <button id="resetState" class="btn warn">Reset local progress</button>
+        </div>
+        <div class="row">
+          <button id="exportState" class="btn">Export local backup</button>
+          <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
+          <input id="importStateFile" type="file" accept="application/json" class="hidden" />
         </div>
         <div id="syncStatus" class="status">Auto-sync is off until Gist ID and token are filled.</div>
       </div>
