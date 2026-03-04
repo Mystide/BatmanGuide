@@ -156,6 +156,7 @@
       <div class="row space">
         <div class="hero">
           <div class="hero-brand">
+            <img id="heroLogo" src="icon.svg" alt="Batman logo" class="hero-logo" />
             <img src="batman-logo.svg" alt="Batman logo" class="hero-logo" />
             <img src="icon.svg" alt="Batman logo" class="hero-logo" />
             <div>
@@ -235,6 +236,11 @@
           <button id="exportState" class="btn">Export local backup</button>
           <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
           <input id="importStateFile" type="file" accept="application/json" class="hidden" />
+        </div>
+        <div class="row">
+          <input id="logoUrl" class="input full" placeholder="Header logo URL (GitHub raw image URL)" />
+          <button id="applyLogo" class="btn">Apply logo</button>
+          <button id="resetLogo" class="btn">Reset logo</button>
         </div>
         <div id="syncStatus" class="status">Auto-sync is off until Gist ID and token are filled.</div>
       </div>
