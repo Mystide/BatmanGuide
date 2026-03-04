@@ -72,6 +72,10 @@
     .progress-wrap { margin-top: 8px; padding: 8px; border: 1px solid rgba(71,85,105,.35); border-radius: 12px; background: rgba(15,23,42,.45); }
     .progress-track { height: 10px; background: #162132; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
     .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
+    .status-row { margin-top: 5px; gap: 10px; }
+    .status-pills { display:flex; gap:6px; flex-wrap:wrap; }
+    .status-pill { font-size: 11px; border:1px solid var(--border); border-radius:999px; padding: 1px 7px; color: var(--muted); }
+    .status-pill strong { color: var(--text); font-size: 12px; }
     .era { margin-top: 14px; }
     details {
       border: 1px solid var(--border);
@@ -209,20 +213,19 @@
       </div>
       <div class="muted controls-hint">Tip: press <span class="kbd">/</span> to jump to search.</div>
 
-      <div class="progress-wrap">
+      <div class="status-strip">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
-        <div class="row space" style="margin-top:6px;">
+        <div class="row status-row">
           <div id="progressText" class="muted">Loading...</div>
           <div id="nextText" class="muted">Next: -</div>
           <div id="continueText" class="muted">Continue: -</div>
+          <div class="status-pills">
+            <span class="status-pill">Visible <strong id="statVisible">-</strong></span>
+            <span class="status-pill">Done <strong id="statDone">-</strong></span>
+            <span class="status-pill">Left <strong id="statRemaining">-</strong></span>
+            <span class="status-pill">Required <strong id="statRequired">-</strong></span>
+          </div>
         </div>
-      </div>
-
-      <div class="meta-grid">
-        <div class="meta-card"><div class="meta-label">Visible entries</div><div id="statVisible" class="meta-value">-</div></div>
-        <div class="meta-card"><div class="meta-label">Completed</div><div id="statDone" class="meta-value">-</div></div>
-        <div class="meta-card"><div class="meta-label">Remaining</div><div id="statRemaining" class="meta-value">-</div></div>
-        <div class="meta-card"><div class="meta-label">Required left</div><div id="statRequired" class="meta-value">-</div></div>
       </div>
     </div>
   </header>
