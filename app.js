@@ -43,6 +43,7 @@
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
+  const FIXED_LOGO_URL = "./logo.png";
 
   const $ = (id) => document.getElementById(id);
 
