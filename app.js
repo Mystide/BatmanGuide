@@ -849,14 +849,12 @@
   }
 
   function bindAdaptiveHeader() {
-    const advanced = $("advancedControls");
-    const toggle = $("btnToggleAdvanced");
-    if (!advanced || !toggle) return;
-  function bindAdaptiveHeader() {
+    const header = document.querySelector(".top");
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
     const headerToggle = $("btnHeaderToggle");
     if (!header || !advanced || !toggle || !headerToggle) return;
+    let lastScrollY = window.scrollY;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -906,6 +904,7 @@
       raf = requestAnimationFrame(() => {
         raf = 0;
         updateCompactMode();
+        lastScrollY = window.scrollY;
       });
     };
 
