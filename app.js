@@ -7,7 +7,8 @@
   const KEYS = {
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
-    syncCfg: "batman-guide:sync:v3"
+    syncCfg: "batman-guide:sync:v3",
+    filters: "batman-guide:filters:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -35,6 +36,29 @@
     auto: true,
     pullMs: AUTO_PULL_BASE_INTERVAL_MS
   });
+
+
+  const defaultFilters = () => ({
+    search: "",
+    type: "",
+    onlyRemaining: false,
+    hideOptional: false,
+    sortBy: "order"
+  });
+
+  function readFilters() {
+    return loadJSON(KEYS.filters, defaultFilters());
+  }
+
+  function writeFilters() {
+    saveJSON(KEYS.filters, {
+      search: $("search").value || "",
+      type: $("typeFilter").value || "",
+      onlyRemaining: !!$("onlyRemaining").checked,
+      hideOptional: !!$("hideOptional").checked,
+      sortBy: $("sortBy").value || "order"
+    });
+  }
 
   let state = loadJSON(KEYS.state, defaultState());
   let dirty = false;
@@ -117,8 +141,9 @@
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
+    const sortBy = $("sortBy").value;
 
-    return LIST.filter((entry) => {
+    const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
       if (q && !entry.title.toLowerCase().includes(q)) return false;
       if (type && entry.type !== type) return false;
@@ -126,6 +151,21 @@
       if (hideOptional && entry.optional) return false;
       return true;
     });
+
+    if (sortBy === "title") {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "progress") {
+      filtered.sort((a, b) => {
+        const sa = ensureItemState(a);
+        const sb = ensureItemState(b);
+        if (sa.done !== sb.done) return Number(sa.done) - Number(sb.done);
+        const ta = Date.parse(sa.touchedAt || "") || 0;
+        const tb = Date.parse(sb.touchedAt || "") || 0;
+        return ta - tb;
+      });
+    }
+
+    return filtered;
   }
 
   function groupedByEra(entries) {
@@ -552,9 +592,22 @@
   }
 
   function bindUI() {
-    for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional"]) {
-      $(id).addEventListener("input", render);
-      $(id).addEventListener("change", render);
+    const savedFilters = readFilters();
+    $("search").value = savedFilters.search || "";
+    $("typeFilter").value = savedFilters.type || "";
+    $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
+    $("hideOptional").checked = !!savedFilters.hideOptional;
+    $("sortBy").value = savedFilters.sortBy || "order";
+
+    for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
+      $(id).addEventListener("input", () => {
+        writeFilters();
+        render();
+      });
+      $(id).addEventListener("change", () => {
+        writeFilters();
+        render();
+      });
     }
 
     $("btnClearFilters").addEventListener("click", () => {
@@ -562,6 +615,22 @@
       $("typeFilter").value = "";
       $("onlyRemaining").checked = false;
       $("hideOptional").checked = false;
+      $("sortBy").value = "order";
+      writeFilters();
+      render();
+    });
+
+    $("btnExpandAll").addEventListener("click", () => {
+      const updated = loadOpenState();
+      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = true;
+      saveOpenState(updated);
+      render();
+    });
+
+    $("btnCollapseAll").addEventListener("click", () => {
+      const updated = loadOpenState();
+      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = false;
+      saveOpenState(updated);
       render();
     });
 
@@ -626,6 +695,15 @@
       saveState();
       render();
       setSyncStatus("Local state reset.");
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target;
+        if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+        e.preventDefault();
+        $("search").focus();
+      }
     });
 
     window.addEventListener("focus", () => void runAutoSync("focus"));
