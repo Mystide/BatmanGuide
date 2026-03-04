@@ -842,11 +842,16 @@
   }
 
 
-  function bindAdaptiveHeader() {
+  function enforceStaticHeader() {
     const header = document.querySelector(".top");
+    if (!header) return;
+    header.classList.add("header-static");
+  }
+
+  function bindAdaptiveHeader() {
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
-    if (!header || !advanced || !toggle) return;
+    if (!advanced || !toggle) return;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -859,27 +864,7 @@
       syncToggleLabel();
     });
 
-    const updateCompactMode = () => {
-      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
-      header.classList.toggle("compact", shouldCompact);
-      if (shouldCompact && window.scrollY > 24) {
-        advanced.classList.add("hidden");
-      }
-      syncToggleLabel();
-    };
-
-    let raf = 0;
-    const queueUpdate = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        updateCompactMode();
-      });
-    };
-
-    window.addEventListener("scroll", queueUpdate, { passive: true });
-    window.addEventListener("resize", queueUpdate);
-    updateCompactMode();
+    syncToggleLabel();
   }
 
   function bindUI() {
@@ -1063,6 +1048,7 @@
 
   try {
     bindUI();
+    enforceStaticHeader();
     bindAdaptiveHeader();
     applyBrand();
     startAutoSync();
