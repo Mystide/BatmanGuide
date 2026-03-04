@@ -394,6 +394,7 @@
         } else {
           cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
         }
+        cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
 
         const content = document.createElement("div");
 
