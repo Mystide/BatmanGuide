@@ -153,6 +153,11 @@
     $("syncStatus").textContent = text;
   }
 
+  function setText(id, value) {
+    const el = $(id);
+    if (el) el.textContent = value;
+  }
+
   function getFiltered() {
     const q = $("search").value.trim().toLowerCase();
     const type = $("typeFilter").value;
@@ -230,11 +235,17 @@
     const cont = continueEntry(filtered);
     if (!cont) {
       $("continueText").textContent = "Continue: -";
-      return;
+    } else {
+      const st = ensureItemState(cont);
+      const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
+      $("continueText").textContent = `Continue: ${cont.title}${where}`;
     }
-    const st = ensureItemState(cont);
-    const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
-    $("continueText").textContent = `Continue: ${cont.title}${where}`;
+
+    const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
+    setText("statVisible", String(s.total));
+    setText("statDone", String(s.done));
+    setText("statRemaining", String(Math.max(0, s.total - s.done)));
+    setText("statRequired", String(requiredRemaining));
   }
 
   function loadOpenState() {
@@ -243,6 +254,23 @@
 
   function saveOpenState(val) {
     saveJSON(KEYS.eraOpen, val);
+  }
+
+
+  function populateEraJump(entries) {
+    const sel = $("eraJump");
+    if (!sel) return;
+    const current = sel.value;
+    const eras = [...groupedByEra(entries).keys()];
+    sel.innerHTML = '<option value="">Jump to era…</option>';
+    for (const era of eras) {
+      const key = eraKey(era);
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = era;
+      sel.appendChild(opt);
+    }
+    if ([...sel.options].some((o) => o.value === current)) sel.value = current;
   }
 
   function render() {
@@ -268,11 +296,13 @@
 
     const byEra = groupedByEra(filtered);
     const openMap = loadOpenState();
+    populateEraJump(filtered);
 
     for (const [era, items] of byEra.entries()) {
       const details = document.createElement("details");
       details.className = "era";
       const key = eraKey(era);
+      details.dataset.eraKey = key;
       details.open = openMap[key] !== false;
 
       details.addEventListener("toggle", () => {
@@ -402,8 +432,10 @@
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort("timeout"), SYNC_REQUEST_TIMEOUT_MS);
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers });
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers,
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
     if (r.status === 304 && opts.allowNotModified) {
       return { notModified: true, gist: null };
     }
@@ -500,10 +532,6 @@
         }
         setSyncStatus("Already in sync.");
         return "unchanged";
-        } else {
-          setSyncStatus("Already in sync.");
-        }
-        return;
       }
       remoteText = pulled.text;
     } catch {
@@ -634,6 +662,19 @@
       });
     }
 
+    const eraJump = $("eraJump");
+    if (eraJump) {
+      eraJump.addEventListener("change", () => {
+        const key = eraJump.value;
+        if (!key) return;
+        const section = document.querySelector(`details[data-era-key="${CSS.escape(key)}"]`);
+        if (section) {
+          section.open = true;
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+
     $("btnClearFilters").addEventListener("click", () => {
       $("search").value = "";
       $("typeFilter").value = "";
@@ -681,7 +722,6 @@
         gistToken: $("gistToken").value.trim(),
         auto: $("autoSync").checked,
         pullMs: clampPullInterval(getCfg().pullMs)
-        auto: $("autoSync").checked
       };
       setCfg(nextCfg);
       startAutoSync();
@@ -691,7 +731,6 @@
         setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
       } else {
         setSyncStatus("Auto-sync active (adaptive polling).");
-        setSyncStatus("Auto-sync active.");
         void runAutoSync("settings");
       }
       return nextCfg;
@@ -715,6 +754,43 @@
       if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
       void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
     });
+
+    const importInput = $("importStateFile");
+    const exportBtn = $("exportState");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => {
+        const blob = new Blob([exportPayload()], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `batman-guide-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setSyncStatus("Local backup exported.");
+      });
+    }
+
+    if (importInput) {
+      importInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const imported = importPayload(text);
+          if (!imported.ok) throw new Error(imported.err);
+          dirty = true;
+          render();
+          scheduleAutoPush();
+          setSyncStatus("Backup imported to local state.");
+        } catch (err) {
+          setSyncStatus(`Import failed: ${String(err.message || err)}`);
+        } finally {
+          importInput.value = "";
+        }
+      });
+    }
 
     $("resetState").addEventListener("click", () => {
       if (!confirm("Reset local progress? This cannot be undone.")) return;
