@@ -6,7 +6,24 @@
 
 
   const REAL_COVERS = {
+    "E1-01": "https://imgix-media.wbdndc.net/ingest/book/preview/91031541-9328-474c-9d6d-a67d249b6783/198d8835-5e2a-46af-8ac0-bd862ef573b1/0.jpg",
+    "E1-02": "https://books.google.com/books/content?id=yJf0DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-03": "https://books.google.com/books/content?id=NVUwDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-04": "https://books.google.com/books/content?id=RnxJDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-06": "https://books.google.com/books/content?id=yjyZwgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E1-07": "https://covers.openlibrary.org/b/id/12415426-M.jpg",
+    "E2-01": "https://covers.openlibrary.org/b/id/7803421-M.jpg",
+    "E3-01": "https://books.google.com/books/content?id=K6qn0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E3-02": "https://books.google.com/books/content?id=Zvg4AgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E4-00": "https://covers.openlibrary.org/b/id/749280-M.jpg",
     "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
+    "E4-02": "https://covers.openlibrary.org/b/id/11026165-M.jpg",
+    "E4-02A": "https://books.google.com/books/content?id=Rxt3EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03A": "https://books.google.com/books/content?id=oZaVBgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03B": "https://books.google.com/books/content?id=CKHWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03C": "https://books.google.com/books/content?id=PE7yngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E4-05": "https://covers.openlibrary.org/b/id/15166226-M.jpg",
+    "E4-06": "https://books.google.com/books/content?id=jpV0DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
     "E4-08": "https://covers.openlibrary.org/b/isbn/9781563896767-M.jpg",
     "E4-11": "https://covers.openlibrary.org/b/isbn/9781401216672-M.jpg",
@@ -22,6 +39,7 @@
     "E5-01": "https://covers.openlibrary.org/b/isbn/9781401235420-M.jpg",
     "E5-04": "https://covers.openlibrary.org/b/isbn/9781401246020-M.jpg",
     "E5-06": "https://covers.openlibrary.org/b/isbn/9781401252281-M.jpg",
+    "E5-10": "https://books.google.com/books/content?id=nUu3BQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E6-01": "https://covers.openlibrary.org/b/isbn/9781401267775-M.jpg",
     "E6-06": "https://covers.openlibrary.org/b/isbn/9781401273615-M.jpg",
     "E6-14": "https://covers.openlibrary.org/b/isbn/9781779507907-M.jpg",
@@ -30,6 +48,7 @@
     "E7-03": "https://covers.openlibrary.org/b/isbn/9781779520029-M.jpg",
     "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
   };
+
 
   const KEYS = {
     state: "batman-guide:state:v3",
