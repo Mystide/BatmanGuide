@@ -39,18 +39,7 @@
       padding: 14px;
       box-shadow: var(--shadow-soft);
     }
-    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); transition: padding .18s ease, background .18s ease; }
-    .top.compact .hero-logo { width: 94px; height: 32px; }
-    .top.compact h1 { font-size: 20px; }
-    .top.compact .controls-hint,
-    .top.compact .meta-grid,
-    .top.compact .progress-wrap,
-    .top.compact #advancedControls { display: none !important; }
-    .top.compact .container { padding-top: 8px; padding-bottom: 8px; }
-    .top.compact .hero-brand { gap: 8px; }
-    .top.compact .btn { padding: 6px 9px; font-size: 12px; }
-    .top.compact .filters { grid-template-columns: minmax(220px, 1fr) minmax(120px, .5fr) auto; }
-    .top.compact .filters .compact-hide { display: none; }
+    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); }
     .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
@@ -155,21 +144,16 @@
     .meta-card { border:1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: rgba(15, 23, 42, .55); }
     .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .35px; }
     .meta-value { margin-top: 1px; font-weight: 700; font-size: 14px; }
-    .filters { display: grid; grid-template-columns: minmax(190px, 1.4fr) minmax(130px, .9fr) auto auto minmax(160px, 1fr) auto; gap: 6px; align-items: center; }
-    .advanced-controls { display:flex; gap:6px; flex-wrap:wrap; margin-top: 6px; }
-    .advanced-controls .select { min-width: 180px; }
+    .filters { display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(130px, .9fr) auto auto minmax(160px, 1fr) minmax(180px, 1fr) auto auto auto; gap: 6px; align-items: center; }
     .filters .input,
     .filters .select,
     .filters .btn { width: 100%; }
     .controls-hint { margin-top: 2px; }
-    .compact-toggle { white-space: nowrap; }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
       .btn, .input, .select { width: 100%; }
       .filters { display: flex; }
-      .advanced-controls { margin-top: 4px; }
-      .top.compact .filters { grid-template-columns: 1fr; }
       .row.space { align-items: flex-start; }
       .item-grid { grid-template-columns: 1fr; }
       .cover { width: 100%; height: 54px; border-radius: 10px; }
@@ -213,7 +197,7 @@
           <option value="title">Title A → Z</option>
           <option value="progress">Least progress first</option>
         </select>
-        <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">Filters</button>
+        <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
       </div>
       <div class="row advanced-controls hidden" id="advancedControls">
         <select id="eraJump" class="select">

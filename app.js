@@ -849,14 +849,9 @@
     if (!header || !advanced || !toggle) return;
 
     const syncToggleLabel = () => {
-      const compact = header.classList.contains("compact");
       const open = !advanced.classList.contains("hidden");
       toggle.setAttribute("aria-expanded", String(open));
-      if (compact) {
-        toggle.textContent = open ? "Close" : "Filters";
-      } else {
-        toggle.textContent = open ? "Less" : "More";
-      }
+      toggle.textContent = open ? "Less" : "More";
     };
 
     toggle.addEventListener("click", () => {
@@ -864,14 +859,10 @@
       syncToggleLabel();
     });
 
-    let lastY = window.scrollY;
     const updateCompactMode = () => {
-      const y = window.scrollY;
-      const scrollingDown = y > lastY;
-      lastY = y;
-      const shouldCompact = y > 120 || (y > 40 && scrollingDown);
+      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
       header.classList.toggle("compact", shouldCompact);
-      if (shouldCompact) {
+      if (shouldCompact && window.scrollY > 24) {
         advanced.classList.add("hidden");
       }
       syncToggleLabel();
