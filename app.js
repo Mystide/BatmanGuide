@@ -521,13 +521,13 @@
         const content = document.createElement("div");
 
         const top = document.createElement("div");
-        top.className = "row space";
+        top.className = "item-head";
         top.innerHTML = `
-          <label class="row" style="align-items:flex-start;">
+          <label class="item-title-row">
             <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
             <span class="title">${entry.title}</span>
           </label>
-          <a href="${entry.url}" target="_blank" rel="noopener">Open</a>
+          <a class="item-link" href="${entry.url}" target="_blank" rel="noopener">Open</a>
         `;
 
         const tags = document.createElement("div");
@@ -539,10 +539,10 @@
         `;
 
         const progress = document.createElement("div");
-        progress.className = "row";
+        progress.className = "progress-fields";
         progress.innerHTML = `
-          <input class="input" data-action="pos" placeholder="where you stopped" value="${escapeHtml(st.pos || "")}" style="max-width:180px;" />
-          <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" style="min-width:240px;" />
+          <input class="input" data-action="pos" placeholder="where you stopped" value="${escapeHtml(st.pos || "")}" />
+          <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
         top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
