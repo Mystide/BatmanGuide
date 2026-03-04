@@ -35,8 +35,7 @@
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1",
-    brand: "batman-guide:brand:v1"
+    filters: "batman-guide:filters:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -186,18 +185,6 @@
   function setText(id, value) {
     const el = $(id);
     if (el) el.textContent = value;
-  }
-
-  function defaultBrand() {
-    return { logoUrl: "" };
-  }
-
-  function getBrand() {
-    return loadJSON(KEYS.brand, defaultBrand());
-  }
-
-  function setBrand(brand) {
-    saveJSON(KEYS.brand, Object.assign(defaultBrand(), brand));
   }
 
   function applyBrand() {
@@ -744,29 +731,6 @@
   function bindUI() {
     const savedFilters = readFilters();
 
-    const logoInput = $("logoUrl");
-    const applyLogoBtn = $("applyLogo");
-    const resetLogoBtn = $("resetLogo");
-    const brand = getBrand();
-    if (logoInput) logoInput.value = brand.logoUrl || "";
-
-    if (applyLogoBtn) {
-      applyLogoBtn.addEventListener("click", () => {
-        const next = (logoInput?.value || "").trim();
-        setBrand({ logoUrl: next });
-        applyBrand();
-        setSyncStatus(next ? "Custom logo applied." : "Default logo in use.");
-      });
-    }
-
-    if (resetLogoBtn) {
-      resetLogoBtn.addEventListener("click", () => {
-        setBrand(defaultBrand());
-        if (logoInput) logoInput.value = "";
-        applyBrand();
-        setSyncStatus("Logo reset to default.");
-      });
-    }
     $("search").value = savedFilters.search || "";
     $("typeFilter").value = savedFilters.type || "";
     $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
