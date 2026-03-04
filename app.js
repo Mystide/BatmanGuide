@@ -875,7 +875,8 @@
     const updateCompactMode = () => {
       const y = window.scrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
-      const hideHeader = shouldCompact && y > 140 && !header.classList.contains("header-expanded");
+      const scrollingDown = y > lastScrollY;
+      const hideHeader = shouldCompact && scrollingDown && y > 140 && !header.classList.contains("header-expanded");
 
       header.classList.toggle("compact", shouldCompact);
       header.classList.toggle("header-hidden", hideHeader);
