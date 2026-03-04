@@ -845,7 +845,8 @@
   function bindAdaptiveHeader() {
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
-    if (!advanced || !toggle) return;
+    const headerToggle = $("btnHeaderToggle");
+    if (!header || !advanced || !toggle || !headerToggle) return;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -853,12 +854,53 @@
       toggle.textContent = open ? "Less" : "More";
     };
 
+    const syncHeaderToggle = () => {
+      const open = header.classList.contains("header-expanded");
+      headerToggle.setAttribute("aria-expanded", String(open));
+      headerToggle.textContent = open ? "Hide filters" : "Filters";
+    };
+
     toggle.addEventListener("click", () => {
       advanced.classList.toggle("hidden");
       syncToggleLabel();
     });
 
-    syncToggleLabel();
+    headerToggle.addEventListener("click", () => {
+      if (!header.classList.contains("compact")) return;
+      header.classList.toggle("header-expanded");
+      syncHeaderToggle();
+    });
+
+    const updateCompactMode = () => {
+      const y = window.scrollY;
+      const shouldCompact = y > 24 || window.innerHeight < 860;
+      const scrollingDown = y > lastScrollY;
+      const hideHeader = shouldCompact && scrollingDown && y > 140 && !header.classList.contains("header-expanded");
+
+      header.classList.toggle("compact", shouldCompact);
+      header.classList.toggle("header-hidden", hideHeader);
+      if (shouldCompact && y > 24) {
+        advanced.classList.add("hidden");
+      }
+      if (!shouldCompact) {
+        header.classList.remove("header-expanded");
+      }
+      syncToggleLabel();
+      syncHeaderToggle();
+    };
+
+    let raf = 0;
+    const queueUpdate = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        updateCompactMode();
+      });
+    };
+
+    window.addEventListener("scroll", queueUpdate, { passive: true });
+    window.addEventListener("resize", queueUpdate);
+    updateCompactMode();
   }
 
   function bindUI() {
