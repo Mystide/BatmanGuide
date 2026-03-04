@@ -873,9 +873,14 @@
     });
 
     const updateCompactMode = () => {
-      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
+      const y = window.scrollY;
+      const shouldCompact = y > 24 || window.innerHeight < 860;
+      const scrollingDown = y > lastScrollY;
+      const hideHeader = shouldCompact && scrollingDown && y > 140 && !header.classList.contains("header-expanded");
+
       header.classList.toggle("compact", shouldCompact);
-      if (shouldCompact && window.scrollY > 24) {
+      header.classList.toggle("header-hidden", hideHeader);
+      if (shouldCompact && y > 24) {
         advanced.classList.add("hidden");
       }
       if (!shouldCompact) {
