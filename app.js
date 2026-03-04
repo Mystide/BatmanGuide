@@ -843,7 +843,6 @@
 
 
   function bindAdaptiveHeader() {
-    const header = document.querySelector(".top");
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
     const headerToggle = $("btnHeaderToggle");
