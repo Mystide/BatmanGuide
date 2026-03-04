@@ -4,11 +4,39 @@
   const BUILD_ID = "batman-guide-auto-sync";
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
+
+  const REAL_COVERS = {
+    "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
+    "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
+    "E4-08": "https://covers.openlibrary.org/b/isbn/9781563896767-M.jpg",
+    "E4-11": "https://covers.openlibrary.org/b/isbn/9781401216672-M.jpg",
+    "E4-12": "https://covers.openlibrary.org/b/isbn/9781401212599-M.jpg",
+    "E4-14": "https://covers.openlibrary.org/b/isbn/9781401237219-M.jpg",
+    "E4-20": "https://covers.openlibrary.org/b/isbn/9781401235635-M.jpg",
+    "E4-25": "https://covers.openlibrary.org/b/isbn/9781401200619-M.jpg",
+    "E4-27": "https://covers.openlibrary.org/b/isbn/9781401218249-M.jpg",
+    "E4-29": "https://covers.openlibrary.org/b/isbn/9781401210847-M.jpg",
+    "E4-31": "https://covers.openlibrary.org/b/isbn/9781401221706-M.jpg",
+    "E4-35": "https://covers.openlibrary.org/b/isbn/9781401232078-M.jpg",
+    "E4-36": "https://covers.openlibrary.org/b/isbn/9781401233389-M.jpg",
+    "E5-01": "https://covers.openlibrary.org/b/isbn/9781401235420-M.jpg",
+    "E5-04": "https://covers.openlibrary.org/b/isbn/9781401246020-M.jpg",
+    "E5-06": "https://covers.openlibrary.org/b/isbn/9781401252281-M.jpg",
+    "E6-01": "https://covers.openlibrary.org/b/isbn/9781401267775-M.jpg",
+    "E6-06": "https://covers.openlibrary.org/b/isbn/9781401273615-M.jpg",
+    "E6-14": "https://covers.openlibrary.org/b/isbn/9781779507907-M.jpg",
+    "E6-15": "https://covers.openlibrary.org/b/isbn/9781779513151-M.jpg",
+    "E7-02": "https://covers.openlibrary.org/b/isbn/9781779516541-M.jpg",
+    "E7-03": "https://covers.openlibrary.org/b/isbn/9781779520029-M.jpg",
+    "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
+  };
+
   const KEYS = {
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1"
+    filters: "batman-guide:filters:v1",
+    brand: "batman-guide:brand:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -79,6 +107,8 @@
 
   function scheduleNextAutoPull(delay = pullDelayMs) {
     if (autoPullTimer) clearTimeout(autoPullTimer);
+
+
     const cfg = getCfg();
     if (!syncReady(cfg) || !cfg.auto) return;
     autoPullTimer = setTimeout(() => {
@@ -151,6 +181,30 @@
 
   function setSyncStatus(text) {
     $("syncStatus").textContent = text;
+  }
+
+  function setText(id, value) {
+    const el = $(id);
+    if (el) el.textContent = value;
+  }
+
+  function defaultBrand() {
+    return { logoUrl: "" };
+  }
+
+  function getBrand() {
+    return loadJSON(KEYS.brand, defaultBrand());
+  }
+
+  function setBrand(brand) {
+    saveJSON(KEYS.brand, Object.assign(defaultBrand(), brand));
+  }
+
+  function applyBrand() {
+    const heroLogo = $("heroLogo");
+    if (!heroLogo) return;
+    const cfg = getBrand();
+    heroLogo.src = (cfg.logoUrl || "").trim() || "icon.svg";
   }
 
   function getFiltered() {
@@ -230,11 +284,17 @@
     const cont = continueEntry(filtered);
     if (!cont) {
       $("continueText").textContent = "Continue: -";
-      return;
+    } else {
+      const st = ensureItemState(cont);
+      const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
+      $("continueText").textContent = `Continue: ${cont.title}${where}`;
     }
-    const st = ensureItemState(cont);
-    const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
-    $("continueText").textContent = `Continue: ${cont.title}${where}`;
+
+    const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
+    setText("statVisible", String(s.total));
+    setText("statDone", String(s.done));
+    setText("statRemaining", String(Math.max(0, s.total - s.done)));
+    setText("statRequired", String(requiredRemaining));
   }
 
   function loadOpenState() {
@@ -243,6 +303,44 @@
 
   function saveOpenState(val) {
     saveJSON(KEYS.eraOpen, val);
+  }
+
+
+  function populateEraJump(entries) {
+    const sel = $("eraJump");
+    if (!sel) return;
+    const current = sel.value;
+    const eras = [...groupedByEra(entries).keys()];
+    sel.innerHTML = '<option value="">Jump to era…</option>';
+    for (const era of eras) {
+      const key = eraKey(era);
+      const opt = document.createElement("option");
+      opt.value = key;
+      opt.textContent = era;
+      sel.appendChild(opt);
+    }
+    if ([...sel.options].some((o) => o.value === current)) sel.value = current;
+  }
+
+
+  function entryCoverLabel(entry) {
+    if (entry.type === "series") return "Series";
+    if (entry.type === "collection") return "Event";
+    return "Book";
+  }
+
+  function entryInitials(title) {
+    const words = String(title || "Batman").replace(/[^a-zA-Z0-9 ]+/g, " ").trim().split(/\s+/).filter(Boolean);
+    return words.slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "BM";
+  }
+
+  function coverGradient(entry) {
+    let hash = 0;
+    const key = `${entry.id}:${entry.title}`;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
+    const hue = Math.abs(hash) % 360;
+    const hue2 = (hue + 42) % 360;
+    return `linear-gradient(160deg, hsl(${hue} 62% 36%), hsl(${hue2} 72% 24%))`;
   }
 
   function render() {
@@ -268,11 +366,13 @@
 
     const byEra = groupedByEra(filtered);
     const openMap = loadOpenState();
+    populateEraJump(filtered);
 
     for (const [era, items] of byEra.entries()) {
       const details = document.createElement("details");
       details.className = "era";
       const key = eraKey(era);
+      details.dataset.eraKey = key;
       details.open = openMap[key] !== false;
 
       details.addEventListener("toggle", () => {
@@ -297,6 +397,27 @@
         const item = document.createElement("div");
         item.className = `item${st.done ? " done" : ""}`;
         item.dataset.id = entry.id;
+
+        const cover = document.createElement("div");
+        cover.className = "cover";
+        cover.style.background = coverGradient(entry);
+        const coverUrl = REAL_COVERS[entry.id] || "";
+        if (coverUrl) {
+          const img = document.createElement("img");
+          img.src = coverUrl;
+          img.alt = `${entry.title} cover`;
+          img.loading = "lazy";
+          img.referrerPolicy = "no-referrer";
+          img.onerror = () => {
+            img.remove();
+            cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+          };
+          cover.appendChild(img);
+        } else {
+          cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+        }
+
+        const content = document.createElement("div");
 
         const top = document.createElement("div");
         top.className = "row space";
@@ -346,7 +467,13 @@
           saveState();
         });
 
-        item.append(top, tags, progress);
+        content.append(top, tags, progress);
+
+        const layout = document.createElement("div");
+        layout.className = "item-grid";
+        layout.append(cover, content);
+
+        item.appendChild(layout);
         list.appendChild(item);
       }
 
@@ -402,8 +529,10 @@
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort("timeout"), SYNC_REQUEST_TIMEOUT_MS);
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers });
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers,
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
     if (r.status === 304 && opts.allowNotModified) {
       return { notModified: true, gist: null };
     }
@@ -500,10 +629,6 @@
         }
         setSyncStatus("Already in sync.");
         return "unchanged";
-        } else {
-          setSyncStatus("Already in sync.");
-        }
-        return;
       }
       remoteText = pulled.text;
     } catch {
@@ -617,6 +742,30 @@
 
   function bindUI() {
     const savedFilters = readFilters();
+
+    const logoInput = $("logoUrl");
+    const applyLogoBtn = $("applyLogo");
+    const resetLogoBtn = $("resetLogo");
+    const brand = getBrand();
+    if (logoInput) logoInput.value = brand.logoUrl || "";
+
+    if (applyLogoBtn) {
+      applyLogoBtn.addEventListener("click", () => {
+        const next = (logoInput?.value || "").trim();
+        setBrand({ logoUrl: next });
+        applyBrand();
+        setSyncStatus(next ? "Custom logo applied." : "Default logo in use.");
+      });
+    }
+
+    if (resetLogoBtn) {
+      resetLogoBtn.addEventListener("click", () => {
+        setBrand(defaultBrand());
+        if (logoInput) logoInput.value = "";
+        applyBrand();
+        setSyncStatus("Logo reset to default.");
+      });
+    }
     $("search").value = savedFilters.search || "";
     $("typeFilter").value = savedFilters.type || "";
     $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
@@ -631,6 +780,19 @@
       $(id).addEventListener("change", () => {
         writeFilters();
         render();
+      });
+    }
+
+    const eraJump = $("eraJump");
+    if (eraJump) {
+      eraJump.addEventListener("change", () => {
+        const key = eraJump.value;
+        if (!key) return;
+        const section = document.querySelector(`details[data-era-key="${CSS.escape(key)}"]`);
+        if (section) {
+          section.open = true;
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     }
 
@@ -681,7 +843,6 @@
         gistToken: $("gistToken").value.trim(),
         auto: $("autoSync").checked,
         pullMs: clampPullInterval(getCfg().pullMs)
-        auto: $("autoSync").checked
       };
       setCfg(nextCfg);
       startAutoSync();
@@ -691,7 +852,6 @@
         setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
       } else {
         setSyncStatus("Auto-sync active (adaptive polling).");
-        setSyncStatus("Auto-sync active.");
         void runAutoSync("settings");
       }
       return nextCfg;
@@ -715,6 +875,43 @@
       if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
       void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
     });
+
+    const importInput = $("importStateFile");
+    const exportBtn = $("exportState");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => {
+        const blob = new Blob([exportPayload()], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `batman-guide-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setSyncStatus("Local backup exported.");
+      });
+    }
+
+    if (importInput) {
+      importInput.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const imported = importPayload(text);
+          if (!imported.ok) throw new Error(imported.err);
+          dirty = true;
+          render();
+          scheduleAutoPush();
+          setSyncStatus("Backup imported to local state.");
+        } catch (err) {
+          setSyncStatus(`Import failed: ${String(err.message || err)}`);
+        } finally {
+          importInput.value = "";
+        }
+      });
+    }
 
     $("resetState").addEventListener("click", () => {
       if (!confirm("Reset local progress? This cannot be undone.")) return;
@@ -747,6 +944,7 @@
 
   try {
     bindUI();
+    applyBrand();
     startAutoSync();
     initPWA();
     render();
