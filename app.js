@@ -68,23 +68,6 @@
   let syncQueued = false;
   let lastPullAt = 0;
   let gistETag = "";
-  let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
-
-
-  function clampPullInterval(ms) {
-    const n = Number(ms);
-    if (!Number.isFinite(n)) return AUTO_PULL_BASE_INTERVAL_MS;
-    return Math.max(AUTO_PULL_BASE_INTERVAL_MS, Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(n)));
-  }
-
-  function scheduleNextAutoPull(delay = pullDelayMs) {
-    if (autoPullTimer) clearTimeout(autoPullTimer);
-    const cfg = getCfg();
-    if (!syncReady(cfg) || !cfg.auto) return;
-    autoPullTimer = setTimeout(() => {
-      void runAutoSync("interval");
-    }, Math.max(0, delay));
-  }
 
   function nowISO() {
     return new Date().toISOString();
@@ -400,9 +383,7 @@
       headers["If-None-Match"] = gistETag;
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort("timeout"), SYNC_REQUEST_TIMEOUT_MS);
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers });
     if (r.status === 304 && opts.allowNotModified) {
       return { notModified: true, gist: null };
     }
@@ -495,10 +476,10 @@
         if (dirty) {
           await gistPush(cfg);
           setSyncStatus("Sync complete (pushed local change).");
-          return "pushed";
+        } else {
+          setSyncStatus("Already in sync.");
         }
-        setSyncStatus("Already in sync.");
-        return "unchanged";
+        return;
       }
       remoteText = pulled.text;
     } catch {
@@ -674,8 +655,7 @@
       const nextCfg = {
         gistId: $("gistId").value.trim(),
         gistToken: $("gistToken").value.trim(),
-        auto: $("autoSync").checked,
-        pullMs: clampPullInterval(getCfg().pullMs)
+        auto: $("autoSync").checked
       };
       setCfg(nextCfg);
       startAutoSync();
@@ -684,7 +664,7 @@
       } else if (!nextCfg.auto) {
         setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
       } else {
-        setSyncStatus("Auto-sync active (adaptive polling).");
+        setSyncStatus("Auto-sync active.");
         void runAutoSync("settings");
       }
       return nextCfg;
