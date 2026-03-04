@@ -40,6 +40,7 @@
   let syncInFlight = false;
   let syncQueued = false;
   let lastPullAt = 0;
+  let gistETag = "";
 
   function nowISO() {
     return new Date().toISOString();
@@ -330,28 +331,37 @@
 
   const GIST_FILE = "batmanguide_progress.json";
 
-  async function gistFetch(cfg) {
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${cfg.gistToken}`
-      }
-    });
+  async function gistFetch(cfg, opts = {}) {
+    const headers = {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${cfg.gistToken}`
+    };
+    if (opts.allowNotModified && gistETag) {
+      headers["If-None-Match"] = gistETag;
+    }
+
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers });
+    if (r.status === 304 && opts.allowNotModified) {
+      return { notModified: true, gist: null };
+    }
     if (!r.ok) throw new Error(`Gist fetch failed (${r.status})`);
-    return r.json();
+    gistETag = r.headers.get("ETag") || gistETag;
+    return { notModified: false, gist: await r.json() };
   }
 
-  async function gistGetText(cfg) {
-    const gist = await gistFetch(cfg);
+  async function gistGetText(cfg, opts = {}) {
+    const { notModified, gist } = await gistFetch(cfg, opts);
+    if (notModified) return { notModified: true, text: "" };
+
     const file = gist.files?.[GIST_FILE];
     if (!file) throw new Error(`File ${GIST_FILE} not found in gist`);
-    if (typeof file.content === "string") return file.content;
+    if (typeof file.content === "string") return { notModified: false, text: file.content };
     if (file.raw_url) {
       const rr = await fetch(file.raw_url, {
         headers: { Authorization: `Bearer ${cfg.gistToken}` }
       });
       if (!rr.ok) throw new Error(`Raw file fetch failed (${rr.status})`);
-      return rr.text();
+      return { notModified: false, text: await rr.text() };
     }
     throw new Error("No content in gist file");
   }
@@ -391,7 +401,13 @@
     if (!force && now - lastPullAt < PULL_THROTTLE_MS) return;
     lastPullAt = now;
 
-    const text = await gistGetText(cfg);
+    const pulled = await gistGetText(cfg, { allowNotModified: !force });
+    if (pulled.notModified) {
+      setSyncStatus("No remote updates.");
+      return;
+    }
+
+    const text = pulled.text;
     const incoming = JSON.parse(text);
     if (!incoming?.state) throw new Error("Remote payload invalid");
 
@@ -412,7 +428,17 @@
   async function gistSync(cfg) {
     let remoteText = "";
     try {
-      remoteText = await gistGetText(cfg);
+      const pulled = await gistGetText(cfg, { allowNotModified: true });
+      if (pulled.notModified) {
+        if (dirty) {
+          await gistPush(cfg);
+          setSyncStatus("Sync complete (pushed local change).");
+        } else {
+          setSyncStatus("Already in sync.");
+        }
+        return;
+      }
+      remoteText = pulled.text;
     } catch {
       await gistPush(cfg);
       setSyncStatus("Remote initialized by push.");
@@ -469,7 +495,7 @@
   function startAutoSync() {
     stopAutoSync();
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
 
     void runAutoSync("start");
     autoPullTimer = setInterval(() => {
@@ -479,7 +505,7 @@
 
   function scheduleAutoPush() {
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
     if (autoPushTimer) clearTimeout(autoPushTimer);
     autoPushTimer = setTimeout(() => {
       void runAutoSync("change");
@@ -543,22 +569,45 @@
     const cfg = getCfg();
     $("gistId").value = cfg.gistId;
     $("gistToken").value = cfg.gistToken;
+    $("autoSync").checked = cfg.auto !== false;
+
     const saveCfgFromUI = () => {
       const nextCfg = {
         gistId: $("gistId").value.trim(),
         gistToken: $("gistToken").value.trim(),
-        auto: true
+        auto: $("autoSync").checked
       };
       setCfg(nextCfg);
       startAutoSync();
-      setSyncStatus(syncReady(nextCfg) ? "Auto-sync active." : "Auto-sync is off until Gist ID and token are filled.");
-      if (syncReady(nextCfg)) void runAutoSync("settings");
+      if (!syncReady(nextCfg)) {
+        setSyncStatus("Auto-sync is off until Gist ID and token are filled.");
+      } else if (!nextCfg.auto) {
+        setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
+      } else {
+        setSyncStatus("Auto-sync active.");
+        void runAutoSync("settings");
+      }
       return nextCfg;
     };
 
-    for (const id of ["gistId", "gistToken"]) {
+    for (const id of ["gistId", "gistToken", "autoSync"]) {
       $(id).addEventListener("change", saveCfgFromUI);
     }
+
+    $("gistPull").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistPull(getCfg(), true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
+    });
+
+    $("gistPush").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistPush(getCfg()).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
+    });
+
+    $("gistSync").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
+    });
 
     $("resetState").addEventListener("click", () => {
       if (!confirm("Reset local progress? This cannot be undone.")) return;
