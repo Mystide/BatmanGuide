@@ -846,7 +846,8 @@
     const header = document.querySelector(".top");
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
-    if (!header || !advanced || !toggle) return;
+    const headerToggle = $("btnHeaderToggle");
+    if (!header || !advanced || !toggle || !headerToggle) return;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -854,18 +855,42 @@
       toggle.textContent = open ? "Less" : "More";
     };
 
+    const syncHeaderToggle = () => {
+      const open = header.classList.contains("header-expanded");
+      headerToggle.setAttribute("aria-expanded", String(open));
+      headerToggle.textContent = open ? "Hide filters" : "Filters";
+    };
+
     toggle.addEventListener("click", () => {
       advanced.classList.toggle("hidden");
       syncToggleLabel();
     });
 
+    headerToggle.addEventListener("click", () => {
+      if (!header.classList.contains("compact")) return;
+      header.classList.toggle("header-expanded");
+      syncHeaderToggle();
+    });
+
+    let lastScrollY = window.scrollY;
+
     const updateCompactMode = () => {
-      const shouldCompact = window.scrollY > 24 || window.innerHeight < 860;
+      const y = window.scrollY;
+      const shouldCompact = y > 24 || window.innerHeight < 860;
+      const scrollingDown = y > lastScrollY;
+      const hideHeader = shouldCompact && scrollingDown && y > 140 && !header.classList.contains("header-expanded");
+
       header.classList.toggle("compact", shouldCompact);
-      if (shouldCompact && window.scrollY > 24) {
+      header.classList.toggle("header-hidden", hideHeader);
+      if (shouldCompact && y > 24) {
         advanced.classList.add("hidden");
       }
+      if (!shouldCompact) {
+        header.classList.remove("header-expanded");
+      }
       syncToggleLabel();
+      syncHeaderToggle();
+      lastScrollY = y;
     };
 
     let raf = 0;
