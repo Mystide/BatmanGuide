@@ -979,6 +979,7 @@
     startAutoSync();
     initPWA();
     render();
+    setTimeout(() => void upgradeCoversFromDcui(), 600);
   } catch (e) {
     setError(`App failed to start: ${String(e.message || e)}`);
     console.error(e);
