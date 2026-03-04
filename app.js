@@ -842,6 +842,16 @@
   }
 
 
+  function enforceStaticHeader() {
+    const header = document.querySelector(".top");
+    if (!header) return;
+    header.classList.add("header-static");
+  }
+
+  function bindAdaptiveHeader() {
+    const advanced = $("advancedControls");
+    const toggle = $("btnToggleAdvanced");
+    if (!advanced || !toggle) return;
   function bindAdaptiveHeader() {
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
@@ -865,6 +875,7 @@
       syncToggleLabel();
     });
 
+    syncToggleLabel();
     headerToggle.addEventListener("click", () => {
       if (!header.classList.contains("compact")) return;
       header.classList.toggle("header-expanded");
@@ -1084,6 +1095,7 @@
 
   try {
     bindUI();
+    enforceStaticHeader();
     bindAdaptiveHeader();
     applyBrand();
     startAutoSync();

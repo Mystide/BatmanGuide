@@ -39,6 +39,8 @@
       padding: 14px;
       box-shadow: var(--shadow-soft);
     }
+    .top { position: relative; z-index: 10; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); }
+    .top.header-static { position: relative !important; top: auto !important; transform: none !important; opacity: 1 !important; }
     .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); transition: transform .2s ease, opacity .2s ease; }
     .top.header-hidden { transform: translateY(calc(-100% + 10px)); opacity: .55; }
     .top:hover,
@@ -219,6 +221,9 @@
             <option value="collection">Collections</option>
             <option value="series">Series</option>
           </select>
+          <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
+          <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
+          <select id="sortBy" class="select">
           <label class="row muted compact-hide"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
           <label class="row muted compact-hide"><input type="checkbox" id="hideOptional" /> hide optional</label>
           <select id="sortBy" class="select compact-hide">
@@ -226,6 +231,7 @@
             <option value="title">Title A → Z</option>
             <option value="progress">Least progress first</option>
           </select>
+          <button class="btn" id="btnToggleAdvanced" aria-expanded="false">More</button>
           <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
         </div>
         <div class="row advanced-controls hidden" id="advancedControls">
