@@ -40,7 +40,7 @@
       box-shadow: var(--shadow-soft);
     }
     .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); transition: transform .2s ease, opacity .2s ease; }
-    .top.header-hidden { transform: translateY(calc(-100% + 8px)); opacity: .35; }
+    .top.header-hidden { transform: translateY(calc(-100% + 10px)); opacity: .55; }
     .top:hover,
     .top:focus-within { transform: translateY(0); opacity: 1; }
     .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -60,15 +60,6 @@
     }
     .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
-    .btn-header-toggle { display: none; }
-    .top.compact .btn-header-toggle { display: inline-flex; }
-    .top.compact h1 { font-size: 20px; }
-    .top.compact .hero-logo { width: 94px; height: 32px; }
-    .top.compact .header-controls,
-    .top.compact .controls-hint,
-    .top.compact .status-strip { display: none; }
-    .top.compact.header-expanded .header-controls { display: grid; }
-    .top.compact.header-expanded .controls-hint { display: block; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
@@ -212,7 +203,6 @@
         <div>
           <p class="header-panel-label">Quick actions</p>
           <div class="top-actions">
-          <button class="btn btn-header-toggle" id="btnHeaderToggle" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnContinue">Continue</button>
           <button class="btn" id="btnTop">Top</button>
