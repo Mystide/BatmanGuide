@@ -273,6 +273,27 @@
     if ([...sel.options].some((o) => o.value === current)) sel.value = current;
   }
 
+
+  function entryCoverLabel(entry) {
+    if (entry.type === "series") return "Series";
+    if (entry.type === "collection") return "Event";
+    return "Book";
+  }
+
+  function entryInitials(title) {
+    const words = String(title || "Batman").replace(/[^a-zA-Z0-9 ]+/g, " ").trim().split(/\s+/).filter(Boolean);
+    return words.slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "BM";
+  }
+
+  function coverGradient(entry) {
+    let hash = 0;
+    const key = `${entry.id}:${entry.title}`;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
+    const hue = Math.abs(hash) % 360;
+    const hue2 = (hue + 42) % 360;
+    return `linear-gradient(160deg, hsl(${hue} 62% 36%), hsl(${hue2} 72% 24%))`;
+  }
+
   function render() {
     setError("");
     const filtered = getFiltered();
@@ -328,6 +349,13 @@
         item.className = `item${st.done ? " done" : ""}`;
         item.dataset.id = entry.id;
 
+        const cover = document.createElement("div");
+        cover.className = "cover";
+        cover.style.background = coverGradient(entry);
+        cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+
+        const content = document.createElement("div");
+
         const top = document.createElement("div");
         top.className = "row space";
         top.innerHTML = `
@@ -376,7 +404,13 @@
           saveState();
         });
 
-        item.append(top, tags, progress);
+        content.append(top, tags, progress);
+
+        const layout = document.createElement("div");
+        layout.className = "item-grid";
+        layout.append(cover, content);
+
+        item.appendChild(layout);
         list.appendChild(item);
       }
 
