@@ -204,7 +204,7 @@
     const heroLogo = $("heroLogo");
     if (!heroLogo) return;
     const cfg = getBrand();
-    heroLogo.src = (cfg.logoUrl || "").trim() || "icon.svg";
+    heroLogo.src = (cfg.logoUrl || "").trim() || "batman-logo.svg";
   }
 
   function getFiltered() {
