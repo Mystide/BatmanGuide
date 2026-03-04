@@ -10,9 +10,9 @@
     syncCfg: "batman-guide:sync:v3"
   };
 
-  const AUTO_PULL_INTERVAL_MS = 1000;
-  const AUTO_PUSH_DEBOUNCE_MS = 80;
-  const PULL_THROTTLE_MS = 700;
+  const AUTO_PULL_INTERVAL_MS = 2000;
+  const AUTO_PUSH_DEBOUNCE_MS = 120;
+  const PULL_THROTTLE_MS = 2500;
 
   const $ = (id) => document.getElementById(id);
 
