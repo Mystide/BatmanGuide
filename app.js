@@ -366,43 +366,95 @@
       .trim();
   }
 
+  function normalizeCoverUrl(url) {
+    if (!url) return "";
+    if (!url.includes("covers.openlibrary.org")) return url;
+    return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
+  }
+
   async function resolveOpenLibraryCover(entry) {
     const id = entry.id;
-    if (!id || REAL_COVERS[id] || coverCache[id] || coverFetchInFlight.has(id)) return;
+    if (!id || coverCache[id] || coverFetchInFlight.has(id)) return coverCache[id] || "";
     coverFetchInFlight.add(id);
     try {
       const query = titleToCoverQuery(entry.title);
-      if (!query) return;
+      if (!query) return "";
       const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
-      if (!res.ok) return;
+      if (!res.ok) return "";
       const data = await res.json();
       const docs = Array.isArray(data?.docs) ? data.docs : [];
       const doc = docs.find((d) => Number.isFinite(d?.cover_i));
-      if (!doc?.cover_i) return;
-      coverCache[id] = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+      if (!doc?.cover_i) return "";
+      coverCache[id] = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
       saveJSON(KEYS.coverCache, coverCache);
-      const card = document.querySelector(`.item[data-id="${id}"] .cover`);
-      if (card) applyCoverImage(card, entry, coverCache[id]);
+      return coverCache[id];
     } catch {
       // Ignore network failures and keep fallback artwork.
+      return "";
     } finally {
       coverFetchInFlight.delete(id);
     }
   }
 
-  function applyCoverImage(coverEl, entry, url) {
-    if (!coverEl || !url) return;
-    coverEl.innerHTML = "";
-    const img = document.createElement("img");
-    img.src = url;
-    img.alt = `${entry.title} cover`;
-    img.loading = "lazy";
-    img.referrerPolicy = "no-referrer";
-    img.onerror = () => {
-      img.remove();
-      coverEl.innerHTML = entryCoverFallback(entry);
-    };
-    coverEl.appendChild(img);
+
+  async function resolveGoogleBooksCover(entry) {
+    const id = entry.id;
+    if (!id) return "";
+    try {
+      const query = titleToCoverQuery(entry.title);
+      if (!query) return "";
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=5`);
+      if (!res.ok) return "";
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      const found = items.find((it) => it?.volumeInfo?.imageLinks?.thumbnail || it?.volumeInfo?.imageLinks?.smallThumbnail);
+      const image = found?.volumeInfo?.imageLinks?.thumbnail || found?.volumeInfo?.imageLinks?.smallThumbnail || "";
+      if (!image) return "";
+      const normalized = image.replace(/^http:\/\//i, "https://");
+      coverCache[id] = normalized;
+      saveJSON(KEYS.coverCache, coverCache);
+      return normalized;
+    } catch {
+      return "";
+    }
+  }
+
+  function loadCoverImage(coverEl, entry, url) {
+    return new Promise((resolve) => {
+      if (!coverEl || !url) return resolve(false);
+      coverEl.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = normalizeCoverUrl(url);
+      img.alt = `${entry.title} cover`;
+      img.loading = "lazy";
+      img.referrerPolicy = "no-referrer";
+      img.onload = () => resolve(true);
+      img.onerror = () => {
+        img.remove();
+        resolve(false);
+      };
+      coverEl.appendChild(img);
+    });
+  }
+
+  async function applyBestCover(coverEl, entry) {
+    const candidates = [];
+    const primary = REAL_COVERS[entry.id];
+    const cached = coverCache[entry.id];
+    if (primary) candidates.push(primary);
+    if (cached && cached !== primary) candidates.push(cached);
+
+    for (const url of candidates) {
+      if (await loadCoverImage(coverEl, entry, url)) return;
+    }
+
+    const discovered = await resolveOpenLibraryCover(entry);
+    if (discovered && await loadCoverImage(coverEl, entry, discovered)) return;
+
+    const googleDiscovered = await resolveGoogleBooksCover(entry);
+    if (googleDiscovered && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
+
+    coverEl.innerHTML = entryCoverFallback(entry);
   }
 
   function render() {
@@ -463,13 +515,8 @@
         const cover = document.createElement("div");
         cover.className = "cover";
         cover.style.background = coverGradient(entry);
-        const coverUrl = REAL_COVERS[entry.id] || coverCache[entry.id] || "";
-        if (coverUrl) {
-          applyCoverImage(cover, entry, coverUrl);
-        } else {
-          cover.innerHTML = entryCoverFallback(entry);
-          void resolveOpenLibraryCover(entry);
-        }
+        cover.innerHTML = entryCoverFallback(entry);
+        void applyBestCover(cover, entry);
 
         const content = document.createElement("div");
 
