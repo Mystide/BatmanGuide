@@ -44,9 +44,28 @@
     .space { justify-content: space-between; }
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
-    .hero { display: grid; gap: 6px; }
+    .top .container { padding-top: 10px; padding-bottom: 10px; }
+    .hero { display: grid; gap: 6px; min-width: 0; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
     .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .header-main { display:flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .header-panel {
+      border: 1px solid rgba(71, 85, 105, .45);
+      border-radius: 12px;
+      padding: 8px;
+      background: rgba(15, 23, 42, .45);
+    }
+    .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
+    .btn-header-toggle { display: none; }
+    .top.compact .btn-header-toggle { display: inline-flex; }
+    .top.compact h1 { font-size: 20px; }
+    .top.compact .hero-logo { width: 94px; height: 32px; }
+    .top.compact .header-controls,
+    .top.compact .controls-hint,
+    .top.compact .status-strip { display: none; }
+    .top.compact.header-expanded .header-controls { display: grid; }
+    .top.compact.header-expanded .controls-hint { display: block; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
@@ -148,16 +167,24 @@
     .meta-card { border:1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: rgba(15, 23, 42, .55); }
     .meta-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .35px; }
     .meta-value { margin-top: 1px; font-weight: 700; font-size: 14px; }
-    .filters { display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(130px, .9fr) auto auto minmax(160px, 1fr) minmax(180px, 1fr) auto auto auto; gap: 6px; align-items: center; }
+    .header-controls { display:grid; gap:8px; }
+    .filters { display: grid; grid-template-columns: minmax(190px, 1.5fr) minmax(130px, .8fr) auto auto; gap: 6px; align-items: center; }
+    .advanced-controls { display:grid; grid-template-columns: minmax(170px, 1fr) repeat(3, auto); gap:6px; align-items:center; }
     .filters .input,
     .filters .select,
+    .advanced-controls .select,
+    .advanced-controls .btn,
     .filters .btn { width: 100%; }
+    .status-strip { border:1px solid rgba(71,85,105,.35); border-radius: 12px; padding: 8px; background: rgba(15,23,42,.45); }
     .controls-hint { margin-top: 2px; }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
       .btn, .input, .select { width: 100%; }
       .filters { display: flex; }
+      .advanced-controls { grid-template-columns: 1fr; }
+      .top-actions { justify-content: stretch; }
+      .top-actions .btn { flex: 1 1 110px; }
       .row.space { align-items: flex-start; }
       .item-grid { grid-template-columns: 1fr; }
       .cover { width: 100%; height: 54px; border-radius: 10px; }
@@ -170,7 +197,7 @@
 <body>
   <header class="top">
     <div class="container stack">
-      <div class="row space">
+      <div class="header-main header-panel">
         <div class="hero">
           <div class="hero-brand">
             <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
@@ -179,37 +206,43 @@
             </div>
           </div>
         </div>
-        <div class="row">
+        <div>
+          <p class="header-panel-label">Quick actions</p>
+          <div class="top-actions">
+          <button class="btn btn-header-toggle" id="btnHeaderToggle" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnContinue">Continue</button>
           <button class="btn" id="btnTop">Top</button>
+          </div>
         </div>
       </div>
 
-      <div class="row filters">
-        <input id="search" class="input" placeholder="Search titles..." />
-        <select id="typeFilter" class="select">
-          <option value="">All types</option>
-          <option value="book">Books</option>
-          <option value="collection">Collections</option>
-          <option value="series">Series</option>
-        </select>
-        <label class="row muted compact-hide"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
-        <label class="row muted compact-hide"><input type="checkbox" id="hideOptional" /> hide optional</label>
-        <select id="sortBy" class="select compact-hide">
-          <option value="order">Default order</option>
-          <option value="title">Title A → Z</option>
-          <option value="progress">Least progress first</option>
-        </select>
-        <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
-      </div>
-      <div class="row advanced-controls hidden" id="advancedControls">
-        <select id="eraJump" class="select">
-          <option value="">Jump to era…</option>
-        </select>
-        <button class="btn" id="btnExpandAll">Expand all</button>
-        <button class="btn" id="btnCollapseAll">Collapse all</button>
-        <button class="btn" id="btnClearFilters">Clear filters</button>
+      <div class="header-controls header-panel">
+        <div class="row filters">
+          <input id="search" class="input" placeholder="Search titles..." />
+          <select id="typeFilter" class="select">
+            <option value="">All types</option>
+            <option value="book">Books</option>
+            <option value="collection">Collections</option>
+            <option value="series">Series</option>
+          </select>
+          <label class="row muted compact-hide"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
+          <label class="row muted compact-hide"><input type="checkbox" id="hideOptional" /> hide optional</label>
+          <select id="sortBy" class="select compact-hide">
+            <option value="order">Default order</option>
+            <option value="title">Title A → Z</option>
+            <option value="progress">Least progress first</option>
+          </select>
+          <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
+        </div>
+        <div class="row advanced-controls hidden" id="advancedControls">
+          <select id="eraJump" class="select">
+            <option value="">Jump to era…</option>
+          </select>
+          <button class="btn" id="btnExpandAll">Expand all</button>
+          <button class="btn" id="btnCollapseAll">Collapse all</button>
+          <button class="btn" id="btnClearFilters">Clear filters</button>
+        </div>
       </div>
       <div class="muted controls-hint">Tip: press <span class="kbd">/</span> to jump to search.</div>
 
