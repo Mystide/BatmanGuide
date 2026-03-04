@@ -1,5 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-04.03-custom-logo-url";
-const CACHE = "batman-guide-cache-2026-03-04.02-real-covers-logo";
+const CACHE = "batman-guide-cache-2026-03-04.04-fixed-logo-png";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -7,7 +6,6 @@ const APP_SHELL = [
   "./list.js",
   "./manifest.webmanifest",
   "./icon.svg",
-  "./batman-logo.svg"
 ];
 
 self.addEventListener("install", (event) => {

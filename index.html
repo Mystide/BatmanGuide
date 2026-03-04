@@ -46,9 +46,7 @@
     .muted { color: var(--muted); font-size: 13px; }
     .hero { display: grid; gap: 6px; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
-    .hero-logo { width:144px; height:52px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
-    .hero-logo { width:52px; height:52px; border-radius:12px; border:1px solid #6b5716; box-shadow: 0 8px 24px rgba(0,0,0,.35); background:#0b1020; }
-    .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
+    .hero-logo { width:160px; height:74px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
     .btn, .input, .select {
       border: 1px solid var(--border);
       background: var(--panel-2);
@@ -156,15 +154,11 @@
       <div class="row space">
         <div class="hero">
           <div class="hero-brand">
-            <img id="heroLogo" src="icon.svg" alt="Batman logo" class="hero-logo" />
-            <img src="batman-logo.svg" alt="Batman logo" class="hero-logo" />
-            <img src="icon.svg" alt="Batman logo" class="hero-logo" />
+            <img id="heroLogo" src="logo.png" alt="Batman logo" class="hero-logo" />
             <div>
-              <span class="badge">Gotham Reading Tracker</span>
               <h1>Batman Guide</h1>
             </div>
           </div>
-          <div class="muted">Track Batman comics, keep notes, and sync progress across devices.</div>
         </div>
         <div class="row">
           <button class="btn" id="btnNext">Next unread</button>
@@ -236,11 +230,6 @@
           <button id="exportState" class="btn">Export local backup</button>
           <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
           <input id="importStateFile" type="file" accept="application/json" class="hidden" />
-        </div>
-        <div class="row">
-          <input id="logoUrl" class="input full" placeholder="Header logo URL (GitHub raw image URL)" />
-          <button id="applyLogo" class="btn">Apply logo</button>
-          <button id="resetLogo" class="btn">Reset logo</button>
         </div>
         <div id="syncStatus" class="status">Auto-sync is off until Gist ID and token are filled.</div>
       </div>

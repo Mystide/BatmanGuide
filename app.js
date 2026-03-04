@@ -35,8 +35,7 @@
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1",
-    brand: "batman-guide:brand:v1"
+    filters: "batman-guide:filters:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -44,6 +43,7 @@
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
+  const FIXED_LOGO_URL = "./logo.png";
 
   const $ = (id) => document.getElementById(id);
 
@@ -188,23 +188,14 @@
     if (el) el.textContent = value;
   }
 
-  function defaultBrand() {
-    return { logoUrl: "" };
-  }
-
-  function getBrand() {
-    return loadJSON(KEYS.brand, defaultBrand());
-  }
-
-  function setBrand(brand) {
-    saveJSON(KEYS.brand, Object.assign(defaultBrand(), brand));
-  }
-
   function applyBrand() {
     const heroLogo = $("heroLogo");
     if (!heroLogo) return;
-    const cfg = getBrand();
-    heroLogo.src = (cfg.logoUrl || "").trim() || "icon.svg";
+    heroLogo.onerror = () => {
+      heroLogo.onerror = null;
+      heroLogo.src = "icon.svg";
+    };
+    heroLogo.src = FIXED_LOGO_URL;
   }
 
   function getFiltered() {
@@ -744,29 +735,6 @@
   function bindUI() {
     const savedFilters = readFilters();
 
-    const logoInput = $("logoUrl");
-    const applyLogoBtn = $("applyLogo");
-    const resetLogoBtn = $("resetLogo");
-    const brand = getBrand();
-    if (logoInput) logoInput.value = brand.logoUrl || "";
-
-    if (applyLogoBtn) {
-      applyLogoBtn.addEventListener("click", () => {
-        const next = (logoInput?.value || "").trim();
-        setBrand({ logoUrl: next });
-        applyBrand();
-        setSyncStatus(next ? "Custom logo applied." : "Default logo in use.");
-      });
-    }
-
-    if (resetLogoBtn) {
-      resetLogoBtn.addEventListener("click", () => {
-        setBrand(defaultBrand());
-        if (logoInput) logoInput.value = "";
-        applyBrand();
-        setSyncStatus("Logo reset to default.");
-      });
-    }
     $("search").value = savedFilters.search || "";
     $("typeFilter").value = savedFilters.type || "";
     $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
