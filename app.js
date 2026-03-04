@@ -402,8 +402,10 @@
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort("timeout"), SYNC_REQUEST_TIMEOUT_MS);
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers });
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+      headers,
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
     if (r.status === 304 && opts.allowNotModified) {
       return { notModified: true, gist: null };
     }
@@ -500,10 +502,6 @@
         }
         setSyncStatus("Already in sync.");
         return "unchanged";
-        } else {
-          setSyncStatus("Already in sync.");
-        }
-        return;
       }
       remoteText = pulled.text;
     } catch {
@@ -681,7 +679,6 @@
         gistToken: $("gistToken").value.trim(),
         auto: $("autoSync").checked,
         pullMs: clampPullInterval(getCfg().pullMs)
-        auto: $("autoSync").checked
       };
       setCfg(nextCfg);
       startAutoSync();
@@ -691,7 +688,6 @@
         setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
       } else {
         setSyncStatus("Auto-sync active (adaptive polling).");
-        setSyncStatus("Auto-sync active.");
         void runAutoSync("settings");
       }
       return nextCfg;
