@@ -10,9 +10,11 @@
     syncCfg: "batman-guide:sync:v3"
   };
 
-  const AUTO_PULL_INTERVAL_MS = 2000;
+  const AUTO_PULL_BASE_INTERVAL_MS = 15000;
+  const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
+  const SYNC_REQUEST_TIMEOUT_MS = 9000;
 
   const $ = (id) => document.getElementById(id);
 
@@ -30,7 +32,8 @@
   const defaultCfg = () => ({
     gistId: "",
     gistToken: "",
-    auto: true
+    auto: true,
+    pullMs: AUTO_PULL_BASE_INTERVAL_MS
   });
 
   let state = loadJSON(KEYS.state, defaultState());
@@ -40,6 +43,24 @@
   let syncInFlight = false;
   let syncQueued = false;
   let lastPullAt = 0;
+  let gistETag = "";
+  let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
+
+
+  function clampPullInterval(ms) {
+    const n = Number(ms);
+    if (!Number.isFinite(n)) return AUTO_PULL_BASE_INTERVAL_MS;
+    return Math.max(AUTO_PULL_BASE_INTERVAL_MS, Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(n)));
+  }
+
+  function scheduleNextAutoPull(delay = pullDelayMs) {
+    if (autoPullTimer) clearTimeout(autoPullTimer);
+    const cfg = getCfg();
+    if (!syncReady(cfg) || !cfg.auto) return;
+    autoPullTimer = setTimeout(() => {
+      void runAutoSync("interval");
+    }, Math.max(0, delay));
+  }
 
   function nowISO() {
     return new Date().toISOString();
@@ -330,28 +351,39 @@
 
   const GIST_FILE = "batmanguide_progress.json";
 
-  async function gistFetch(cfg) {
-    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${cfg.gistToken}`
-      }
-    });
+  async function gistFetch(cfg, opts = {}) {
+    const headers = {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${cfg.gistToken}`
+    };
+    if (opts.allowNotModified && gistETag) {
+      headers["If-None-Match"] = gistETag;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort("timeout"), SYNC_REQUEST_TIMEOUT_MS);
+    const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, { headers, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+    if (r.status === 304 && opts.allowNotModified) {
+      return { notModified: true, gist: null };
+    }
     if (!r.ok) throw new Error(`Gist fetch failed (${r.status})`);
-    return r.json();
+    gistETag = r.headers.get("ETag") || gistETag;
+    return { notModified: false, gist: await r.json() };
   }
 
-  async function gistGetText(cfg) {
-    const gist = await gistFetch(cfg);
+  async function gistGetText(cfg, opts = {}) {
+    const { notModified, gist } = await gistFetch(cfg, opts);
+    if (notModified) return { notModified: true, text: "" };
+
     const file = gist.files?.[GIST_FILE];
     if (!file) throw new Error(`File ${GIST_FILE} not found in gist`);
-    if (typeof file.content === "string") return file.content;
+    if (typeof file.content === "string") return { notModified: false, text: file.content };
     if (file.raw_url) {
       const rr = await fetch(file.raw_url, {
         headers: { Authorization: `Bearer ${cfg.gistToken}` }
       });
       if (!rr.ok) throw new Error(`Raw file fetch failed (${rr.status})`);
-      return rr.text();
+      return { notModified: false, text: await rr.text() };
     }
     throw new Error("No content in gist file");
   }
@@ -391,7 +423,13 @@
     if (!force && now - lastPullAt < PULL_THROTTLE_MS) return;
     lastPullAt = now;
 
-    const text = await gistGetText(cfg);
+    const pulled = await gistGetText(cfg, { allowNotModified: !force });
+    if (pulled.notModified) {
+      setSyncStatus("No remote updates.");
+      return;
+    }
+
+    const text = pulled.text;
     const incoming = JSON.parse(text);
     if (!incoming?.state) throw new Error("Remote payload invalid");
 
@@ -412,11 +450,21 @@
   async function gistSync(cfg) {
     let remoteText = "";
     try {
-      remoteText = await gistGetText(cfg);
+      const pulled = await gistGetText(cfg, { allowNotModified: true });
+      if (pulled.notModified) {
+        if (dirty) {
+          await gistPush(cfg);
+          setSyncStatus("Sync complete (pushed local change).");
+          return "pushed";
+        }
+        setSyncStatus("Already in sync.");
+        return "unchanged";
+      }
+      remoteText = pulled.text;
     } catch {
       await gistPush(cfg);
       setSyncStatus("Remote initialized by push.");
-      return;
+      return "pushed";
     }
 
     let remote;
@@ -425,7 +473,7 @@
     } catch {
       await gistPush(cfg);
       setSyncStatus("Remote fixed (invalid JSON replaced).");
-      return;
+      return "pushed";
     }
 
     const remoteAt = parseDate(remote?.state?.updatedAt);
@@ -434,7 +482,7 @@
     if (!remote?.state) {
       await gistPush(cfg);
       setSyncStatus("Remote fixed (invalid shape replaced).");
-      return;
+      return "pushed";
     }
 
     if (remoteAt > localAt) {
@@ -443,21 +491,22 @@
       dirty = false;
       render();
       setSyncStatus("Sync complete (pulled newer remote).");
-      return;
+      return "pulled";
     }
 
     if (localAt > remoteAt || dirty) {
       await gistPush(cfg);
       setSyncStatus("Sync complete (pushed newer local).");
-      return;
+      return "pushed";
     }
 
     setSyncStatus("Already in sync.");
+    return "unchanged";
   }
 
   function stopAutoSync() {
     if (autoPullTimer) {
-      clearInterval(autoPullTimer);
+      clearTimeout(autoPullTimer);
       autoPullTimer = null;
     }
     if (autoPushTimer) {
@@ -469,17 +518,15 @@
   function startAutoSync() {
     stopAutoSync();
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
 
+    pullDelayMs = clampPullInterval(cfg.pullMs);
     void runAutoSync("start");
-    autoPullTimer = setInterval(() => {
-      void runAutoSync("interval");
-    }, AUTO_PULL_INTERVAL_MS);
   }
 
   function scheduleAutoPush() {
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
     if (autoPushTimer) clearTimeout(autoPushTimer);
     autoPushTimer = setTimeout(() => {
       void runAutoSync("change");
@@ -488,7 +535,7 @@
 
   async function runAutoSync(reason) {
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
     if (syncInFlight) {
       syncQueued = true;
       return;
@@ -499,17 +546,26 @@
       setSyncStatus(`Auto-sync (${reason})...`);
       if (dirty && reason === "change") {
         await gistPush(cfg);
+        pullDelayMs = clampPullInterval(cfg.pullMs);
         setSyncStatus("Sync complete (pushed local change).");
       } else {
-        await gistSync(cfg);
+        const result = await gistSync(cfg);
+        if (result === "unchanged") {
+          pullDelayMs = Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(pullDelayMs * 1.35));
+        } else {
+          pullDelayMs = clampPullInterval(cfg.pullMs);
+        }
       }
     } catch (e) {
+      pullDelayMs = Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(Math.max(pullDelayMs, clampPullInterval(cfg.pullMs)) * 1.8));
       setSyncStatus(`Auto-sync failed: ${String(e.message || e)}`);
     } finally {
       syncInFlight = false;
       if (syncQueued) {
         syncQueued = false;
         void runAutoSync("queued");
+      } else if (reason !== "change") {
+        scheduleNextAutoPull(pullDelayMs);
       }
     }
   }
@@ -543,22 +599,46 @@
     const cfg = getCfg();
     $("gistId").value = cfg.gistId;
     $("gistToken").value = cfg.gistToken;
+    $("autoSync").checked = cfg.auto !== false;
+
     const saveCfgFromUI = () => {
       const nextCfg = {
         gistId: $("gistId").value.trim(),
         gistToken: $("gistToken").value.trim(),
-        auto: true
+        auto: $("autoSync").checked,
+        pullMs: clampPullInterval(getCfg().pullMs)
       };
       setCfg(nextCfg);
       startAutoSync();
-      setSyncStatus(syncReady(nextCfg) ? "Auto-sync active." : "Auto-sync is off until Gist ID and token are filled.");
-      if (syncReady(nextCfg)) void runAutoSync("settings");
+      if (!syncReady(nextCfg)) {
+        setSyncStatus("Auto-sync is off until Gist ID and token are filled.");
+      } else if (!nextCfg.auto) {
+        setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
+      } else {
+        setSyncStatus("Auto-sync active (adaptive polling).");
+        void runAutoSync("settings");
+      }
       return nextCfg;
     };
 
-    for (const id of ["gistId", "gistToken"]) {
+    for (const id of ["gistId", "gistToken", "autoSync"]) {
       $(id).addEventListener("change", saveCfgFromUI);
     }
+
+    $("gistPull").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistPull(getCfg(), true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
+    });
+
+    $("gistPush").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistPush(getCfg()).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
+    });
+
+    $("gistSync").addEventListener("click", () => {
+      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+      void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
+    });
 
     $("resetState").addEventListener("click", () => {
       if (!confirm("Reset local progress? This cannot be undone.")) return;
