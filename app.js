@@ -35,7 +35,8 @@
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1"
+    filters: "batman-guide:filters:v1",
+    coverCache: "batman-guide:covers:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -97,6 +98,8 @@
   let lastPullAt = 0;
   let gistETag = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
+  const coverCache = loadJSON(KEYS.coverCache, {});
+  const coverFetchInFlight = new Set();
 
 
   function clampPullInterval(ms) {
@@ -330,6 +333,59 @@
     return `linear-gradient(160deg, hsl(${hue} 62% 36%), hsl(${hue2} 72% 24%))`;
   }
 
+  function entryCoverFallback(entry) {
+    return `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+  }
+
+  function titleToCoverQuery(title) {
+    return String(title || "")
+      .replace(/\(.*?\)/g, " ")
+      .replace(/[—:]/g, " ")
+      .replace(/\bvol\.?\b/gi, "volume")
+      .replace(/[^a-zA-Z0-9 ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  async function resolveOpenLibraryCover(entry) {
+    const id = entry.id;
+    if (!id || REAL_COVERS[id] || coverCache[id] || coverFetchInFlight.has(id)) return;
+    coverFetchInFlight.add(id);
+    try {
+      const query = titleToCoverQuery(entry.title);
+      if (!query) return;
+      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const docs = Array.isArray(data?.docs) ? data.docs : [];
+      const doc = docs.find((d) => Number.isFinite(d?.cover_i));
+      if (!doc?.cover_i) return;
+      coverCache[id] = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+      saveJSON(KEYS.coverCache, coverCache);
+      const card = document.querySelector(`.item[data-id="${id}"] .cover`);
+      if (card) applyCoverImage(card, entry, coverCache[id]);
+    } catch {
+      // Ignore network failures and keep fallback artwork.
+    } finally {
+      coverFetchInFlight.delete(id);
+    }
+  }
+
+  function applyCoverImage(coverEl, entry, url) {
+    if (!coverEl || !url) return;
+    coverEl.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `${entry.title} cover`;
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onerror = () => {
+      img.remove();
+      coverEl.innerHTML = entryCoverFallback(entry);
+    };
+    coverEl.appendChild(img);
+  }
+
   function render() {
     setError("");
     const filtered = getFiltered();
@@ -388,22 +444,13 @@
         const cover = document.createElement("div");
         cover.className = "cover";
         cover.style.background = coverGradient(entry);
-        const coverUrl = REAL_COVERS[entry.id] || "";
+        const coverUrl = REAL_COVERS[entry.id] || coverCache[entry.id] || "";
         if (coverUrl) {
-          const img = document.createElement("img");
-          img.src = coverUrl;
-          img.alt = `${entry.title} cover`;
-          img.loading = "lazy";
-          img.referrerPolicy = "no-referrer";
-          img.onerror = () => {
-            img.remove();
-            cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
-          };
-          cover.appendChild(img);
+          applyCoverImage(cover, entry, coverUrl);
         } else {
-          cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+          cover.innerHTML = entryCoverFallback(entry);
+          void resolveOpenLibraryCover(entry);
         }
-        cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
 
         const content = document.createElement("div");
 
