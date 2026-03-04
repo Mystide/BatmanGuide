@@ -10,23 +10,18 @@
     "E1-02": "https://books.google.com/books/content?id=yJf0DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E1-03": "https://books.google.com/books/content?id=NVUwDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E1-04": "https://books.google.com/books/content?id=RnxJDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
-    "E1-05": "https://imgix-media.wbdndc.net/ingest/book/preview/9a319085-3586-413b-9c59-e54845d2514b/a8088bca-861b-4a2f-8541-4ebd823da1d4/0.jpg",
     "E1-06": "https://books.google.com/books/content?id=yjyZwgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "E1-07": "https://covers.openlibrary.org/b/id/12415426-M.jpg",
     "E2-01": "https://covers.openlibrary.org/b/id/7803421-M.jpg",
     "E3-01": "https://books.google.com/books/content?id=K6qn0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "E3-02": "https://books.google.com/books/content?id=Zvg4AgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-    "E3-03": "https://imgix-media.wbdndc.net/asset/collection/c1245/5cbf4890/hero-c.jpg",
-    "E3-04": "https://books.google.com/books/content?id=AavWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-00": "https://covers.openlibrary.org/b/id/749280-M.jpg",
     "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
     "E4-02": "https://covers.openlibrary.org/b/id/11026165-M.jpg",
     "E4-02A": "https://books.google.com/books/content?id=Rxt3EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
-    "E4-03": "https://imgix-media.wbdndc.net/asset/collection/c1547/5c7d6df9/hero-c.jpg",
     "E4-03A": "https://books.google.com/books/content?id=oZaVBgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-03B": "https://books.google.com/books/content?id=CKHWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-03C": "https://books.google.com/books/content?id=PE7yngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-    "E4-04": "https://imgix-media.wbdndc.net/ingest/book/preview/f2a3bcf5-ecc4-494c-88bd-7e44f303dba5/c78e12c0-aa2b-466b-87e3-371610287912/0.jpg",
     "E4-05": "https://covers.openlibrary.org/b/id/15166226-M.jpg",
     "E4-06": "https://books.google.com/books/content?id=jpV0DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
@@ -60,7 +55,7 @@
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
-    coverCache: "batman-guide:covers:v5"
+    coverCache: "batman-guide:covers:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -124,7 +119,6 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   const coverCache = loadJSON(KEYS.coverCache, {});
   const coverFetchInFlight = new Set();
-  const coverFailedUrls = new Map();
 
 
   function clampPullInterval(ms) {
@@ -372,128 +366,27 @@
       .trim();
   }
 
-  function coverQueryCandidates(title) {
-    const raw = String(title || "").trim();
-    const clean = titleToCoverQuery(raw);
-    const trimmed = clean
-      .replace(/\b(deluxe|edition|anniversary|complete|collection|saga)\b/gi, "")
-      .replace(/\s+/g, " ")
-      .trim();
-    return [...new Set([clean, trimmed, raw].filter(Boolean))];
-  }
-
-  async function fetchDcuiCover(entry) {
-    const sourceUrl = String(entry?.url || "");
-    if (!sourceUrl.includes("dcuniverseinfinite.com")) return "";
-    try {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(sourceUrl)}`;
-      const res = await fetch(proxyUrl);
-      if (!res.ok) return "";
-      const html = await res.text();
-      const match = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["']([^"']+)["']/i);
-      return match?.[1] ? match[1].replace(/^http:/, "https:") : "";
-    } catch {
-      return "";
-    }
-  }
-
-  async function fetchOpenLibraryCover(title) {
-    for (const q of coverQueryCandidates(title)) {
-      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const docs = Array.isArray(data?.docs) ? data.docs : [];
-      const preferred = docs.find(
-        (d) => Number.isFinite(d?.cover_i) && String(d?.title || "").toLowerCase().includes("batman")
-      );
-      const fallback = docs.find((d) => Number.isFinite(d?.cover_i));
-      const coverId = preferred?.cover_i || fallback?.cover_i;
-      if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
-    }
-    return "";
-  }
-
-  async function fetchGoogleBooksCover(title) {
-    for (const q of coverQueryCandidates(title)) {
-      const query = `intitle:${q} batman`;
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5&printType=books`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      for (const item of items) {
-        const links = item?.volumeInfo?.imageLinks || {};
-        const url = links.thumbnail || links.smallThumbnail || "";
-        if (url) return url.replace(/^http:/, "https:");
-      }
-    }
-    return "";
-  }
-
-  function markCoverUrlFailed(id, url) {
-    if (!id || !url) return;
-    if (!coverFailedUrls.has(id)) coverFailedUrls.set(id, new Set());
-    coverFailedUrls.get(id).add(url);
-  }
-
-  function isCoverUrlFailed(id, url, exclude = []) {
-    if (!url) return true;
-    if (exclude.includes(url)) return true;
-    return coverFailedUrls.get(id)?.has(url) || false;
-  }
-
-  async function resolveCoverArtwork(entry, opts = {}) {
+  async function resolveOpenLibraryCover(entry) {
     const id = entry.id;
-    const exclude = Array.isArray(opts.exclude) ? opts.exclude : [];
-    if (!id || coverFetchInFlight.has(id)) return "";
-
-    const cachedUrl = coverCache[id] || "";
-    const staticUrl = REAL_COVERS[id] || "";
-
-    if (!opts.force) {
-      const preferred = cachedUrl || staticUrl;
-      if (preferred && !isCoverUrlFailed(id, preferred, exclude)) return preferred;
-    }
-
+    if (!id || REAL_COVERS[id] || coverCache[id] || coverFetchInFlight.has(id)) return;
     coverFetchInFlight.add(id);
     try {
-      const candidates = [];
-      if (cachedUrl) candidates.push(cachedUrl);
-      if (staticUrl) candidates.push(staticUrl);
-
-      const fromDcui = await fetchDcuiCover(entry);
-      if (fromDcui) candidates.push(fromDcui);
-
-      const fromOpenLibrary = await fetchOpenLibraryCover(entry.title);
-      if (fromOpenLibrary) candidates.push(fromOpenLibrary);
-
-      const fromGoogle = await fetchGoogleBooksCover(entry.title);
-      if (fromGoogle) candidates.push(fromGoogle);
-
-      const unique = [...new Set(candidates)].filter((url) => !isCoverUrlFailed(id, url, exclude));
-      const best = unique[0] || "";
-      if (!best) return "";
-
-      coverCache[id] = best;
+      const query = titleToCoverQuery(entry.title);
+      if (!query) return;
+      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const docs = Array.isArray(data?.docs) ? data.docs : [];
+      const doc = docs.find((d) => Number.isFinite(d?.cover_i));
+      if (!doc?.cover_i) return;
+      coverCache[id] = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
       saveJSON(KEYS.coverCache, coverCache);
-      return best;
+      const card = document.querySelector(`.item[data-id="${id}"] .cover`);
+      if (card) applyCoverImage(card, entry, coverCache[id]);
     } catch {
-      return "";
+      // Ignore network failures and keep fallback artwork.
     } finally {
       coverFetchInFlight.delete(id);
-    }
-  }
-
-  async function tryRecoverCover(coverEl, entry, failedUrl) {
-    markCoverUrlFailed(entry.id, failedUrl);
-    if (coverCache[entry.id] === failedUrl) {
-      delete coverCache[entry.id];
-      saveJSON(KEYS.coverCache, coverCache);
-    }
-    const recovered = await resolveCoverArtwork(entry, { force: true, exclude: [failedUrl] });
-    if (recovered) {
-      applyCoverImage(coverEl, entry, recovered);
-    } else {
-      coverEl.innerHTML = entryCoverFallback(entry);
     }
   }
 
@@ -507,7 +400,7 @@
     img.referrerPolicy = "no-referrer";
     img.onerror = () => {
       img.remove();
-      void tryRecoverCover(coverEl, entry, url);
+      coverEl.innerHTML = entryCoverFallback(entry);
     };
     coverEl.appendChild(img);
   }
@@ -575,9 +468,7 @@
           applyCoverImage(cover, entry, coverUrl);
         } else {
           cover.innerHTML = entryCoverFallback(entry);
-          void resolveCoverArtwork(entry).then((resolved) => {
-            if (resolved) applyCoverImage(cover, entry, resolved);
-          });
+          void resolveOpenLibraryCover(entry);
         }
 
         const content = document.createElement("div");
