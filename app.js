@@ -35,7 +35,8 @@
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1"
+    filters: "batman-guide:filters:v1",
+    coverCache: "batman-guide:covers:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -43,7 +44,7 @@
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
-  const FIXED_LOGO_URL = "./logo.png";
+  const FIXED_LOGO_URL = "./batman-logo.png";
 
   const $ = (id) => document.getElementById(id);
 
@@ -97,6 +98,8 @@
   let lastPullAt = 0;
   let gistETag = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
+  const coverCache = loadJSON(KEYS.coverCache, {});
+  const coverFetchInFlight = new Set();
 
 
   function clampPullInterval(ms) {
@@ -191,8 +194,7 @@
   function applyBrand() {
     const heroLogo = $("heroLogo");
     if (!heroLogo) return;
-    const cfg = getBrand();
-    heroLogo.src = (cfg.logoUrl || "").trim() || "batman-logo.svg";
+    heroLogo.src = FIXED_LOGO_URL;
   }
 
   function getFiltered() {
@@ -331,6 +333,96 @@
     return `linear-gradient(160deg, hsl(${hue} 62% 36%), hsl(${hue2} 72% 24%))`;
   }
 
+  function entryCoverFallback(entry) {
+    return `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+  }
+
+  function titleToCoverQuery(title) {
+    return String(title || "")
+      .replace(/\(.*?\)/g, " ")
+      .replace(/[—:]/g, " ")
+      .replace(/\bvol\.?\b/gi, "volume")
+      .replace(/[^a-zA-Z0-9 ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function coverQueryCandidates(title) {
+    const raw = String(title || "").trim();
+    const clean = titleToCoverQuery(raw);
+    const trimmed = clean
+      .replace(/\b(deluxe|edition|anniversary|complete|collection|saga)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return [...new Set([clean, trimmed, raw].filter(Boolean))];
+  }
+
+  async function fetchOpenLibraryCover(title) {
+    for (const q of coverQueryCandidates(title)) {
+      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const docs = Array.isArray(data?.docs) ? data.docs : [];
+      const preferred = docs.find(
+        (d) => Number.isFinite(d?.cover_i) && String(d?.title || "").toLowerCase().includes("batman")
+      );
+      const fallback = docs.find((d) => Number.isFinite(d?.cover_i));
+      const coverId = preferred?.cover_i || fallback?.cover_i;
+      if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+    }
+    return "";
+  }
+
+  async function fetchGoogleBooksCover(title) {
+    for (const q of coverQueryCandidates(title)) {
+      const query = `intitle:${q} batman`;
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5&printType=books`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      for (const item of items) {
+        const links = item?.volumeInfo?.imageLinks || {};
+        const url = links.thumbnail || links.smallThumbnail || "";
+        if (url) return url.replace(/^http:/, "https:");
+      }
+    }
+    return "";
+  }
+
+  async function resolveCoverArtwork(entry) {
+    const id = entry.id;
+    if (!id || REAL_COVERS[id] || coverCache[id] || coverFetchInFlight.has(id)) return;
+    coverFetchInFlight.add(id);
+    try {
+      const fromOpenLibrary = await fetchOpenLibraryCover(entry.title);
+      const coverUrl = fromOpenLibrary || await fetchGoogleBooksCover(entry.title);
+      if (!coverUrl) return;
+      coverCache[id] = coverUrl;
+      saveJSON(KEYS.coverCache, coverCache);
+      const card = document.querySelector(`.item[data-id="${id}"] .cover`);
+      if (card) applyCoverImage(card, entry, coverUrl);
+    } catch {
+      // Ignore network failures and keep fallback artwork.
+    } finally {
+      coverFetchInFlight.delete(id);
+    }
+  }
+
+  function applyCoverImage(coverEl, entry, url) {
+    if (!coverEl || !url) return;
+    coverEl.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `${entry.title} cover`;
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onerror = () => {
+      img.remove();
+      coverEl.innerHTML = entryCoverFallback(entry);
+    };
+    coverEl.appendChild(img);
+  }
+
   function render() {
     setError("");
     const filtered = getFiltered();
@@ -389,22 +481,13 @@
         const cover = document.createElement("div");
         cover.className = "cover";
         cover.style.background = coverGradient(entry);
-        const coverUrl = REAL_COVERS[entry.id] || "";
+        const coverUrl = REAL_COVERS[entry.id] || coverCache[entry.id] || "";
         if (coverUrl) {
-          const img = document.createElement("img");
-          img.src = coverUrl;
-          img.alt = `${entry.title} cover`;
-          img.loading = "lazy";
-          img.referrerPolicy = "no-referrer";
-          img.onerror = () => {
-            img.remove();
-            cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
-          };
-          cover.appendChild(img);
+          applyCoverImage(cover, entry, coverUrl);
         } else {
-          cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+          cover.innerHTML = entryCoverFallback(entry);
+          void resolveCoverArtwork(entry);
         }
-        cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
 
         const content = document.createElement("div");
 
