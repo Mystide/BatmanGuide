@@ -6,7 +6,29 @@
 
 
   const REAL_COVERS = {
+    "E1-01": "https://imgix-media.wbdndc.net/ingest/book/preview/91031541-9328-474c-9d6d-a67d249b6783/198d8835-5e2a-46af-8ac0-bd862ef573b1/0.jpg",
+    "E1-02": "https://books.google.com/books/content?id=yJf0DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-03": "https://books.google.com/books/content?id=NVUwDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-04": "https://books.google.com/books/content?id=RnxJDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-05": "https://imgix-media.wbdndc.net/ingest/book/preview/9a319085-3586-413b-9c59-e54845d2514b/a8088bca-861b-4a2f-8541-4ebd823da1d4/0.jpg",
+    "E1-06": "https://books.google.com/books/content?id=yjyZwgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E1-07": "https://covers.openlibrary.org/b/id/12415426-M.jpg",
+    "E2-01": "https://covers.openlibrary.org/b/id/7803421-M.jpg",
+    "E3-01": "https://books.google.com/books/content?id=K6qn0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E3-02": "https://books.google.com/books/content?id=Zvg4AgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E3-03": "https://imgix-media.wbdndc.net/asset/collection/c1245/5cbf4890/hero-c.jpg",
+    "E3-04": "https://books.google.com/books/content?id=AavWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-00": "https://covers.openlibrary.org/b/id/749280-M.jpg",
     "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
+    "E4-02": "https://covers.openlibrary.org/b/id/11026165-M.jpg",
+    "E4-02A": "https://books.google.com/books/content?id=Rxt3EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03": "https://imgix-media.wbdndc.net/asset/collection/c1547/5c7d6df9/hero-c.jpg",
+    "E4-03A": "https://books.google.com/books/content?id=oZaVBgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03B": "https://books.google.com/books/content?id=CKHWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03C": "https://books.google.com/books/content?id=PE7yngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E4-04": "https://imgix-media.wbdndc.net/ingest/book/preview/f2a3bcf5-ecc4-494c-88bd-7e44f303dba5/c78e12c0-aa2b-466b-87e3-371610287912/0.jpg",
+    "E4-05": "https://covers.openlibrary.org/b/id/15166226-M.jpg",
+    "E4-06": "https://books.google.com/books/content?id=jpV0DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
     "E4-08": "https://covers.openlibrary.org/b/isbn/9781563896767-M.jpg",
     "E4-11": "https://covers.openlibrary.org/b/isbn/9781401216672-M.jpg",
@@ -22,6 +44,7 @@
     "E5-01": "https://covers.openlibrary.org/b/isbn/9781401235420-M.jpg",
     "E5-04": "https://covers.openlibrary.org/b/isbn/9781401246020-M.jpg",
     "E5-06": "https://covers.openlibrary.org/b/isbn/9781401252281-M.jpg",
+    "E5-10": "https://books.google.com/books/content?id=nUu3BQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E6-01": "https://covers.openlibrary.org/b/isbn/9781401267775-M.jpg",
     "E6-06": "https://covers.openlibrary.org/b/isbn/9781401273615-M.jpg",
     "E6-14": "https://covers.openlibrary.org/b/isbn/9781779507907-M.jpg",
@@ -31,11 +54,13 @@
     "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
   };
 
+
   const KEYS = {
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
-    filters: "batman-guide:filters:v1"
+    filters: "batman-guide:filters:v1",
+    coverCache: "batman-guide:covers:v8"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -43,7 +68,7 @@
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
-  const FIXED_LOGO_URL = "./logo.png";
+  const FIXED_LOGO_URL = "./batman-logo.png";
 
   const $ = (id) => document.getElementById(id);
 
@@ -97,6 +122,11 @@
   let lastPullAt = 0;
   let gistETag = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
+  const coverCache = loadJSON(KEYS.coverCache, {});
+  const coverFetchInFlight = new Set();
+  const coverFailedUrls = new Map();
+  const dcuiUnavailableIds = new Set();
+  let dcuiUpgradeStarted = false;
 
 
   function clampPullInterval(ms) {
@@ -191,8 +221,7 @@
   function applyBrand() {
     const heroLogo = $("heroLogo");
     if (!heroLogo) return;
-    const cfg = getBrand();
-    heroLogo.src = (cfg.logoUrl || "").trim() || "batman-logo.svg";
+    heroLogo.src = FIXED_LOGO_URL;
   }
 
   function getFiltered() {
@@ -331,6 +360,236 @@
     return `linear-gradient(160deg, hsl(${hue} 62% 36%), hsl(${hue2} 72% 24%))`;
   }
 
+  function entryCoverFallback(entry) {
+    return `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+  }
+
+  function titleToCoverQuery(title) {
+    return String(title || "")
+      .replace(/\(.*?\)/g, " ")
+      .replace(/[—:]/g, " ")
+      .replace(/\bvol\.?\b/gi, "volume")
+      .replace(/[^a-zA-Z0-9 ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function coverQueryCandidates(title) {
+    const raw = String(title || "").trim();
+    const clean = titleToCoverQuery(raw);
+    const trimmed = clean
+      .replace(/\b(deluxe|edition|anniversary|complete|collection|saga)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return [...new Set([clean, trimmed, raw].filter(Boolean))];
+  }
+
+  async function fetchTextWithTimeout(url, timeoutMs = 6500) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal });
+      if (!res.ok) return "";
+      return await res.text();
+    } catch {
+      return "";
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function fetchDcuiCover(entry) {
+    const sourceUrl = String(entry?.url || "");
+    if (!sourceUrl.includes("dcuniverseinfinite.com")) return "";
+
+    const candidateHtml = [];
+    const proxies = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(sourceUrl)}`,
+      `https://r.jina.ai/http://${sourceUrl.replace(/^https?:\/\//, "")}`
+    ];
+
+    for (const proxyUrl of proxies) {
+      const html = await fetchTextWithTimeout(proxyUrl);
+      if (html) candidateHtml.push(html);
+    }
+
+    for (const html of candidateHtml) {
+      const match = html.match(/<meta[^>]+(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["']([^"']+)["']/i);
+      if (match?.[1]) return match[1].replace(/^http:/, "https:");
+
+      const jinaMatch = html.match(/https:\/\/imgix-media\.wbdndc\.net\/[^\s"')]+/i);
+      if (jinaMatch?.[0]) return jinaMatch[0].replace(/^http:/, "https:");
+    }
+
+    return "";
+  }
+
+  async function fetchOpenLibraryCover(title) {
+    for (const q of coverQueryCandidates(title)) {
+      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(q)}&limit=10`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const docs = Array.isArray(data?.docs) ? data.docs : [];
+      const preferred = docs.find(
+        (d) => Number.isFinite(d?.cover_i) && String(d?.title || "").toLowerCase().includes("batman")
+      );
+      const fallback = docs.find((d) => Number.isFinite(d?.cover_i));
+      const coverId = preferred?.cover_i || fallback?.cover_i;
+      if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+    }
+    return "";
+  }
+
+  async function fetchGoogleBooksCover(title) {
+    for (const q of coverQueryCandidates(title)) {
+      const query = `intitle:${q} batman`;
+      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5&printType=books`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const items = Array.isArray(data?.items) ? data.items : [];
+      for (const item of items) {
+        const links = item?.volumeInfo?.imageLinks || {};
+        const url = links.thumbnail || links.smallThumbnail || "";
+        if (url) return url.replace(/^http:/, "https:");
+      }
+    }
+    return "";
+  }
+
+  function isDcuiCoverUrl(url) {
+    const u = String(url || "").toLowerCase();
+    return u.includes("imgix-media.wbdndc.net") || u.includes("dcuniverseinfinite.com");
+  }
+
+  function markCoverUrlFailed(id, url) {
+    if (!id || !url) return;
+    if (!coverFailedUrls.has(id)) coverFailedUrls.set(id, new Set());
+    coverFailedUrls.get(id).add(url);
+  }
+
+  function isCoverUrlFailed(id, url, exclude = []) {
+    if (!url) return true;
+    if (exclude.includes(url)) return true;
+    return coverFailedUrls.get(id)?.has(url) || false;
+  }
+
+  async function resolveCoverArtwork(entry, opts = {}) {
+    const id = entry.id;
+    const exclude = Array.isArray(opts.exclude) ? opts.exclude : [];
+    if (!id || coverFetchInFlight.has(id)) return "";
+
+    const cachedUrl = coverCache[id] || "";
+    const staticUrl = REAL_COVERS[id] || "";
+
+    if (!opts.force) {
+      const preferred = cachedUrl || staticUrl;
+      if (preferred && isDcuiCoverUrl(preferred) && !isCoverUrlFailed(id, preferred, exclude)) return preferred;
+    }
+
+    coverFetchInFlight.add(id);
+    try {
+      const candidates = [];
+
+      if (!dcuiUnavailableIds.has(id) || opts.force) {
+        const fromDcui = await fetchDcuiCover(entry);
+        if (fromDcui) {
+          candidates.push(fromDcui);
+        } else {
+          dcuiUnavailableIds.add(id);
+        }
+      }
+
+      if (cachedUrl) candidates.push(cachedUrl);
+      if (staticUrl) candidates.push(staticUrl);
+
+      const fromOpenLibrary = await fetchOpenLibraryCover(entry.title);
+      if (fromOpenLibrary) candidates.push(fromOpenLibrary);
+
+      const fromGoogle = await fetchGoogleBooksCover(entry.title);
+      if (fromGoogle) candidates.push(fromGoogle);
+
+      const unique = [...new Set(candidates)].filter((url) => !isCoverUrlFailed(id, url, exclude));
+      const best = unique[0] || "";
+      if (!best) return "";
+
+      coverCache[id] = best;
+      saveJSON(KEYS.coverCache, coverCache);
+      return best;
+    } catch {
+      return "";
+    } finally {
+      coverFetchInFlight.delete(id);
+    }
+  }
+
+  async function tryRecoverCover(coverEl, entry, failedUrl) {
+    markCoverUrlFailed(entry.id, failedUrl);
+    if (coverCache[entry.id] === failedUrl) {
+      delete coverCache[entry.id];
+      saveJSON(KEYS.coverCache, coverCache);
+    }
+    const recovered = await resolveCoverArtwork(entry, { force: true, exclude: [failedUrl] });
+    if (recovered) {
+      applyCoverImage(coverEl, entry, recovered);
+    } else {
+      coverEl.innerHTML = entryCoverFallback(entry);
+    }
+  }
+
+  function applyCoverImage(coverEl, entry, url) {
+    if (!coverEl || !url) return;
+    coverEl.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = `${entry.title} cover`;
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onerror = () => {
+      img.remove();
+      void tryRecoverCover(coverEl, entry, url);
+    };
+    coverEl.appendChild(img);
+  }
+
+  async function upgradeCoversFromDcui() {
+    if (dcuiUpgradeStarted) return;
+    dcuiUpgradeStarted = true;
+
+    const queue = LIST.filter((entry) => {
+      const id = entry.id;
+      const current = coverCache[id] || REAL_COVERS[id] || "";
+      if (isDcuiCoverUrl(current) && !isCoverUrlFailed(id, current)) return false;
+      if (dcuiUnavailableIds.has(id)) return false;
+      return true;
+    });
+
+    const workerCount = Math.min(6, queue.length || 1);
+    const workers = Array.from({ length: workerCount }, async () => {
+      while (queue.length) {
+        const entry = queue.shift();
+        if (!entry) return;
+        const id = entry.id;
+
+        const dcuiUrl = await fetchDcuiCover(entry);
+        if (!dcuiUrl) {
+          dcuiUnavailableIds.add(id);
+          continue;
+        }
+
+        const current = coverCache[id] || REAL_COVERS[id] || "";
+        if (dcuiUrl === current) continue;
+
+        coverCache[id] = dcuiUrl;
+        saveJSON(KEYS.coverCache, coverCache);
+
+        const coverEl = document.querySelector(`.item[data-id="${id}"] .cover`);
+        if (coverEl) applyCoverImage(coverEl, entry, dcuiUrl);
+      }
+    });
+
+    await Promise.all(workers);
+  }
+
   function render() {
     setError("");
     const filtered = getFiltered();
@@ -389,22 +648,15 @@
         const cover = document.createElement("div");
         cover.className = "cover";
         cover.style.background = coverGradient(entry);
-        const coverUrl = REAL_COVERS[entry.id] || "";
+        const coverUrl = REAL_COVERS[entry.id] || coverCache[entry.id] || "";
         if (coverUrl) {
-          const img = document.createElement("img");
-          img.src = coverUrl;
-          img.alt = `${entry.title} cover`;
-          img.loading = "lazy";
-          img.referrerPolicy = "no-referrer";
-          img.onerror = () => {
-            img.remove();
-            cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
-          };
-          cover.appendChild(img);
+          applyCoverImage(cover, entry, coverUrl);
         } else {
-          cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+          cover.innerHTML = entryCoverFallback(entry);
+          void resolveCoverArtwork(entry).then((resolved) => {
+            if (resolved) applyCoverImage(cover, entry, resolved);
+          });
         }
-        cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
 
         const content = document.createElement("div");
 
@@ -914,6 +1166,7 @@
     startAutoSync();
     initPWA();
     render();
+    setTimeout(() => void upgradeCoversFromDcui(), 600);
   } catch (e) {
     setError(`App failed to start: ${String(e.message || e)}`);
     console.error(e);
