@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const BUILD_ID = "2026-03-03.16-auto-only-sync";
+  const BUILD_ID = "batman-guide-auto-sync";
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
   const KEYS = {
@@ -38,6 +38,7 @@
   let autoPushTimer = null;
   let autoPullTimer = null;
   let syncInFlight = false;
+  let syncQueued = false;
   let lastPullAt = 0;
 
   function nowISO() {
@@ -487,16 +488,29 @@
 
   async function runAutoSync(reason) {
     const cfg = getCfg();
-    if (!syncReady(cfg) || syncInFlight) return;
+    if (!syncReady(cfg)) return;
+    if (syncInFlight) {
+      syncQueued = true;
+      return;
+    }
 
     syncInFlight = true;
     try {
       setSyncStatus(`Auto-sync (${reason})...`);
-      await gistSync(cfg);
+      if (dirty && reason === "change") {
+        await gistPush(cfg);
+        setSyncStatus("Sync complete (pushed local change).");
+      } else {
+        await gistSync(cfg);
+      }
     } catch (e) {
       setSyncStatus(`Auto-sync failed: ${String(e.message || e)}`);
     } finally {
       syncInFlight = false;
+      if (syncQueued) {
+        syncQueued = false;
+        void runAutoSync("queued");
+      }
     }
   }
 
