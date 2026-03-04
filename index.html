@@ -9,66 +9,81 @@
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <style>
     :root {
-      --bg: #0b1020;
+      --bg: #070b16;
       --panel: #111827;
-      --panel-2: #1f2937;
-      --text: #f3f4f6;
-      --muted: #b7bfd1;
+      --panel-2: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
       --accent: #facc15;
-      --border: #334155;
+      --accent-2: #f59e0b;
+      --border: #2f3d56;
       --danger: #ef4444;
-      --shadow: 0 14px 36px rgba(0,0,0,.35);
+      --shadow: 0 12px 28px rgba(0,0,0,.28);
+      --shadow-soft: 0 6px 18px rgba(0,0,0,.2);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--text);
-      background: radial-gradient(1200px 500px at 20% -10%, #1e293b 0%, transparent 60%), linear-gradient(180deg, #0b1020 0%, #0f172a 100%);
+      background:
+        radial-gradient(1400px 700px at 10% -10%, rgba(250, 204, 21, .13) 0%, transparent 55%),
+        radial-gradient(900px 500px at 95% -15%, rgba(59, 130, 246, .14) 0%, transparent 60%),
+        linear-gradient(180deg, #070b16 0%, #0b1224 100%);
     }
-    .container { max-width: 1040px; margin: 0 auto; padding: 16px; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 16px; }
     .card {
-      background: color-mix(in srgb, var(--panel) 92%, black 8%);
+      background: linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.82));
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: var(--shadow-soft);
     }
-    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); background: rgba(11,16,32,.82); border-bottom: 1px solid var(--border); }
+    .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); background: rgba(7,11,22,.78); border-bottom: 1px solid rgba(70, 85, 116, .45); }
     .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
-    h1 { margin: 0; font-size: 22px; }
+    h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
+    .hero { display: grid; gap: 6px; }
+    .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
       background: var(--panel-2);
       color: var(--text);
-      border-radius: 10px;
-      padding: 9px 11px;
+      border-radius: 12px;
+      padding: 10px 12px;
       font-size: 14px;
     }
-    .btn { cursor: pointer; font-weight: 700; box-shadow: var(--shadow); }
+    .btn {
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: var(--shadow-soft);
+      background: linear-gradient(180deg, rgba(39, 50, 75, .95), rgba(24, 34, 54, .95));
+      transition: transform .14s ease, border-color .14s ease, filter .14s ease;
+    }
+    .btn:hover { border-color: #4c638b; transform: translateY(-1px); filter: brightness(1.06); }
     .btn.primary { border-color: #7c640f; background: linear-gradient(180deg, #4a3c17, #332b14); color: #fde68a; }
-    .btn.warn { border-color: #7f1d1d; background: #3a1010; color: #fecaca; }
+    .btn.warn { border-color: #7f1d1d; background: linear-gradient(180deg,#4a1414,#341010); color: #fecaca; }
     .input, .select { min-width: 150px; }
     .input.full { width: 100%; }
     .status { font-size: 12px; color: var(--muted); }
-    .progress-wrap { margin-top: 10px; }
-    .progress-track { height: 10px; background: #1f2937; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-wrap { margin-top: 12px; padding: 10px; border: 1px solid rgba(71,85,105,.35); border-radius: 14px; background: rgba(15,23,42,.45); }
+    .progress-track { height: 10px; background: #162132; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
     .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
     .era { margin-top: 14px; }
     details {
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
-      background: rgba(18, 26, 47, .7);
-      margin-bottom: 12px;
-      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, rgba(18, 26, 47, .78), rgba(13, 22, 39, .76));
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
     }
     summary {
       list-style: none;
       cursor: pointer;
-      padding: 11px 12px;
-      background: rgba(25, 35, 65, .65);
+      padding: 13px 14px;
+      background: linear-gradient(90deg, rgba(34, 48, 84, .72), rgba(27, 42, 68, .55));
       border-bottom: 1px solid var(--border);
       font-weight: 700;
       display: flex;
@@ -76,19 +91,31 @@
       gap: 8px;
     }
     summary::-webkit-details-marker { display: none; }
-    .items { padding: 10px; }
+    .items { padding: 12px; }
     .item {
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 10px;
       margin-bottom: 8px;
       background: rgba(15, 23, 42, .78);
+      transition: border-color .16s ease, transform .16s ease, background .2s ease;
     }
-    .item.done { opacity: .72; }
-    .title { font-weight: 650; }
+    .item:hover { border-color: #4f6288; transform: translateY(-1px); background: rgba(19, 31, 57, .8); }
+    .item.done { opacity: .72; border-style: dashed; }
+    .title { font-weight: 700; line-height: 1.25; }
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 12px; color: #fde68a; border: 1px solid #725f0a; border-radius: 999px; padding: 1px 8px; }
     .stack { display: grid; gap: 8px; }
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 11px;
+      color: #e5e7eb;
+      background: #0f172a;
+    }
     .hidden { display: none; }
     .tools { margin-top: 14px; }
     .error {
@@ -101,13 +128,20 @@
       font-size: 13px;
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
+    @media (max-width: 760px) {
+      h1 { font-size: 24px; }
+      .container { padding: 12px; }
+      .btn, .input, .select { width: 100%; }
+      .row.space { align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
   <header class="top">
     <div class="container stack">
       <div class="row space">
-        <div>
+        <div class="hero">
+          <span class="badge">Gotham Reading Tracker</span>
           <h1>Batman Guide</h1>
           <div class="muted">Track Batman comics, keep notes, and sync progress across devices.</div>
         </div>
@@ -128,8 +162,16 @@
         </select>
         <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
         <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
+        <select id="sortBy" class="select">
+          <option value="order">Default order</option>
+          <option value="title">Title A → Z</option>
+          <option value="progress">Least progress first</option>
+        </select>
+        <button class="btn" id="btnExpandAll">Expand all</button>
+        <button class="btn" id="btnCollapseAll">Collapse all</button>
         <button class="btn" id="btnClearFilters">Clear filters</button>
       </div>
+      <div class="muted">Tip: press <span class="kbd">/</span> to jump to search.</div>
 
       <div class="progress-wrap">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
