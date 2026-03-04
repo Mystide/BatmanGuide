@@ -10,9 +10,11 @@
     syncCfg: "batman-guide:sync:v3"
   };
 
-  const AUTO_PULL_INTERVAL_MS = 2000;
+  const AUTO_PULL_BASE_INTERVAL_MS = 15000;
+  const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const PULL_THROTTLE_MS = 2500;
+  const SYNC_REQUEST_TIMEOUT_MS = 9000;
 
   const $ = (id) => document.getElementById(id);
 
@@ -30,7 +32,8 @@
   const defaultCfg = () => ({
     gistId: "",
     gistToken: "",
-    auto: true
+    auto: true,
+    pullMs: AUTO_PULL_BASE_INTERVAL_MS
   });
 
   let state = loadJSON(KEYS.state, defaultState());
@@ -442,7 +445,7 @@
     } catch {
       await gistPush(cfg);
       setSyncStatus("Remote initialized by push.");
-      return;
+      return "pushed";
     }
 
     let remote;
@@ -451,7 +454,7 @@
     } catch {
       await gistPush(cfg);
       setSyncStatus("Remote fixed (invalid JSON replaced).");
-      return;
+      return "pushed";
     }
 
     const remoteAt = parseDate(remote?.state?.updatedAt);
@@ -460,7 +463,7 @@
     if (!remote?.state) {
       await gistPush(cfg);
       setSyncStatus("Remote fixed (invalid shape replaced).");
-      return;
+      return "pushed";
     }
 
     if (remoteAt > localAt) {
@@ -469,21 +472,22 @@
       dirty = false;
       render();
       setSyncStatus("Sync complete (pulled newer remote).");
-      return;
+      return "pulled";
     }
 
     if (localAt > remoteAt || dirty) {
       await gistPush(cfg);
       setSyncStatus("Sync complete (pushed newer local).");
-      return;
+      return "pushed";
     }
 
     setSyncStatus("Already in sync.");
+    return "unchanged";
   }
 
   function stopAutoSync() {
     if (autoPullTimer) {
-      clearInterval(autoPullTimer);
+      clearTimeout(autoPullTimer);
       autoPullTimer = null;
     }
     if (autoPushTimer) {
@@ -497,10 +501,8 @@
     const cfg = getCfg();
     if (!syncReady(cfg) || !cfg.auto) return;
 
+    pullDelayMs = clampPullInterval(cfg.pullMs);
     void runAutoSync("start");
-    autoPullTimer = setInterval(() => {
-      void runAutoSync("interval");
-    }, AUTO_PULL_INTERVAL_MS);
   }
 
   function scheduleAutoPush() {
@@ -514,7 +516,7 @@
 
   async function runAutoSync(reason) {
     const cfg = getCfg();
-    if (!syncReady(cfg)) return;
+    if (!syncReady(cfg) || !cfg.auto) return;
     if (syncInFlight) {
       syncQueued = true;
       return;
@@ -525,17 +527,26 @@
       setSyncStatus(`Auto-sync (${reason})...`);
       if (dirty && reason === "change") {
         await gistPush(cfg);
+        pullDelayMs = clampPullInterval(cfg.pullMs);
         setSyncStatus("Sync complete (pushed local change).");
       } else {
-        await gistSync(cfg);
+        const result = await gistSync(cfg);
+        if (result === "unchanged") {
+          pullDelayMs = Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(pullDelayMs * 1.35));
+        } else {
+          pullDelayMs = clampPullInterval(cfg.pullMs);
+        }
       }
     } catch (e) {
+      pullDelayMs = Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(Math.max(pullDelayMs, clampPullInterval(cfg.pullMs)) * 1.8));
       setSyncStatus(`Auto-sync failed: ${String(e.message || e)}`);
     } finally {
       syncInFlight = false;
       if (syncQueued) {
         syncQueued = false;
         void runAutoSync("queued");
+      } else if (reason !== "change") {
+        scheduleNextAutoPull(pullDelayMs);
       }
     }
   }
