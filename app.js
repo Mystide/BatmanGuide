@@ -4,6 +4,33 @@
   const BUILD_ID = "batman-guide-auto-sync";
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
+
+  const REAL_COVERS = {
+    "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
+    "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
+    "E4-08": "https://covers.openlibrary.org/b/isbn/9781563896767-M.jpg",
+    "E4-11": "https://covers.openlibrary.org/b/isbn/9781401216672-M.jpg",
+    "E4-12": "https://covers.openlibrary.org/b/isbn/9781401212599-M.jpg",
+    "E4-14": "https://covers.openlibrary.org/b/isbn/9781401237219-M.jpg",
+    "E4-20": "https://covers.openlibrary.org/b/isbn/9781401235635-M.jpg",
+    "E4-25": "https://covers.openlibrary.org/b/isbn/9781401200619-M.jpg",
+    "E4-27": "https://covers.openlibrary.org/b/isbn/9781401218249-M.jpg",
+    "E4-29": "https://covers.openlibrary.org/b/isbn/9781401210847-M.jpg",
+    "E4-31": "https://covers.openlibrary.org/b/isbn/9781401221706-M.jpg",
+    "E4-35": "https://covers.openlibrary.org/b/isbn/9781401232078-M.jpg",
+    "E4-36": "https://covers.openlibrary.org/b/isbn/9781401233389-M.jpg",
+    "E5-01": "https://covers.openlibrary.org/b/isbn/9781401235420-M.jpg",
+    "E5-04": "https://covers.openlibrary.org/b/isbn/9781401246020-M.jpg",
+    "E5-06": "https://covers.openlibrary.org/b/isbn/9781401252281-M.jpg",
+    "E6-01": "https://covers.openlibrary.org/b/isbn/9781401267775-M.jpg",
+    "E6-06": "https://covers.openlibrary.org/b/isbn/9781401273615-M.jpg",
+    "E6-14": "https://covers.openlibrary.org/b/isbn/9781779507907-M.jpg",
+    "E6-15": "https://covers.openlibrary.org/b/isbn/9781779513151-M.jpg",
+    "E7-02": "https://covers.openlibrary.org/b/isbn/9781779516541-M.jpg",
+    "E7-03": "https://covers.openlibrary.org/b/isbn/9781779520029-M.jpg",
+    "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
+  };
+
   const KEYS = {
     state: "batman-guide:state:v3",
     eraOpen: "batman-guide:era-open:v3",
@@ -352,6 +379,21 @@
         const cover = document.createElement("div");
         cover.className = "cover";
         cover.style.background = coverGradient(entry);
+        const coverUrl = REAL_COVERS[entry.id] || "";
+        if (coverUrl) {
+          const img = document.createElement("img");
+          img.src = coverUrl;
+          img.alt = `${entry.title} cover`;
+          img.loading = "lazy";
+          img.referrerPolicy = "no-referrer";
+          img.onerror = () => {
+            img.remove();
+            cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+          };
+          cover.appendChild(img);
+        } else {
+          cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
+        }
         cover.innerHTML = `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
 
         const content = document.createElement("div");

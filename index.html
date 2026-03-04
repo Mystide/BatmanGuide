@@ -46,6 +46,7 @@
     .muted { color: var(--muted); font-size: 13px; }
     .hero { display: grid; gap: 6px; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
+    .hero-logo { width:144px; height:52px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
     .hero-logo { width:52px; height:52px; border-radius:12px; border:1px solid #6b5716; box-shadow: 0 8px 24px rgba(0,0,0,.35); background:#0b1020; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
@@ -104,6 +105,7 @@
     }
     .item-grid { display:grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: start; }
     .cover { width: 60px; height: 84px; border-radius: 8px; border:1px solid rgba(255,255,255,.2); display:grid; place-items:center; text-align:center; font-size:10px; font-weight:800; letter-spacing:.45px; color:#fff; text-transform:uppercase; box-shadow: 0 8px 16px rgba(0,0,0,.35); }
+    .cover img { width:100%; height:100%; object-fit:cover; border-radius:8px; display:block; }
     .cover small { display:block; font-size:9px; opacity:.85; }
     .item:hover { border-color: #6f86b1; transform: translateY(-1px); background: rgba(19, 31, 57, .86); }
     .item.done { opacity: .72; border-style: dashed; }
@@ -154,6 +156,7 @@
       <div class="row space">
         <div class="hero">
           <div class="hero-brand">
+            <img src="batman-logo.svg" alt="Batman logo" class="hero-logo" />
             <img src="icon.svg" alt="Batman logo" class="hero-logo" />
             <div>
               <span class="badge">Gotham Reading Tracker</span>
