@@ -1,11 +1,11 @@
-const CACHE = "batman-guide-cache-2026-03-04.04-fixed-logo-png";
+const CACHE = "batman-guide-cache-2026-03-04.05-logo-and-shell-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./app.js",
   "./list.js",
   "./manifest.webmanifest",
-  "./icon.svg",
+  "./batman-logo.png",
 ];
 
 self.addEventListener("install", (event) => {
