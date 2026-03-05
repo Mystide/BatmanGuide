@@ -1002,9 +1002,39 @@
         writeFilters();
         syncQuickFilterChips();
         render();
+      });
+    }
+
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) {
+      chipOpen.addEventListener("click", () => {
+        $("onlyRemaining").checked = !$("onlyRemaining").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
         syncEraToggleButton();
       });
     }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+      });
+    }
+
+    syncQuickFilterChips();
 
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
