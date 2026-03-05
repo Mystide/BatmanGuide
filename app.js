@@ -984,7 +984,8 @@
   }
 
   function bindUI() {
-    const savedFilters = readFilters();
+    try {
+      const savedFilters = readFilters();
 
     $("search").value = savedFilters.search || "";
     $("typeFilter").value = savedFilters.type || "";
@@ -1228,6 +1229,53 @@
     window.addEventListener("online", () => void runAutoSync("online"));
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") void runAutoSync("visible");
+    });
+    } catch (e) {
+      console.error("UI binding failed:", e);
+    }
+  }
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
     });
   }
 
