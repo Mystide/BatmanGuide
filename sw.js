@@ -1,4 +1,7 @@
 const CACHE = "batman-guide-cache-2026-03-05.09-network-first-shell";
+const CACHE = "batman-guide-cache-2026-03-05.08-startup-resilience";
+const CACHE = "batman-guide-cache-2026-03-05.07-legacy-era-buttons-compat";
+const CACHE = "batman-guide-cache-2026-03-05.06-header-compat-fix";
 const APP_SHELL = [
   "./",
   "./index.html",
