@@ -875,7 +875,8 @@
     const advanced = $("advancedControls");
     const toggle = $("btnToggleAdvanced");
     const headerToggle = $("btnHeaderToggle");
-    if (!header || !advanced || !toggle || !headerToggle) return;
+    const revealHeader = $("btnRevealHeader");
+    if (!header || !advanced || !toggle || !headerToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
 
     const syncToggleLabel = () => {
@@ -890,6 +891,11 @@
       headerToggle.textContent = open ? "Hide filters" : "Filters";
     };
 
+    const syncRevealButton = () => {
+      const shouldShow = header.classList.contains("header-hidden");
+      revealHeader.classList.toggle("hidden", !shouldShow);
+    };
+
     toggle.addEventListener("click", () => {
       advanced.classList.toggle("hidden");
       syncToggleLabel();
@@ -902,6 +908,13 @@
       syncHeaderToggle();
     });
 
+    revealHeader.addEventListener("click", () => {
+      header.classList.remove("header-hidden");
+      header.classList.add("header-expanded");
+      syncHeaderToggle();
+      syncRevealButton();
+    });
+
     const updateCompactMode = () => {
       const y = window.scrollY;
       const delta = y - lastScrollY;
@@ -909,7 +922,8 @@
       const scrollingDown = delta > 4;
       const scrollingUp = delta < -4;
 
-      if (scrollingUp) header.classList.remove("header-hidden");
+      const nearTop = y < 72;
+      if (scrollingUp && nearTop) header.classList.remove("header-hidden");
       if (shouldCompact && scrollingDown && y > 120) {
         header.classList.remove("header-expanded");
       }
@@ -929,6 +943,7 @@
       }
       syncToggleLabel();
       syncHeaderToggle();
+      syncRevealButton();
     };
 
     let raf = 0;

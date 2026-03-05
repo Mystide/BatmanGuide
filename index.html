@@ -122,23 +122,43 @@
       background: linear-gradient(180deg, rgba(15, 23, 42, .88), rgba(10, 17, 34, .88));
       transition: border-color .16s ease, transform .16s ease, background .2s ease;
     }
-    .item-grid { display:grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: start; }
-    .item-head { display:flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-    .item-title-row { display:flex; gap:8px; align-items:flex-start; flex: 1; min-width: 0; }
-    .item-title-row input[type="checkbox"] { margin-top: 2px; }
-    .item-link { flex-shrink: 0; white-space: nowrap; }
-    .cover { width: 60px; height: 84px; border-radius: 8px; border:1px solid rgba(255,255,255,.2); display:grid; place-items:center; text-align:center; font-size:10px; font-weight:800; letter-spacing:.45px; color:#fff; text-transform:uppercase; box-shadow: 0 8px 16px rgba(0,0,0,.35); }
-    .cover img { width:100%; height:100%; object-fit:cover; border-radius:8px; display:block; }
+    .item-grid { display:grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; }
+    .item-head { display:flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .item-title-row { display:flex; gap:10px; align-items:center; flex: 1; min-width: 0; }
+    .item-title-row input[type="checkbox"] { margin: 0; width: 18px; height: 18px; accent-color: #60a5fa; }
+    .item-link {
+      flex-shrink: 0;
+      white-space: nowrap;
+      margin-left: auto;
+      font-size: 13px;
+      font-weight: 600;
+      color: #dbeafe;
+      text-decoration: none;
+      border: 1px solid rgba(147, 197, 253, .38);
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: rgba(30, 64, 175, .16);
+      transition: border-color .16s ease, background .16s ease, color .16s ease;
+    }
+    .item-link:hover,
+    .item-link:focus-visible {
+      color: #eff6ff;
+      border-color: rgba(191, 219, 254, .7);
+      background: rgba(37, 99, 235, .26);
+      text-decoration: none;
+    }
+    .cover { width: 64px; height: 92px; border-radius: 10px; border:1px solid rgba(255,255,255,.2); display:grid; place-items:center; text-align:center; font-size:10px; font-weight:800; letter-spacing:.45px; color:#fff; text-transform:uppercase; box-shadow: 0 8px 16px rgba(0,0,0,.35); }
+    .cover img { width:100%; height:100%; object-fit:cover; border-radius:10px; display:block; }
     .cover small { display:block; font-size:9px; opacity:.85; }
     .cover.fallback-logo { position: relative; background: radial-gradient(circle at 30% 20%, rgba(250,204,21,.16), rgba(15,23,42,.95)); }
     .cover.fallback-logo img { object-fit: contain; padding: 6px; opacity: .95; }
     .cover-fallback-label { position: absolute; left: 4px; right: 4px; bottom: 4px; border-radius: 999px; font-size: 9px; text-align:center; color: #f8fafc; background: rgba(2,6,23,.7); border: 1px solid rgba(148,163,184,.35); padding: 1px 4px; text-transform: uppercase; letter-spacing: .35px; }
     .item:hover { border-color: #6f86b1; transform: translateY(-1px); background: rgba(19, 31, 57, .86); }
     .item.done { opacity: .72; border-style: dashed; }
-    .title { font-weight: 700; line-height: 1.25; }
+    .title { font-weight: 700; line-height: 1.25; font-size: 18px; }
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 12px; color: #fde68a; border: 1px solid #725f0a; border-radius: 999px; padding: 1px 8px; }
-    .progress-fields { margin-top: 8px; display:grid; grid-template-columns: minmax(150px, 210px) minmax(220px, 1fr); gap: 8px; }
+    .progress-fields { margin-top: 10px; display:grid; grid-template-columns: minmax(180px, 240px) minmax(240px, 1fr); gap: 8px; }
     .stack { display: grid; gap: 8px; }
     .kbd {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -177,6 +197,13 @@
     .filters .btn { width: 100%; }
     .status-strip { border:1px solid rgba(71,85,105,.35); border-radius: 12px; padding: 8px; background: rgba(15,23,42,.45); }
     .controls-hint { margin-top: 2px; }
+    .header-reveal {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 60;
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
@@ -187,7 +214,7 @@
       .top-actions .btn { flex: 1 1 110px; }
       .row.space { align-items: flex-start; }
       .item-grid { grid-template-columns: 1fr; }
-      .cover { width: 100%; height: 54px; border-radius: 10px; }
+      .cover { width: 100%; height: 60px; border-radius: 10px; }
       .item-head { flex-direction: column; align-items: stretch; gap: 6px; }
       .item-link { align-self: flex-start; }
       .progress-fields { grid-template-columns: 1fr; }
@@ -262,6 +289,8 @@
       </div>
     </div>
   </header>
+
+  <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
 
   <main class="container">
     <div id="errorBox" class="error hidden"></div>
