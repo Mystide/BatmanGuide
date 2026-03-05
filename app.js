@@ -499,6 +499,7 @@
 
     const byEra = groupedByEra(filtered);
     const openMap = loadOpenState();
+    const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
     for (const [era, items] of byEra.entries()) {
@@ -528,7 +529,8 @@
         const st = ensureItemState(entry);
 
         const item = document.createElement("div");
-        item.className = `item${st.done ? " done" : ""}`;
+        const isContinueTarget = continueId && entry.id === continueId;
+        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}`;
         item.dataset.id = entry.id;
 
         const cover = document.createElement("div");
@@ -554,6 +556,7 @@
         tags.innerHTML = `
           <span class="tag">${entry.type}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           <span class="muted">${entry.id}</span>
         `;
 
@@ -882,7 +885,8 @@
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
       toggle.setAttribute("aria-expanded", String(open));
-      toggle.textContent = open ? "Less" : "More";
+      toggle.textContent = open ? "Hide advanced" : "Advanced filters";
+      toggle.setAttribute("aria-label", open ? "Hide advanced controls" : "Show advanced controls");
     };
 
     const syncHeaderToggle = () => {
@@ -894,6 +898,13 @@
     const syncRevealButton = () => {
       const shouldShow = header.classList.contains("header-hidden");
       revealHeader.classList.toggle("hidden", !shouldShow);
+    };
+
+    const releaseHeaderFocus = () => {
+      const active = document.activeElement;
+      if (!active || active === document.body) return;
+      if (!header.contains(active)) return;
+      if (typeof active.blur === "function") active.blur();
     };
 
     toggle.addEventListener("click", () => {
@@ -928,6 +939,7 @@
         header.classList.remove("header-expanded");
       }
       if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+        releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
       if (!shouldCompact || y < 48) {
@@ -961,6 +973,15 @@
     updateCompactMode();
   }
 
+  function syncQuickFilterChips() {
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) chipOpen.classList.toggle("active", $("onlyRemaining").checked);
+    if (chipRequired) chipRequired.classList.toggle("active", $("hideOptional").checked);
+    if (chipBook) chipBook.classList.toggle("active", $("typeFilter").value === "book");
+  }
+
   function bindUI() {
     const savedFilters = readFilters();
 
@@ -973,13 +994,50 @@
     for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
       $(id).addEventListener("input", () => {
         writeFilters();
+        syncQuickFilterChips();
         render();
+        syncEraToggleButton();
       });
       $(id).addEventListener("change", () => {
         writeFilters();
+        syncQuickFilterChips();
         render();
+        syncEraToggleButton();
       });
     }
+
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) {
+      chipOpen.addEventListener("click", () => {
+        $("onlyRemaining").checked = !$("onlyRemaining").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+
+    syncQuickFilterChips();
 
     const eraJump = $("eraJump");
     if (eraJump) {
@@ -990,6 +1048,7 @@
         if (section) {
           section.open = true;
           section.scrollIntoView({ behavior: "smooth", block: "start" });
+          syncEraToggleButton();
         }
       });
     }
@@ -1001,22 +1060,58 @@
       $("hideOptional").checked = false;
       $("sortBy").value = "order";
       writeFilters();
+      syncQuickFilterChips();
       render();
+      syncEraToggleButton();
     });
 
-    $("btnExpandAll").addEventListener("click", () => {
+    const syncEraToggleButton = () => {
+      const btn = $("btnToggleAllEras");
+      if (!btn) return;
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      if (!eras.length) {
+        btn.disabled = true;
+        btn.textContent = "No eras in view";
+        return;
+      }
+      btn.disabled = false;
       const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = true;
-      saveOpenState(updated);
-      render();
-    });
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+      btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+    };
 
-    $("btnCollapseAll").addEventListener("click", () => {
+    const toggleAllEras = (forceOpen = null) => {
+      const eras = [...groupedByEra(getFiltered()).keys()];
       const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = false;
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      const nextOpen = forceOpen == null ? !allOpen : !!forceOpen;
+      for (const era of eras) updated[eraKey(era)] = nextOpen;
       saveOpenState(updated);
       render();
-    });
+      syncEraToggleButton();
+    };
+
+    const toggleAllBtn = $("btnToggleAllEras");
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener("click", () => toggleAllEras(null));
+    }
+
+    const expandAllBtn = $("btnExpandAll");
+    if (expandAllBtn) {
+      expandAllBtn.addEventListener("click", () => toggleAllEras(true));
+    }
+
+    const collapseAllBtn = $("btnCollapseAll");
+    if (collapseAllBtn) {
+      collapseAllBtn.addEventListener("click", () => toggleAllEras(false));
+    }
+
+    $("main").addEventListener("toggle", (e) => {
+      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+    }, true);
+
+    syncEraToggleButton();
 
     $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 

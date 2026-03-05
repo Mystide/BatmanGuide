@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-04.05-logo-and-shell-fix";
+const CACHE = "batman-guide-cache-2026-03-05.07-legacy-era-buttons-compat";
 const APP_SHELL = [
   "./",
   "./index.html",
