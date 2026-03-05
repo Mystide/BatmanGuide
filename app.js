@@ -606,6 +606,7 @@
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
+    updateDebugHealth();
   }
 
   function escapeHtml(v) {
@@ -974,6 +975,30 @@
     updateCompactMode();
   }
 
+
+  function isDebugMode() {
+    try {
+      const q = new URLSearchParams(window.location.search || "");
+      return q.get("debug") === "1" || localStorage.getItem("batman-guide:debug") === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function updateDebugHealth() {
+    const box = $("debugHealth");
+    if (!box) return;
+    const enabled = isDebugMode();
+    box.classList.toggle("hidden", !enabled);
+    if (!enabled) return;
+
+    const ready = window.__BATMAN_APP_READY === true ? "yes" : "no";
+    const lastStep = window.__BATMAN_LAST_STARTUP_STEP || "-";
+    const lastUiStep = window.__BATMAN_LAST_UI_STEP || "-";
+    const err = window.__BATMAN_APP_ERROR || "-";
+    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)}`;
+  }
+
   function syncQuickFilterChips() {
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
@@ -985,10 +1010,14 @@
 
   function bindUI() {
     const runUIStep = (step, fn) => {
+      window.__BATMAN_LAST_UI_STEP = step;
+      updateDebugHealth();
       try {
         fn();
       } catch (error) {
         reportStartupIssue(`bindUI:${step}`, error, false);
+      } finally {
+        updateDebugHealth();
       }
     };
 
@@ -1125,6 +1154,8 @@
         syncEraToggleButton();
       });
     });
+  }
+
 
     runUIStep("quickNav", () => {
       $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -1270,75 +1301,6 @@
     quickFilterRows.forEach((row, idx) => {
       if (idx > 0) row.remove();
     });
-    } catch (e) {
-      console.error("UI binding failed:", e);
-    }
-  }
-
-
-  function normalizeDomConflicts() {
-    const uniqueIds = [
-      "chipOpen", "chipRequired", "chipBook",
-      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
-      "btnToggleAdvanced", "advancedControls", "eraJump"
-    ];
-
-    for (const id of uniqueIds) {
-      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
-      if (nodes.length < 2) continue;
-      nodes.forEach((node, idx) => {
-        if (idx > 0) node.remove();
-      });
-    }
-
-    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
-    quickFilterRows.forEach((row, idx) => {
-      if (idx > 0) row.remove();
-    });
-  }
-
-
-  function normalizeDomConflicts() {
-    const uniqueIds = [
-      "chipOpen", "chipRequired", "chipBook",
-      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
-      "btnToggleAdvanced", "advancedControls", "eraJump"
-    ];
-
-    for (const id of uniqueIds) {
-      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
-      if (nodes.length < 2) continue;
-      nodes.forEach((node, idx) => {
-        if (idx > 0) node.remove();
-      });
-    }
-
-    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
-    quickFilterRows.forEach((row, idx) => {
-      if (idx > 0) row.remove();
-    });
-  }
-
-
-  function normalizeDomConflicts() {
-    const uniqueIds = [
-      "chipOpen", "chipRequired", "chipBook",
-      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
-      "btnToggleAdvanced", "advancedControls", "eraJump"
-    ];
-
-    for (const id of uniqueIds) {
-      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
-      if (nodes.length < 2) continue;
-      nodes.forEach((node, idx) => {
-        if (idx > 0) node.remove();
-      });
-    }
-
-    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
-    quickFilterRows.forEach((row, idx) => {
-      if (idx > 0) row.remove();
-    });
   }
 
   function initPWA() {
@@ -1374,6 +1336,7 @@
   }
 
   function reportStartupIssue(step, error, critical = false) {
+    window.__BATMAN_LAST_STARTUP_STEP = step;
     const message = `${step}: ${String(error?.message || error)}`;
     window.__BATMAN_APP_READY = false;
     window.__BATMAN_APP_ERROR = message;
@@ -1382,11 +1345,15 @@
       setError(`App failed to start: ${message}`);
       void attemptStartupRecovery();
     }
+    updateDebugHealth();
   }
 
   function runStartupStep(step, fn, critical = false) {
+    window.__BATMAN_LAST_STARTUP_STEP = step;
+    updateDebugHealth();
     try {
       fn();
+      updateDebugHealth();
       return true;
     } catch (error) {
       reportStartupIssue(step, error, critical);
@@ -1395,6 +1362,7 @@
   }
 
   function bootstrap() {
+    updateDebugHealth();
     runStartupStep("normalizeDomConflicts", normalizeDomConflicts, false);
     runStartupStep("applyBrand", applyBrand, false);
 
