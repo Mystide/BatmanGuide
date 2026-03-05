@@ -1349,12 +1349,35 @@
     }
   }
 
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
   function initPWA() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 
   try {
+    normalizeDomConflicts();
     applyBrand();
     render();
     bindUI();
