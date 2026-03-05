@@ -280,7 +280,12 @@
             <option value="title">Title A → Z</option>
             <option value="progress">Least progress first</option>
           </select>
-          <button class="btn" id="btnToggleAdvanced" aria-expanded="false">More</button>
+          <button class="btn" id="btnToggleAdvanced" aria-expanded="false" aria-label="Show advanced controls">Advanced filters</button>
+        </div>
+        <div class="quick-filters" aria-label="Quick filters">
+          <button class="chip" type="button" id="chipOpen">Open only</button>
+          <button class="chip" type="button" id="chipRequired">Required only</button>
+          <button class="chip" type="button" id="chipBook">Books</button>
         </div>
         <div class="quick-filters" aria-label="Quick filters">
           <button class="chip" type="button" id="chipOpen">Open only</button>
@@ -291,8 +296,7 @@
           <select id="eraJump" class="select">
             <option value="">Jump to era…</option>
           </select>
-          <button class="btn" id="btnExpandAll">Expand all</button>
-          <button class="btn" id="btnCollapseAll">Collapse all</button>
+          <button class="btn" id="btnToggleAllEras" aria-label="Toggle all era sections">Collapse all eras</button>
           <button class="btn" id="btnClearFilters">Clear filters</button>
         </div>
       </div>

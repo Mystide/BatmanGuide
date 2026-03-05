@@ -885,7 +885,8 @@
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
       toggle.setAttribute("aria-expanded", String(open));
-      toggle.textContent = open ? "Less" : "More";
+      toggle.textContent = open ? "Hide advanced" : "Advanced filters";
+      toggle.setAttribute("aria-label", open ? "Hide advanced controls" : "Show advanced controls");
     };
 
     const syncHeaderToggle = () => {
@@ -995,6 +996,7 @@
         writeFilters();
         syncQuickFilterChips();
         render();
+        syncEraToggleButton();
       });
       $(id).addEventListener("change", () => {
         writeFilters();
@@ -1012,6 +1014,7 @@
         writeFilters();
         syncQuickFilterChips();
         render();
+        syncEraToggleButton();
       });
     }
     if (chipRequired) {
@@ -1033,6 +1036,39 @@
 
     syncQuickFilterChips();
 
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) {
+      chipOpen.addEventListener("click", () => {
+        $("onlyRemaining").checked = !$("onlyRemaining").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+
+    syncQuickFilterChips();
+
     const eraJump = $("eraJump");
     if (eraJump) {
       eraJump.addEventListener("change", () => {
@@ -1042,6 +1078,7 @@
         if (section) {
           section.open = true;
           section.scrollIntoView({ behavior: "smooth", block: "start" });
+          syncEraToggleButton();
         }
       });
     }
@@ -1055,21 +1092,40 @@
       writeFilters();
       syncQuickFilterChips();
       render();
+      syncEraToggleButton();
     });
 
-    $("btnExpandAll").addEventListener("click", () => {
+    const syncEraToggleButton = () => {
+      const btn = $("btnToggleAllEras");
+      if (!btn) return;
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      if (!eras.length) {
+        btn.disabled = true;
+        btn.textContent = "No eras in view";
+        return;
+      }
+      btn.disabled = false;
       const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = true;
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+      btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+    };
+
+    $("btnToggleAllEras").addEventListener("click", () => {
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      for (const era of eras) updated[eraKey(era)] = !allOpen;
       saveOpenState(updated);
       render();
+      syncEraToggleButton();
     });
 
-    $("btnCollapseAll").addEventListener("click", () => {
-      const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = false;
-      saveOpenState(updated);
-      render();
-    });
+    $("main").addEventListener("toggle", (e) => {
+      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+    }, true);
+
+    syncEraToggleButton();
 
     $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
