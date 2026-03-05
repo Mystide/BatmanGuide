@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-04.05-logo-and-shell-fix";
+const CACHE = "batman-guide-cache-2026-03-05.08-startup-resilience";
 const APP_SHELL = [
   "./",
   "./index.html",
