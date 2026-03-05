@@ -1,4 +1,5 @@
-# Prefer current branch version for these frequently-edited UI files
+# Prefer current branch version for these frequently-edited app-shell files
 # when the custom "ours" merge driver is configured locally.
 index.html merge=ours
 app.js merge=ours
+sw.js merge=ours
