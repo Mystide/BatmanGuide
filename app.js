@@ -1114,6 +1114,12 @@
 
     syncEraToggleButton();
 
+    $("main").addEventListener("toggle", (e) => {
+      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+    }, true);
+
+    syncEraToggleButton();
+
     $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
     $("btnNext").addEventListener("click", () => {
