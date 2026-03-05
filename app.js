@@ -1279,9 +1279,58 @@
     });
   }
 
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
   function initPWA() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+
+
+  async function attemptStartupRecovery() {
+    const key = "batman-guide:startup-recovery-attempted";
+    if (sessionStorage.getItem(key) === "1") return;
+
+    const hasList = Array.isArray(window.BATMAN_GUIDE_LIST) && window.BATMAN_GUIDE_LIST.length > 0;
+    if (!hasList) return;
+
+    sessionStorage.setItem(key, "1");
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch {
+      // best effort
+    }
+
+    const u = new URL(window.location.href);
+    u.searchParams.set("cache_bust", String(Date.now()));
+    window.location.replace(u.toString());
   }
 
   function reportStartupIssue(step, error, critical = false) {
@@ -1289,7 +1338,10 @@
     window.__BATMAN_APP_READY = false;
     window.__BATMAN_APP_ERROR = message;
     console.error(`Startup step failed (${step})`, error);
-    if (critical) setError(`App failed to start: ${message}`);
+    if (critical) {
+      setError(`App failed to start: ${message}`);
+      void attemptStartupRecovery();
+    }
   }
 
   function runStartupStep(step, fn, critical = false) {
