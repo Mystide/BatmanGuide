@@ -896,6 +896,13 @@
       revealHeader.classList.toggle("hidden", !shouldShow);
     };
 
+    const releaseHeaderFocus = () => {
+      const active = document.activeElement;
+      if (!active || active === document.body) return;
+      if (!header.contains(active)) return;
+      if (typeof active.blur === "function") active.blur();
+    };
+
     toggle.addEventListener("click", () => {
       advanced.classList.toggle("hidden");
       syncToggleLabel();
@@ -928,6 +935,7 @@
         header.classList.remove("header-expanded");
       }
       if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+        releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
       if (!shouldCompact || y < 48) {
