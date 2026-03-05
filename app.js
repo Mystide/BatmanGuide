@@ -499,6 +499,7 @@
 
     const byEra = groupedByEra(filtered);
     const openMap = loadOpenState();
+    const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
     for (const [era, items] of byEra.entries()) {
@@ -528,7 +529,8 @@
         const st = ensureItemState(entry);
 
         const item = document.createElement("div");
-        item.className = `item${st.done ? " done" : ""}`;
+        const isContinueTarget = continueId && entry.id === continueId;
+        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}`;
         item.dataset.id = entry.id;
 
         const cover = document.createElement("div");
@@ -554,6 +556,7 @@
         tags.innerHTML = `
           <span class="tag">${entry.type}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           <span class="muted">${entry.id}</span>
         `;
 
@@ -969,6 +972,15 @@
     updateCompactMode();
   }
 
+  function syncQuickFilterChips() {
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) chipOpen.classList.toggle("active", $("onlyRemaining").checked);
+    if (chipRequired) chipRequired.classList.toggle("active", $("hideOptional").checked);
+    if (chipBook) chipBook.classList.toggle("active", $("typeFilter").value === "book");
+  }
+
   function bindUI() {
     const savedFilters = readFilters();
 
@@ -981,13 +993,45 @@
     for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
       $(id).addEventListener("input", () => {
         writeFilters();
+        syncQuickFilterChips();
         render();
       });
       $(id).addEventListener("change", () => {
         writeFilters();
+        syncQuickFilterChips();
         render();
       });
     }
+
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) {
+      chipOpen.addEventListener("click", () => {
+        $("onlyRemaining").checked = !$("onlyRemaining").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+      });
+    }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+      });
+    }
+
+    syncQuickFilterChips();
 
     const eraJump = $("eraJump");
     if (eraJump) {
@@ -1009,6 +1053,7 @@
       $("hideOptional").checked = false;
       $("sortBy").value = "order";
       writeFilters();
+      syncQuickFilterChips();
       render();
     });
 
