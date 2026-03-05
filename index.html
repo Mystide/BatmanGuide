@@ -177,6 +177,13 @@
     .filters .btn { width: 100%; }
     .status-strip { border:1px solid rgba(71,85,105,.35); border-radius: 12px; padding: 8px; background: rgba(15,23,42,.45); }
     .controls-hint { margin-top: 2px; }
+    .header-reveal {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 60;
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
@@ -262,6 +269,8 @@
       </div>
     </div>
   </header>
+
+  <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
 
   <main class="container">
     <div id="errorBox" class="error hidden"></div>
