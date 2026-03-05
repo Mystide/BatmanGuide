@@ -379,9 +379,11 @@
     return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
   }
 
-  async function resolveOpenLibraryCover(entry) {
+  async function resolveOpenLibraryCover(entry, opts = {}) {
     const id = entry.id;
-    if (!id || coverCache[id] || coverFetchInFlight.has(id)) return coverCache[id] || "";
+    const force = !!opts.force;
+    if (!id || coverFetchInFlight.has(id)) return coverCache[id] || "";
+    if (!force && coverCache[id]) return coverCache[id] || "";
     coverFetchInFlight.add(id);
     try {
       const query = titleToCoverQuery(entry.title);
@@ -404,9 +406,11 @@
   }
 
 
-  async function resolveGoogleBooksCover(entry) {
+  async function resolveGoogleBooksCover(entry, opts = {}) {
     const id = entry.id;
+    const force = !!opts.force;
     if (!id) return "";
+    if (!force && coverCache[id]) return coverCache[id] || "";
     try {
       const query = titleToCoverQuery(entry.title);
       if (!query) return "";
@@ -455,6 +459,8 @@
       if (await loadCoverImage(coverEl, entry, url)) return;
     }
 
+    const discovered = await resolveOpenLibraryCover(entry, { force: true });
+    if (discovered && discovered !== cached && await loadCoverImage(coverEl, entry, discovered)) return;
     if (cached) {
       delete coverCache[entry.id];
       saveJSON(KEYS.coverCache, coverCache);
@@ -463,8 +469,8 @@
     const discovered = await resolveOpenLibraryCover(entry);
     if (discovered && await loadCoverImage(coverEl, entry, discovered)) return;
 
-    const googleDiscovered = await resolveGoogleBooksCover(entry);
-    if (googleDiscovered && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
+    const googleDiscovered = await resolveGoogleBooksCover(entry, { force: true });
+    if (googleDiscovered && googleDiscovered !== cached && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
 
     coverEl.classList.add("fallback-logo");
     coverEl.innerHTML = entryLogoFallback(entry);
@@ -904,6 +910,9 @@
       const scrollingUp = delta < -4;
 
       if (scrollingUp) header.classList.remove("header-hidden");
+      if (shouldCompact && scrollingDown && y > 120) {
+        header.classList.remove("header-expanded");
+      }
       if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
         header.classList.add("header-hidden");
       }
