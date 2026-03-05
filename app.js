@@ -459,15 +459,15 @@
       if (await loadCoverImage(coverEl, entry, url)) return;
     }
 
-    const discovered = await resolveOpenLibraryCover(entry, { force: true });
-    if (discovered && discovered !== cached && await loadCoverImage(coverEl, entry, discovered)) return;
+    const forcedOpenLibrary = await resolveOpenLibraryCover(entry, { force: true });
+    if (forcedOpenLibrary && forcedOpenLibrary !== cached && await loadCoverImage(coverEl, entry, forcedOpenLibrary)) return;
     if (cached) {
       delete coverCache[entry.id];
       saveJSON(KEYS.coverCache, coverCache);
     }
 
-    const discovered = await resolveOpenLibraryCover(entry);
-    if (discovered && await loadCoverImage(coverEl, entry, discovered)) return;
+    const discoveredOpenLibrary = await resolveOpenLibraryCover(entry);
+    if (discoveredOpenLibrary && await loadCoverImage(coverEl, entry, discoveredOpenLibrary)) return;
 
     const googleDiscovered = await resolveGoogleBooksCover(entry, { force: true });
     if (googleDiscovered && googleDiscovered !== cached && await loadCoverImage(coverEl, entry, googleDiscovered)) return;

@@ -209,6 +209,7 @@
         <div>
           <p class="header-panel-label">Quick actions</p>
           <div class="top-actions">
+          <button class="btn" id="btnHeaderToggle" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnContinue">Continue</button>
           <button class="btn" id="btnTop">Top</button>
@@ -228,15 +229,11 @@
           <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
           <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
           <select id="sortBy" class="select">
-          <label class="row muted compact-hide"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
-          <label class="row muted compact-hide"><input type="checkbox" id="hideOptional" /> hide optional</label>
-          <select id="sortBy" class="select compact-hide">
             <option value="order">Default order</option>
             <option value="title">Title A → Z</option>
             <option value="progress">Least progress first</option>
           </select>
           <button class="btn" id="btnToggleAdvanced" aria-expanded="false">More</button>
-          <button class="btn compact-toggle" id="btnToggleAdvanced" aria-expanded="false">More</button>
         </div>
         <div class="row advanced-controls hidden" id="advancedControls">
           <select id="eraJump" class="select">
