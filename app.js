@@ -605,6 +605,7 @@
     }
 
     refreshHeader(filtered);
+    window.__BATMAN_APP_READY = true;
   }
 
   function escapeHtml(v) {
@@ -1114,12 +1115,6 @@
 
     syncEraToggleButton();
 
-    $("main").addEventListener("toggle", (e) => {
-      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
-    }, true);
-
-    syncEraToggleButton();
-
     $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
     $("btnNext").addEventListener("click", () => {
@@ -1277,6 +1272,8 @@
     initPWA();
     setTimeout(() => void upgradeCoversFromDcui(), 600);
   } catch (e) {
+    window.__BATMAN_APP_READY = false;
+    window.__BATMAN_APP_ERROR = String(e.message || e);
     setError(`App failed to start: ${String(e.message || e)}`);
     console.error(e);
   }

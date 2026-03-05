@@ -347,5 +347,44 @@
 
   <script src="list.js"></script>
   <script src="app.js"></script>
+  <script>
+    (function () {
+      const RECOVERY_KEY = "batman-guide:recovery-attempted";
+
+      async function tryRecovery() {
+        if (window.__BATMAN_APP_READY) return;
+        const hasList = Array.isArray(window.BATMAN_GUIDE_LIST) && window.BATMAN_GUIDE_LIST.length > 0;
+        if (!hasList) return;
+
+        const attempted = sessionStorage.getItem(RECOVERY_KEY) === "1";
+        if (attempted) return;
+        sessionStorage.setItem(RECOVERY_KEY, "1");
+
+        try {
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+          }
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+        } catch {
+          // best effort recovery
+        }
+
+        const u = new URL(window.location.href);
+        u.searchParams.set("cache_bust", String(Date.now()));
+        window.location.replace(u.toString());
+      }
+
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          void tryRecovery();
+        }, 1400);
+      });
+    })();
+  </script>
+
 </body>
 </html>
