@@ -1145,6 +1145,43 @@
     }, true);
 
     syncEraToggleButton();
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+      btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+    };
+
+    const toggleAllEras = (forceOpen = null) => {
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      const nextOpen = forceOpen == null ? !allOpen : !!forceOpen;
+      for (const era of eras) updated[eraKey(era)] = nextOpen;
+      saveOpenState(updated);
+      render();
+      syncEraToggleButton();
+    };
+
+    const toggleAllBtn = $("btnToggleAllEras");
+    if (toggleAllBtn) {
+      toggleAllBtn.addEventListener("click", () => toggleAllEras(null));
+    }
+
+    const expandAllBtn = $("btnExpandAll");
+    if (expandAllBtn) {
+      expandAllBtn.addEventListener("click", () => toggleAllEras(true));
+    }
+
+    const collapseAllBtn = $("btnCollapseAll");
+    if (collapseAllBtn) {
+      collapseAllBtn.addEventListener("click", () => toggleAllEras(false));
+    }
+
+    $("main").addEventListener("toggle", (e) => {
+      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+    }, true);
+
+    syncEraToggleButton();
     $("btnToggleAllEras").addEventListener("click", () => {
       const eras = [...groupedByEra(getFiltered()).keys()];
       const updated = loadOpenState();
