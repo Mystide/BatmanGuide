@@ -499,6 +499,7 @@
 
     const byEra = groupedByEra(filtered);
     const openMap = loadOpenState();
+    const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
     for (const [era, items] of byEra.entries()) {
@@ -528,7 +529,8 @@
         const st = ensureItemState(entry);
 
         const item = document.createElement("div");
-        item.className = `item${st.done ? " done" : ""}`;
+        const isContinueTarget = continueId && entry.id === continueId;
+        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}`;
         item.dataset.id = entry.id;
 
         const cover = document.createElement("div");
@@ -554,6 +556,7 @@
         tags.innerHTML = `
           <span class="tag">${entry.type}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           <span class="muted">${entry.id}</span>
         `;
 
@@ -602,6 +605,7 @@
     }
 
     refreshHeader(filtered);
+    window.__BATMAN_APP_READY = true;
   }
 
   function escapeHtml(v) {
@@ -882,7 +886,8 @@
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
       toggle.setAttribute("aria-expanded", String(open));
-      toggle.textContent = open ? "Less" : "More";
+      toggle.textContent = open ? "Hide advanced" : "Advanced filters";
+      toggle.setAttribute("aria-label", open ? "Hide advanced controls" : "Show advanced controls");
     };
 
     const syncHeaderToggle = () => {
@@ -894,6 +899,13 @@
     const syncRevealButton = () => {
       const shouldShow = header.classList.contains("header-hidden");
       revealHeader.classList.toggle("hidden", !shouldShow);
+    };
+
+    const releaseHeaderFocus = () => {
+      const active = document.activeElement;
+      if (!active || active === document.body) return;
+      if (!header.contains(active)) return;
+      if (typeof active.blur === "function") active.blur();
     };
 
     toggle.addEventListener("click", () => {
@@ -928,6 +940,7 @@
         header.classList.remove("header-expanded");
       }
       if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+        releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
       if (!shouldCompact || y < 48) {
@@ -961,177 +974,301 @@
     updateCompactMode();
   }
 
+  function syncQuickFilterChips() {
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) chipOpen.classList.toggle("active", $("onlyRemaining").checked);
+    if (chipRequired) chipRequired.classList.toggle("active", $("hideOptional").checked);
+    if (chipBook) chipBook.classList.toggle("active", $("typeFilter").value === "book");
+  }
+
   function bindUI() {
-    const savedFilters = readFilters();
-
-    $("search").value = savedFilters.search || "";
-    $("typeFilter").value = savedFilters.type || "";
-    $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
-    $("hideOptional").checked = !!savedFilters.hideOptional;
-    $("sortBy").value = savedFilters.sortBy || "order";
-
-    for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
-      $(id).addEventListener("input", () => {
-        writeFilters();
-        render();
-      });
-      $(id).addEventListener("change", () => {
-        writeFilters();
-        render();
-      });
-    }
-
-    const eraJump = $("eraJump");
-    if (eraJump) {
-      eraJump.addEventListener("change", () => {
-        const key = eraJump.value;
-        if (!key) return;
-        const section = document.querySelector(`details[data-era-key="${CSS.escape(key)}"]`);
-        if (section) {
-          section.open = true;
-          section.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
-    }
-
-    $("btnClearFilters").addEventListener("click", () => {
-      $("search").value = "";
-      $("typeFilter").value = "";
-      $("onlyRemaining").checked = false;
-      $("hideOptional").checked = false;
-      $("sortBy").value = "order";
-      writeFilters();
-      render();
-    });
-
-    $("btnExpandAll").addEventListener("click", () => {
-      const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = true;
-      saveOpenState(updated);
-      render();
-    });
-
-    $("btnCollapseAll").addEventListener("click", () => {
-      const updated = loadOpenState();
-      for (const era of groupedByEra(getFiltered()).keys()) updated[eraKey(era)] = false;
-      saveOpenState(updated);
-      render();
-    });
-
-    $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-
-    $("btnNext").addEventListener("click", () => {
-      const next = nextUnread(getFiltered());
-      if (next) scrollToEntry(next.id);
-    });
-
-    $("btnContinue").addEventListener("click", () => {
-      const c = continueEntry(getFiltered());
-      if (c) scrollToEntry(c.id);
-    });
-
-    const cfg = getCfg();
-    $("gistId").value = cfg.gistId;
-    $("gistToken").value = cfg.gistToken;
-    $("autoSync").checked = cfg.auto !== false;
-
-    const saveCfgFromUI = () => {
-      const nextCfg = {
-        gistId: $("gistId").value.trim(),
-        gistToken: $("gistToken").value.trim(),
-        auto: $("autoSync").checked,
-        pullMs: clampPullInterval(getCfg().pullMs)
-      };
-      setCfg(nextCfg);
-      startAutoSync();
-      if (!syncReady(nextCfg)) {
-        setSyncStatus("Auto-sync is off until Gist ID and token are filled.");
-      } else if (!nextCfg.auto) {
-        setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
-      } else {
-        setSyncStatus("Auto-sync active (adaptive polling).");
-        void runAutoSync("settings");
+    const runUIStep = (step, fn) => {
+      try {
+        fn();
+      } catch (error) {
+        reportStartupIssue(`bindUI:${step}`, error, false);
       }
-      return nextCfg;
     };
 
-    for (const id of ["gistId", "gistToken", "autoSync"]) {
-      $(id).addEventListener("change", saveCfgFromUI);
-    }
+    let syncEraToggleButton = () => {};
 
-    $("gistPull").addEventListener("click", () => {
-      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
-      void gistPull(getCfg(), true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
+    runUIStep("restoreFilters", () => {
+      const savedFilters = readFilters();
+      $("search").value = savedFilters.search || "";
+      $("typeFilter").value = savedFilters.type || "";
+      $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
+      $("hideOptional").checked = !!savedFilters.hideOptional;
+      $("sortBy").value = savedFilters.sortBy || "order";
+      syncQuickFilterChips();
     });
 
-    $("gistPush").addEventListener("click", () => {
-      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
-      void gistPush(getCfg()).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
-    });
-
-    $("gistSync").addEventListener("click", () => {
-      if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
-      void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
-    });
-
-    const importInput = $("importStateFile");
-    const exportBtn = $("exportState");
-    if (exportBtn) {
-      exportBtn.addEventListener("click", () => {
-        const blob = new Blob([exportPayload()], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `batman-guide-backup-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        setSyncStatus("Local backup exported.");
-      });
-    }
-
-    if (importInput) {
-      importInput.addEventListener("change", async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        try {
-          const text = await file.text();
-          const imported = importPayload(text);
-          if (!imported.ok) throw new Error(imported.err);
-          dirty = true;
+    runUIStep("filterInputs", () => {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
+        $(id).addEventListener("input", () => {
+          writeFilters();
+          syncQuickFilterChips();
           render();
-          scheduleAutoPush();
-          setSyncStatus("Backup imported to local state.");
-        } catch (err) {
-          setSyncStatus(`Import failed: ${String(err.message || err)}`);
-        } finally {
-          importInput.value = "";
-        }
-      });
-    }
-
-    $("resetState").addEventListener("click", () => {
-      if (!confirm("Reset local progress? This cannot be undone.")) return;
-      state = defaultState();
-      saveState();
-      render();
-      setSyncStatus("Local state reset.");
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const t = e.target;
-        if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
-        e.preventDefault();
-        $("search").focus();
+          syncEraToggleButton();
+        });
+        $(id).addEventListener("change", () => {
+          writeFilters();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
       }
     });
 
-    window.addEventListener("focus", () => void runAutoSync("focus"));
-    window.addEventListener("online", () => void runAutoSync("online"));
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") void runAutoSync("visible");
+    runUIStep("quickFilterChips", () => {
+      const chipOpen = $("chipOpen");
+      const chipRequired = $("chipRequired");
+      const chipBook = $("chipBook");
+      if (chipOpen) {
+        chipOpen.addEventListener("click", () => {
+          $("onlyRemaining").checked = !$("onlyRemaining").checked;
+          writeFilters();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      }
+      if (chipRequired) {
+        chipRequired.addEventListener("click", () => {
+          $("hideOptional").checked = !$("hideOptional").checked;
+          writeFilters();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      }
+      if (chipBook) {
+        chipBook.addEventListener("click", () => {
+          $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+          writeFilters();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      }
+    });
+
+    runUIStep("eraControls", () => {
+      syncEraToggleButton = () => {
+        const btn = $("btnToggleAllEras");
+        if (!btn) return;
+        const eras = [...groupedByEra(getFiltered()).keys()];
+        if (!eras.length) {
+          btn.disabled = true;
+          btn.textContent = "No eras in view";
+          return;
+        }
+        btn.disabled = false;
+        const updated = loadOpenState();
+        const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+        btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+        btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+      };
+
+      const eraJump = $("eraJump");
+      if (eraJump) {
+        eraJump.addEventListener("change", () => {
+          const key = eraJump.value;
+          if (!key) return;
+          const section = document.querySelector(`details[data-era-key="${CSS.escape(key)}"]`);
+          if (section) {
+            section.open = true;
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+            syncEraToggleButton();
+          }
+        });
+      }
+
+      const toggleAllEras = (forceOpen = null) => {
+        const eras = [...groupedByEra(getFiltered()).keys()];
+        const updated = loadOpenState();
+        const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+        const nextOpen = forceOpen == null ? !allOpen : !!forceOpen;
+        for (const era of eras) updated[eraKey(era)] = nextOpen;
+        saveOpenState(updated);
+        render();
+        syncEraToggleButton();
+      };
+
+      const toggleAllBtn = $("btnToggleAllEras");
+      if (toggleAllBtn) toggleAllBtn.addEventListener("click", () => toggleAllEras(null));
+
+      const expandAllBtn = $("btnExpandAll");
+      if (expandAllBtn) expandAllBtn.addEventListener("click", () => toggleAllEras(true));
+
+      const collapseAllBtn = $("btnCollapseAll");
+      if (collapseAllBtn) collapseAllBtn.addEventListener("click", () => toggleAllEras(false));
+
+      $("main").addEventListener("toggle", (e) => {
+        if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+      }, true);
+
+      syncEraToggleButton();
+    });
+
+    runUIStep("clearFilters", () => {
+      $("btnClearFilters").addEventListener("click", () => {
+        $("search").value = "";
+        $("typeFilter").value = "";
+        $("onlyRemaining").checked = false;
+        $("hideOptional").checked = false;
+        $("sortBy").value = "order";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    });
+
+    runUIStep("quickNav", () => {
+      $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+      $("btnNext").addEventListener("click", () => {
+        const next = nextUnread(getFiltered());
+        if (next) scrollToEntry(next.id);
+      });
+      $("btnContinue").addEventListener("click", () => {
+        const c = continueEntry(getFiltered());
+        if (c) scrollToEntry(c.id);
+      });
+    });
+
+    runUIStep("syncConfig", () => {
+      const cfg = getCfg();
+      $("gistId").value = cfg.gistId;
+      $("gistToken").value = cfg.gistToken;
+      $("autoSync").checked = cfg.auto !== false;
+
+      const saveCfgFromUI = () => {
+        const nextCfg = {
+          gistId: $("gistId").value.trim(),
+          gistToken: $("gistToken").value.trim(),
+          auto: $("autoSync").checked,
+          pullMs: clampPullInterval(getCfg().pullMs)
+        };
+        setCfg(nextCfg);
+        startAutoSync();
+        if (!syncReady(nextCfg)) {
+          setSyncStatus("Auto-sync is off until Gist ID and token are filled.");
+        } else if (!nextCfg.auto) {
+          setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
+        } else {
+          setSyncStatus("Auto-sync active (adaptive polling).");
+          void runAutoSync("settings");
+        }
+        return nextCfg;
+      };
+
+      for (const id of ["gistId", "gistToken", "autoSync"]) {
+        $(id).addEventListener("change", saveCfgFromUI);
+      }
+
+      $("gistPull").addEventListener("click", () => {
+        if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+        void gistPull(getCfg(), true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
+      });
+
+      $("gistPush").addEventListener("click", () => {
+        if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+        void gistPush(getCfg()).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
+      });
+
+      $("gistSync").addEventListener("click", () => {
+        if (!syncReady(getCfg())) return setSyncStatus("Set Gist ID and token first.");
+        void gistSync(getCfg()).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
+      });
+    });
+
+    runUIStep("backupTools", () => {
+      const importInput = $("importStateFile");
+      const exportBtn = $("exportState");
+      if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+          const blob = new Blob([exportPayload()], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `batman-guide-backup-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          setSyncStatus("Local backup exported.");
+        });
+      }
+
+      if (importInput) {
+        importInput.addEventListener("change", async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          try {
+            const text = await file.text();
+            const imported = importPayload(text);
+            if (!imported.ok) throw new Error(imported.err);
+            dirty = true;
+            render();
+            scheduleAutoPush();
+            setSyncStatus("Backup imported to local state.");
+          } catch (err) {
+            setSyncStatus(`Import failed: ${String(err.message || err)}`);
+          } finally {
+            importInput.value = "";
+          }
+        });
+      }
+    });
+
+    runUIStep("globalActions", () => {
+      $("resetState").addEventListener("click", () => {
+        if (!confirm("Reset local progress? This cannot be undone.")) return;
+        state = defaultState();
+        saveState();
+        render();
+        setSyncStatus("Local state reset.");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          const t = e.target;
+          if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+          e.preventDefault();
+          $("search").focus();
+        }
+      });
+
+      window.addEventListener("focus", () => void runAutoSync("focus"));
+      window.addEventListener("online", () => void runAutoSync("online"));
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") void runAutoSync("visible");
+      });
+    });
+  }
+
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
     });
   }
 
@@ -1140,16 +1277,71 @@
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 
-  try {
-    bindUI();
-    bindAdaptiveHeader();
-    applyBrand();
-    startAutoSync();
-    initPWA();
-    render();
-    setTimeout(() => void upgradeCoversFromDcui(), 600);
-  } catch (e) {
-    setError(`App failed to start: ${String(e.message || e)}`);
-    console.error(e);
+
+  async function attemptStartupRecovery() {
+    const key = "batman-guide:startup-recovery-attempted";
+    if (sessionStorage.getItem(key) === "1") return;
+
+    const hasList = Array.isArray(window.BATMAN_GUIDE_LIST) && window.BATMAN_GUIDE_LIST.length > 0;
+    if (!hasList) return;
+
+    sessionStorage.setItem(key, "1");
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch {
+      // best effort
+    }
+
+    const u = new URL(window.location.href);
+    u.searchParams.set("cache_bust", String(Date.now()));
+    window.location.replace(u.toString());
   }
+
+  function reportStartupIssue(step, error, critical = false) {
+    const message = `${step}: ${String(error?.message || error)}`;
+    window.__BATMAN_APP_READY = false;
+    window.__BATMAN_APP_ERROR = message;
+    console.error(`Startup step failed (${step})`, error);
+    if (critical) {
+      setError(`App failed to start: ${message}`);
+      void attemptStartupRecovery();
+    }
+  }
+
+  function runStartupStep(step, fn, critical = false) {
+    try {
+      fn();
+      return true;
+    } catch (error) {
+      reportStartupIssue(step, error, critical);
+      return false;
+    }
+  }
+
+  function bootstrap() {
+    runStartupStep("normalizeDomConflicts", normalizeDomConflicts, false);
+    runStartupStep("applyBrand", applyBrand, false);
+
+    if (!runStartupStep("render", render, true)) return;
+
+    runStartupStep("bindUI", bindUI, false);
+    runStartupStep("bindAdaptiveHeader", bindAdaptiveHeader, false);
+    runStartupStep("startAutoSync", startAutoSync, false);
+    runStartupStep("initPWA", initPWA, false);
+
+    setTimeout(() => {
+      void upgradeCoversFromDcui().catch((error) => {
+        reportStartupIssue("upgradeCoversFromDcui", error, false);
+      });
+    }, 600);
+  }
+
+  bootstrap();
 })();
