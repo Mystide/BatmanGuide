@@ -55,7 +55,7 @@
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
-    coverCache: "batman-guide:covers:v1"
+    coverCache: "batman-guide:covers:v2"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -356,6 +356,13 @@
     return `<div>${entryInitials(entry.title)}<small>${entryCoverLabel(entry)}</small></div>`;
   }
 
+  function entryLogoFallback(entry) {
+    return `
+      <img src="${FIXED_LOGO_URL}" alt="${escapeHtml(entry.title)} cover fallback" loading="lazy" />
+      <span class="cover-fallback-label">${entryCoverLabel(entry)}</span>
+    `;
+  }
+
   function titleToCoverQuery(title) {
     return String(title || "")
       .replace(/\(.*?\)/g, " ")
@@ -448,13 +455,19 @@
       if (await loadCoverImage(coverEl, entry, url)) return;
     }
 
+    if (cached) {
+      delete coverCache[entry.id];
+      saveJSON(KEYS.coverCache, coverCache);
+    }
+
     const discovered = await resolveOpenLibraryCover(entry);
     if (discovered && await loadCoverImage(coverEl, entry, discovered)) return;
 
     const googleDiscovered = await resolveGoogleBooksCover(entry);
     if (googleDiscovered && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
 
-    coverEl.innerHTML = entryCoverFallback(entry);
+    coverEl.classList.add("fallback-logo");
+    coverEl.innerHTML = entryLogoFallback(entry);
   }
 
   function render() {
@@ -842,10 +855,13 @@
   }
 
 
-  function enforceStaticHeader() {
-    const header = document.querySelector(".top");
-    if (!header) return;
-    header.classList.add("header-static");
+  async function upgradeCoversFromDcui() {
+    const missing = LIST.filter((entry) => !REAL_COVERS[entry.id] && !coverCache[entry.id]);
+    for (const entry of missing.slice(0, 12)) {
+      await resolveOpenLibraryCover(entry);
+      if (!coverCache[entry.id]) await resolveGoogleBooksCover(entry);
+    }
+    if (missing.length) render();
   }
 
   function bindAdaptiveHeader() {
@@ -882,12 +898,20 @@
 
     const updateCompactMode = () => {
       const y = window.scrollY;
+      const delta = y - lastScrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
-      const scrollingDown = y > lastScrollY;
-      const hideHeader = shouldCompact && scrollingDown && y > 140 && !header.classList.contains("header-expanded");
+      const scrollingDown = delta > 4;
+      const scrollingUp = delta < -4;
+
+      if (scrollingUp) header.classList.remove("header-hidden");
+      if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+        header.classList.add("header-hidden");
+      }
+      if (!shouldCompact || y < 48) {
+        header.classList.remove("header-hidden");
+      }
 
       header.classList.toggle("compact", shouldCompact);
-      header.classList.toggle("header-hidden", hideHeader);
       if (shouldCompact && y > 24) {
         advanced.classList.add("hidden");
       }
@@ -1094,7 +1118,6 @@
 
   try {
     bindUI();
-    enforceStaticHeader();
     bindAdaptiveHeader();
     applyBrand();
     startAutoSync();
