@@ -1257,24 +1257,68 @@
     });
   }
 
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
   function initPWA() {
     if (!("serviceWorker" in navigator)) return;
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 
-  try {
-    normalizeDomConflicts();
-    applyBrand();
-    render();
-    bindUI();
-    bindAdaptiveHeader();
-    startAutoSync();
-    initPWA();
-    setTimeout(() => void upgradeCoversFromDcui(), 600);
-  } catch (e) {
+  function reportStartupIssue(step, error, critical = false) {
+    const message = `${step}: ${String(error?.message || error)}`;
     window.__BATMAN_APP_READY = false;
-    window.__BATMAN_APP_ERROR = String(e.message || e);
-    setError(`App failed to start: ${String(e.message || e)}`);
-    console.error(e);
+    window.__BATMAN_APP_ERROR = message;
+    console.error(`Startup step failed (${step})`, error);
+    if (critical) setError(`App failed to start: ${message}`);
   }
+
+  function runStartupStep(step, fn, critical = false) {
+    try {
+      fn();
+      return true;
+    } catch (error) {
+      reportStartupIssue(step, error, critical);
+      return false;
+    }
+  }
+
+  function bootstrap() {
+    runStartupStep("normalizeDomConflicts", normalizeDomConflicts, false);
+    runStartupStep("applyBrand", applyBrand, false);
+
+    if (!runStartupStep("render", render, true)) return;
+
+    runStartupStep("bindUI", bindUI, false);
+    runStartupStep("bindAdaptiveHeader", bindAdaptiveHeader, false);
+    runStartupStep("startAutoSync", startAutoSync, false);
+    runStartupStep("initPWA", initPWA, false);
+
+    setTimeout(() => {
+      void upgradeCoversFromDcui().catch((error) => {
+        reportStartupIssue("upgradeCoversFromDcui", error, false);
+      });
+    }, 600);
+  }
+
+  bootstrap();
 })();
