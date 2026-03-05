@@ -1039,6 +1039,39 @@
 
     syncQuickFilterChips();
 
+    const chipOpen = $("chipOpen");
+    const chipRequired = $("chipRequired");
+    const chipBook = $("chipBook");
+    if (chipOpen) {
+      chipOpen.addEventListener("click", () => {
+        $("onlyRemaining").checked = !$("onlyRemaining").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+
+    syncQuickFilterChips();
+
     const eraJump = $("eraJump");
     if (eraJump) {
       eraJump.addEventListener("change", () => {
@@ -1106,6 +1139,21 @@
     if (collapseAllBtn) {
       collapseAllBtn.addEventListener("click", () => toggleAllEras(false));
     }
+
+    $("main").addEventListener("toggle", (e) => {
+      if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
+    }, true);
+
+    syncEraToggleButton();
+    $("btnToggleAllEras").addEventListener("click", () => {
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      for (const era of eras) updated[eraKey(era)] = !allOpen;
+      saveOpenState(updated);
+      render();
+      syncEraToggleButton();
+    });
 
     $("main").addEventListener("toggle", (e) => {
       if (e.target?.matches?.('details[data-era-key]')) syncEraToggleButton();
