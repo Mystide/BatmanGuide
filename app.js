@@ -922,7 +922,8 @@
       const scrollingDown = delta > 4;
       const scrollingUp = delta < -4;
 
-      if (scrollingUp) header.classList.remove("header-hidden");
+      const nearTop = y < 72;
+      if (scrollingUp && nearTop) header.classList.remove("header-hidden");
       if (shouldCompact && scrollingDown && y > 120) {
         header.classList.remove("header-expanded");
       }
