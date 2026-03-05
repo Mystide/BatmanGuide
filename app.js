@@ -983,7 +983,8 @@
   }
 
   function bindUI() {
-    const savedFilters = readFilters();
+    try {
+      const savedFilters = readFilters();
 
     $("search").value = savedFilters.search || "";
     $("typeFilter").value = savedFilters.type || "";
@@ -1014,6 +1015,26 @@
         $("onlyRemaining").checked = !$("onlyRemaining").checked;
         writeFilters();
         syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipRequired) {
+      chipRequired.addEventListener("click", () => {
+        $("hideOptional").checked = !$("hideOptional").checked;
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
+      });
+    }
+    if (chipBook) {
+      chipBook.addEventListener("click", () => {
+        $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+        writeFilters();
+        syncQuickFilterChips();
+        render();
+        syncEraToggleButton();
         render();
         syncEraToggleButton();
       });
@@ -1108,6 +1129,16 @@
         return;
       }
       btn.disabled = false;
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
+      btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+      btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+    };
+
+    const toggleAllEras = (forceOpen = null) => {
+      const eras = [...groupedByEra(getFiltered()).keys()];
+      const updated = loadOpenState();
+      const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
       const updated = loadOpenState();
       const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
       btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
@@ -1313,6 +1344,9 @@
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") void runAutoSync("visible");
     });
+    } catch (e) {
+      console.error("UI binding failed:", e);
+    }
   }
 
   function initPWA() {
@@ -1321,12 +1355,12 @@
   }
 
   try {
+    applyBrand();
+    render();
     bindUI();
     bindAdaptiveHeader();
-    applyBrand();
     startAutoSync();
     initPWA();
-    render();
     setTimeout(() => void upgradeCoversFromDcui(), 600);
   } catch (e) {
     setError(`App failed to start: ${String(e.message || e)}`);
