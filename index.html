@@ -195,6 +195,24 @@
     .advanced-controls .select,
     .advanced-controls .btn,
     .filters .btn { width: 100%; }
+    .quick-filters { display:flex; gap:6px; flex-wrap:wrap; }
+    .chip {
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, .7);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color .16s ease, color .16s ease, background .16s ease;
+    }
+    .chip.active {
+      color: #fde68a;
+      border-color: #7c640f;
+      background: rgba(74, 60, 23, .55);
+    }
+    .item.continue-target { border-color: #7c640f; box-shadow: inset 0 0 0 1px rgba(250, 204, 21, .2), 0 8px 18px rgba(0,0,0,.28); }
+    .continue-tag { color: #fde68a; border-color: #7c640f; background: rgba(250, 204, 21, .1); }
     .status-strip { border:1px solid rgba(71,85,105,.35); border-radius: 12px; padding: 8px; background: rgba(15,23,42,.45); }
     .controls-hint { margin-top: 2px; }
     .header-reveal {
@@ -213,11 +231,13 @@
       .top-actions { justify-content: stretch; }
       .top-actions .btn { flex: 1 1 110px; }
       .row.space { align-items: flex-start; }
-      .item-grid { grid-template-columns: 1fr; }
-      .cover { width: 100%; height: 60px; border-radius: 10px; }
-      .item-head { flex-direction: column; align-items: stretch; gap: 6px; }
-      .item-link { align-self: flex-start; }
+      .item-grid { grid-template-columns: 68px 1fr; gap: 10px; }
+      .cover { width: 68px; height: 96px; border-radius: 10px; }
+      .title { font-size: 16px; }
+      .item-head { flex-direction: row; align-items: center; gap: 8px; }
+      .item-link { align-self: auto; margin-left: 0; }
       .progress-fields { grid-template-columns: 1fr; }
+      .quick-filters { margin-top: 2px; }
     }
   </style>
 </head>
@@ -260,14 +280,20 @@
             <option value="title">Title A → Z</option>
             <option value="progress">Least progress first</option>
           </select>
-          <button class="btn" id="btnToggleAdvanced" aria-expanded="false">More</button>
+          <button class="btn" id="btnToggleAdvanced" aria-expanded="false" aria-label="Show advanced controls">Advanced filters</button>
+        </div>
+        <div class="quick-filters" aria-label="Quick filters">
+          <button class="chip" type="button" id="chipOpen">Open only</button>
+          <button class="chip" type="button" id="chipRequired">Required only</button>
+          <button class="chip" type="button" id="chipBook">Books</button>
         </div>
         <div class="row advanced-controls hidden" id="advancedControls">
           <select id="eraJump" class="select">
             <option value="">Jump to era…</option>
           </select>
-          <button class="btn" id="btnExpandAll">Expand all</button>
-          <button class="btn" id="btnCollapseAll">Collapse all</button>
+          <button class="btn" id="btnToggleAllEras" aria-label="Toggle all era sections">Collapse all eras</button>
+          <button class="btn hidden" id="btnExpandAll" type="button" tabindex="-1" aria-hidden="true">Expand all</button>
+          <button class="btn hidden" id="btnCollapseAll" type="button" tabindex="-1" aria-hidden="true">Collapse all</button>
           <button class="btn" id="btnClearFilters">Clear filters</button>
         </div>
       </div>
