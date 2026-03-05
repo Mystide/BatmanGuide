@@ -1270,6 +1270,75 @@
     quickFilterRows.forEach((row, idx) => {
       if (idx > 0) row.remove();
     });
+    } catch (e) {
+      console.error("UI binding failed:", e);
+    }
+  }
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
+  }
+
+
+  function normalizeDomConflicts() {
+    const uniqueIds = [
+      "chipOpen", "chipRequired", "chipBook",
+      "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
+      "btnToggleAdvanced", "advancedControls", "eraJump"
+    ];
+
+    for (const id of uniqueIds) {
+      const nodes = document.querySelectorAll(`#${CSS.escape(id)}`);
+      if (nodes.length < 2) continue;
+      nodes.forEach((node, idx) => {
+        if (idx > 0) node.remove();
+      });
+    }
+
+    const quickFilterRows = document.querySelectorAll('.header-controls .quick-filters');
+    quickFilterRows.forEach((row, idx) => {
+      if (idx > 0) row.remove();
+    });
   }
 
   function initPWA() {
