@@ -461,6 +461,13 @@
 
     const discovered = await resolveOpenLibraryCover(entry, { force: true });
     if (discovered && discovered !== cached && await loadCoverImage(coverEl, entry, discovered)) return;
+    if (cached) {
+      delete coverCache[entry.id];
+      saveJSON(KEYS.coverCache, coverCache);
+    }
+
+    const discovered = await resolveOpenLibraryCover(entry);
+    if (discovered && await loadCoverImage(coverEl, entry, discovered)) return;
 
     const googleDiscovered = await resolveGoogleBooksCover(entry, { force: true });
     if (googleDiscovered && googleDiscovered !== cached && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
