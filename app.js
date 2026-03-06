@@ -1067,7 +1067,11 @@
       }
 
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+      if (shouldCompact && scrollingDown && y > 180) {
+        if (header.classList.contains("header-expanded")) {
+          header.classList.remove("header-expanded");
+          setFiltersOpen(false, false);
+        }
         releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
