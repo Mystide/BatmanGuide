@@ -207,6 +207,7 @@
   let lastPullAt = 0;
   let gistETag = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
+  let randomTargetId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
   const coverFetchInFlight = new Set();
 
@@ -394,6 +395,9 @@
       const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
       $("continueText").textContent = `Continue: ${cont.title}${where}`;
     }
+
+    const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
+    $("randomText").textContent = `Random: ${randomEntry ? randomEntry.title : "-"}`;
 
     const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
     setText("statVisible", String(s.total));
@@ -626,7 +630,8 @@
 
         const item = document.createElement("div");
         const isContinueTarget = continueId && entry.id === continueId;
-        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}`;
+        const isRandomTarget = randomTargetId && entry.id === randomTargetId;
+        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}`;
         item.dataset.id = entry.id;
 
         const cover = document.createElement("div");
@@ -653,6 +658,7 @@
           <span class="tag">${entry.type}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
+          ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
           <span class="muted">${entry.id}</span>
         `;
 
@@ -1307,7 +1313,10 @@
       });
       $("btnRandom").addEventListener("click", () => {
         const random = randomUnread(getFiltered());
-        if (random) scrollToEntry(random.id);
+        if (!random) return;
+        randomTargetId = random.id;
+        render();
+        scrollToEntry(random.id);
       });
       $("btnContinue").addEventListener("click", () => {
         const c = continueEntry(getFiltered());
