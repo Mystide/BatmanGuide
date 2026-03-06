@@ -1038,12 +1038,17 @@
     filterToggle.addEventListener("click", () => {
       const opening = controls.classList.contains("hidden");
       setFiltersOpen(opening);
+      if (opening) {
+        header.classList.remove("header-hidden");
+      }
       header.classList.toggle("header-expanded", opening);
+      syncRevealButton();
     });
 
     revealHeader.addEventListener("click", () => {
       header.classList.remove("header-hidden");
-      header.classList.add("header-expanded");
+      header.classList.toggle("header-expanded", userWantsFiltersOpen);
+      setFiltersOpen(userWantsFiltersOpen, false);
       syncRevealButton();
     });
 
