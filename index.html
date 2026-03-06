@@ -350,6 +350,7 @@
       <div class="stack">
         <input id="gistId" class="input full" placeholder="Gist ID" />
         <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" />
+        <label class="row muted"><input type="checkbox" id="rememberToken" /> remember token on this device</label>
         <label class="row muted"><input type="checkbox" id="autoSync" checked /> auto sync</label>
         <div class="row">
           <button id="gistPull" class="btn">Pull</button>
@@ -363,6 +364,7 @@
           <input id="importStateFile" type="file" accept="application/json" class="hidden" />
         </div>
         <div id="syncStatus" class="status">Auto-sync is off until Gist ID and token are filled.</div>
+        <div class="muted" style="font-size:12px;">Tip: leave “remember token” off on shared/public devices.</div>
       </div>
     </section>
   </main>
