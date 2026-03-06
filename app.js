@@ -1389,6 +1389,9 @@
           saveCfgFromUI(false);
         });
       }
+      for (const id of ["gistId", "gistToken"]) {
+        $(id).addEventListener("input", saveCfgFromUI);
+      }
 
       $("gistPull").addEventListener("click", () => {
         const nextCfg = readCfgFromUI();
