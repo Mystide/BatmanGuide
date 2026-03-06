@@ -1008,6 +1008,7 @@
     if (!header || !controls || !filterToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
     let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
+    let forceHeaderVisibleUntil = 0;
 
     const syncFilterToggle = () => {
       const open = !controls.classList.contains("hidden");
@@ -1046,6 +1047,7 @@
     });
 
     revealHeader.addEventListener("click", () => {
+      forceHeaderVisibleUntil = Date.now() + 900;
       header.classList.remove("header-hidden");
       header.classList.toggle("header-expanded", userWantsFiltersOpen);
       setFiltersOpen(userWantsFiltersOpen, false);
@@ -1058,6 +1060,7 @@
       const shouldCompact = y > 24 || window.innerHeight < 860;
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
+      const forceVisible = Date.now() < forceHeaderVisibleUntil;
 
       if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden");
@@ -1066,8 +1069,12 @@
         return;
       }
 
+      if (forceVisible) {
+        header.classList.remove("header-hidden");
+      }
+
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (shouldCompact && scrollingDown && y > 180) {
+      if (!forceVisible && shouldCompact && scrollingDown && y > 180) {
         if (header.classList.contains("header-expanded")) {
           header.classList.remove("header-expanded");
           setFiltersOpen(false, false);
