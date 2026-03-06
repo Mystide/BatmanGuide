@@ -470,9 +470,21 @@
       .trim();
   }
 
+  function coverKeywordsFromUrl(url) {
+    try {
+      const pathname = new URL(url).pathname || "";
+      const m = pathname.match(/\/(?:book|series|collections?)\/([^/]+)/i);
+      if (!m?.[1]) return "";
+      return titleToCoverQuery(m[1].replace(/-/g, " "));
+    } catch {
+      return "";
+    }
+  }
+
   function buildCoverQueries(entry) {
     const raw = String(entry?.title || "").trim();
     const base = titleToCoverQuery(raw);
+    const urlWords = coverKeywordsFromUrl(entry?.url || "");
     const queries = [];
     const seen = new Set();
 
@@ -484,6 +496,7 @@
     };
 
     push(base);
+    push(urlWords);
     push(raw.replace(/\s+[—-].*$/, " "));
     push(raw.replace(/^[^:]+:\s*/, " "));
     push(raw.replace(/^[^:]+:\s*/, " ").replace(/\b(the|a)\b/gi, " "));
@@ -499,16 +512,29 @@
     const wanted = titleToCoverQuery(entryTitle).toLowerCase();
     const got = titleToCoverQuery(candidateTitle).toLowerCase();
     if (!wanted || !got) return 0;
-    if (wanted === got) return 100;
-    if (got.includes(wanted) || wanted.includes(got)) return 70;
-    const wantedWords = new Set(wanted.split(" ").filter(Boolean));
-    const gotWords = new Set(got.split(" ").filter(Boolean));
+    if (wanted === got) return 120;
+
+    const wantedWords = wanted.split(" ").filter(Boolean);
+    const gotWords = got.split(" ").filter(Boolean);
+    const wantedSet = new Set(wantedWords);
+    const gotSet = new Set(gotWords);
+
     let overlap = 0;
-    for (const word of wantedWords) if (gotWords.has(word)) overlap++;
-    return overlap;
+    for (const word of wantedSet) if (gotSet.has(word)) overlap++;
+
+    let score = overlap * 12;
+    if (got.includes(wanted) || wanted.includes(got)) score += 30;
+    if (wantedSet.has("batman") && !gotSet.has("batman")) score -= 40;
+    if (wantedWords.length > 2 && overlap < 2) score -= 20;
+    return score;
+  }
+
+  function isAcceptableCoverMatch(score) {
+    return score >= 24;
   }
 
   function normalizeCoverUrl(url) {
+
     if (!url) return "";
     if (!url.includes("covers.openlibrary.org")) return url;
     return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
@@ -538,9 +564,9 @@
               bestCover = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
             }
           }
-          if (bestScore >= 70) break;
+          if (bestScore >= 60) break;
         }
-        if (!bestCover) return "";
+        if (!bestCover || !isAcceptableCoverMatch(bestScore)) return "";
         coverCache[id] = bestCover;
         void saveJSON(KEYS.coverCache, coverCache);
         return bestCover;
@@ -566,7 +592,7 @@
       let bestImage = "";
       let bestScore = 0;
       for (const query of buildCoverQueries(entry)) {
-        const variants = [`intitle:${query}`, `${query} batman`];
+        const variants = [`intitle:${query}`, query, `${query} batman`];
         for (const variant of variants) {
           const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(variant)}&maxResults=8`);
           if (!res.ok) continue;
@@ -582,11 +608,11 @@
               bestImage = image;
             }
           }
-          if (bestScore >= 70) break;
+          if (bestScore >= 60) break;
         }
-        if (bestScore >= 70) break;
+        if (bestScore >= 60) break;
       }
-      if (!bestImage) return "";
+      if (!bestImage || !isAcceptableCoverMatch(bestScore)) return "";
       const normalized = bestImage.replace(/^http:\/\//i, "https://");
       coverCache[id] = normalized;
       void saveJSON(KEYS.coverCache, coverCache);
