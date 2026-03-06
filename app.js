@@ -497,6 +497,10 @@
       candidates.push(next);
     };
 
+    push(entry?.cover);
+    if (Array.isArray(entry?.covers)) {
+      for (const candidate of entry.covers) push(candidate);
+    }
     push(REAL_COVERS[entry.id]);
 
     const url = String(entry?.url || "");
@@ -599,7 +603,7 @@
   }
 
   async function applyBestCover(coverEl, entry) {
-    const primary = REAL_COVERS[entry.id];
+    const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
 
     if (cached && !isOfficialCoverUrl(cached)) {
