@@ -146,6 +146,58 @@
     });
   }
 
+  function readFiltersFromURL() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const type = params.get("type") || "";
+      const sortBy = params.get("sort") || "order";
+      return {
+        search: params.get("q") || "",
+        type: ["", "book", "series", "collection"].includes(type) ? type : "",
+        onlyRemaining: params.get("remaining") === "1",
+        hideOptional: params.get("required") === "1",
+        sortBy: ["order", "title", "progress"].includes(sortBy) ? sortBy : "order"
+      };
+    } catch {
+      return defaultFilters();
+    }
+  }
+
+  function writeFiltersToURL() {
+    try {
+      const filters = {
+        search: $("search").value.trim(),
+        type: $("typeFilter").value || "",
+        onlyRemaining: !!$("onlyRemaining").checked,
+        hideOptional: !!$("hideOptional").checked,
+        sortBy: $("sortBy").value || "order"
+      };
+      const defaults = defaultFilters();
+      const next = new URLSearchParams(window.location.search || "");
+
+      if (filters.search && filters.search !== defaults.search) next.set("q", filters.search);
+      else next.delete("q");
+
+      if (filters.type && filters.type !== defaults.type) next.set("type", filters.type);
+      else next.delete("type");
+
+      if (filters.onlyRemaining !== defaults.onlyRemaining) next.set("remaining", filters.onlyRemaining ? "1" : "0");
+      else next.delete("remaining");
+
+      if (filters.hideOptional !== defaults.hideOptional) next.set("required", filters.hideOptional ? "1" : "0");
+      else next.delete("required");
+
+      if (filters.sortBy && filters.sortBy !== defaults.sortBy) next.set("sort", filters.sortBy);
+      else next.delete("sort");
+
+      const nextQuery = next.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
+      window.history.replaceState(null, "", nextUrl);
+    } catch {
+      // no-op: keep local filters even when URL updates fail
+    }
+  }
+
   let state = loadJSON(KEYS.state, defaultState());
   let dirty = false;
   let autoPushTimer = null;
@@ -1088,24 +1140,33 @@
 
     runUIStep("restoreFilters", () => {
       const savedFilters = readFilters();
-      $("search").value = savedFilters.search || "";
-      $("typeFilter").value = savedFilters.type || "";
-      $("onlyRemaining").checked = !!savedFilters.onlyRemaining;
-      $("hideOptional").checked = !!savedFilters.hideOptional;
-      $("sortBy").value = savedFilters.sortBy || "order";
+      const urlFilters = readFiltersFromURL();
+      const params = new URLSearchParams(window.location.search || "");
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort"].some((key) => params.has(key));
+      const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
+
+      $("search").value = activeFilters.search || "";
+      $("typeFilter").value = activeFilters.type || "";
+      $("onlyRemaining").checked = !!activeFilters.onlyRemaining;
+      $("hideOptional").checked = !!activeFilters.hideOptional;
+      $("sortBy").value = activeFilters.sortBy || "order";
       syncQuickFilterChips();
+      writeFilters();
+      writeFiltersToURL();
     });
 
     runUIStep("filterInputs", () => {
       for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
         $(id).addEventListener("input", () => {
           writeFilters();
+          writeFiltersToURL();
           syncQuickFilterChips();
           render();
           syncEraToggleButton();
         });
         $(id).addEventListener("change", () => {
           writeFilters();
+          writeFiltersToURL();
           syncQuickFilterChips();
           render();
           syncEraToggleButton();
@@ -1121,6 +1182,7 @@
         chipOpen.addEventListener("click", () => {
           $("onlyRemaining").checked = !$("onlyRemaining").checked;
           writeFilters();
+          writeFiltersToURL();
           syncQuickFilterChips();
           render();
           syncEraToggleButton();
@@ -1130,6 +1192,7 @@
         chipRequired.addEventListener("click", () => {
           $("hideOptional").checked = !$("hideOptional").checked;
           writeFilters();
+          writeFiltersToURL();
           syncQuickFilterChips();
           render();
           syncEraToggleButton();
@@ -1139,6 +1202,7 @@
         chipBook.addEventListener("click", () => {
           $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
           writeFilters();
+          writeFiltersToURL();
           syncQuickFilterChips();
           render();
           syncEraToggleButton();
@@ -1212,6 +1276,7 @@
         $("hideOptional").checked = false;
         $("sortBy").value = "order";
         writeFilters();
+        writeFiltersToURL();
         syncQuickFilterChips();
         render();
         syncEraToggleButton();
