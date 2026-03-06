@@ -470,6 +470,44 @@
       .trim();
   }
 
+  function buildCoverQueries(entry) {
+    const raw = String(entry?.title || "").trim();
+    const base = titleToCoverQuery(raw);
+    const queries = [];
+    const seen = new Set();
+
+    const push = (value) => {
+      const next = titleToCoverQuery(value);
+      if (!next || seen.has(next)) return;
+      seen.add(next);
+      queries.push(next);
+    };
+
+    push(base);
+    push(raw.replace(/\s+[—-].*$/, " "));
+    push(raw.replace(/^[^:]+:\s*/, " "));
+    push(raw.replace(/^[^:]+:\s*/, " ").replace(/\b(the|a)\b/gi, " "));
+    if (entry?.type === "collection") {
+      push(`${raw} comic`);
+      push(`${raw} graphic novel`);
+    }
+
+    return queries.slice(0, 6);
+  }
+
+  function scoreTitleMatch(entryTitle, candidateTitle) {
+    const wanted = titleToCoverQuery(entryTitle).toLowerCase();
+    const got = titleToCoverQuery(candidateTitle).toLowerCase();
+    if (!wanted || !got) return 0;
+    if (wanted === got) return 100;
+    if (got.includes(wanted) || wanted.includes(got)) return 70;
+    const wantedWords = new Set(wanted.split(" ").filter(Boolean));
+    const gotWords = new Set(got.split(" ").filter(Boolean));
+    let overlap = 0;
+    for (const word of wantedWords) if (gotWords.has(word)) overlap++;
+    return overlap;
+  }
+
   function normalizeCoverUrl(url) {
     if (!url) return "";
     if (!url.includes("covers.openlibrary.org")) return url;
@@ -485,17 +523,27 @@
 
     const request = (async () => {
       try {
-        const query = titleToCoverQuery(entry.title);
-        if (!query) return "";
-        const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
-        if (!res.ok) return "";
-        const data = await res.json();
-        const docs = Array.isArray(data?.docs) ? data.docs : [];
-        const doc = docs.find((d) => Number.isFinite(d?.cover_i));
-        if (!doc?.cover_i) return "";
-        coverCache[id] = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
+        let bestCover = "";
+        let bestScore = 0;
+        for (const query of buildCoverQueries(entry)) {
+          const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=10`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          const docs = Array.isArray(data?.docs) ? data.docs : [];
+          for (const doc of docs) {
+            if (!Number.isFinite(doc?.cover_i)) continue;
+            const score = scoreTitleMatch(entry.title, doc?.title);
+            if (score > bestScore) {
+              bestScore = score;
+              bestCover = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
+            }
+          }
+          if (bestScore >= 70) break;
+        }
+        if (!bestCover) return "";
+        coverCache[id] = bestCover;
         void saveJSON(KEYS.coverCache, coverCache);
-        return coverCache[id];
+        return bestCover;
       } catch {
         // Ignore network failures and keep fallback artwork.
         return "";
@@ -515,16 +563,31 @@
     if (!id) return "";
     if (!force && coverCache[id]) return coverCache[id] || "";
     try {
-      const query = titleToCoverQuery(entry.title);
-      if (!query) return "";
-      const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(query)}&maxResults=5`);
-      if (!res.ok) return "";
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      const found = items.find((it) => it?.volumeInfo?.imageLinks?.thumbnail || it?.volumeInfo?.imageLinks?.smallThumbnail);
-      const image = found?.volumeInfo?.imageLinks?.thumbnail || found?.volumeInfo?.imageLinks?.smallThumbnail || "";
-      if (!image) return "";
-      const normalized = image.replace(/^http:\/\//i, "https://");
+      let bestImage = "";
+      let bestScore = 0;
+      for (const query of buildCoverQueries(entry)) {
+        const variants = [`intitle:${query}`, `${query} batman`];
+        for (const variant of variants) {
+          const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(variant)}&maxResults=8`);
+          if (!res.ok) continue;
+          const data = await res.json();
+          const items = Array.isArray(data?.items) ? data.items : [];
+          for (const item of items) {
+            const info = item?.volumeInfo || {};
+            const image = info?.imageLinks?.thumbnail || info?.imageLinks?.small || info?.imageLinks?.smallThumbnail || "";
+            if (!image) continue;
+            const score = scoreTitleMatch(entry.title, info?.title);
+            if (score > bestScore) {
+              bestScore = score;
+              bestImage = image;
+            }
+          }
+          if (bestScore >= 70) break;
+        }
+        if (bestScore >= 70) break;
+      }
+      if (!bestImage) return "";
+      const normalized = bestImage.replace(/^http:\/\//i, "https://");
       coverCache[id] = normalized;
       void saveJSON(KEYS.coverCache, coverCache);
       return normalized;
