@@ -1056,8 +1056,8 @@
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
       setHeaderHidden(false);
-      header.classList.remove("header-expanded");
-      setFiltersOpen(false, false);
+      header.classList.toggle("header-expanded", userWantsFiltersOpen);
+      setFiltersOpen(userWantsFiltersOpen, false);
     });
 
     const updateCompactMode = () => {
