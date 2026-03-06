@@ -1362,8 +1362,9 @@
         if (!syncMenu) return;
         const ready = syncReady(cfgNow);
         syncMenu.classList.toggle("is-onboarding", !ready);
-        if (syncMenuTitle) syncMenuTitle.textContent = ready ? "Sync" : "Sync setup";
-        if (syncMenuHint) syncMenuHint.textContent = ready ? "(edit)" : "(one-time)";
+        syncMenu.classList.toggle("is-ready", ready);
+        if (syncMenuTitle) syncMenuTitle.textContent = ready ? "☁" : "Sync setup";
+        if (syncMenuHint) syncMenuHint.textContent = ready ? "" : "(one-time)";
         if (!ready && !onboardingSeen()) {
           syncMenu.open = true;
           markOnboardingSeen();
