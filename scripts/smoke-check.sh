@@ -40,9 +40,12 @@ echo "[smoke] start local server on ${PORT}"
 python3 -m http.server "${PORT}" --directory . >/tmp/batman-smoke-http.log 2>&1 &
 SERVER_PID=$!
 
-for _ in {1..40}; do
+for _ in {1..120}; do
   if curl -fsS "${BASE}/index.html" >/tmp/batman-smoke-index.html 2>/dev/null; then
     break
+  fi
+  if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+    fail "http server exited before becoming ready"
   fi
   sleep 0.1
 done
