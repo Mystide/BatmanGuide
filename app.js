@@ -1154,8 +1154,6 @@
         syncEraToggleButton();
       });
     });
-  }
-
     runUIStep("quickNav", () => {
       $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       $("btnNext").addEventListener("click", () => {
@@ -1277,6 +1275,7 @@
         if (document.visibilityState === "visible") void runAutoSync("visible");
       });
     });
+
   }
 
 
