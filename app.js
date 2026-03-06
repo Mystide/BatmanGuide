@@ -98,8 +98,7 @@
 
 
   const defaultUiPrefs = () => ({
-    advancedOpen: false,
-    tabletMode: null
+    filtersOpen: false
   });
 
   function readUiPrefs() {
@@ -109,29 +108,6 @@
   function writeUiPrefs(next) {
     const current = readUiPrefs();
     void saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), current, next));
-  }
-
-  function detectTabletByDevice() {
-    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    const mediumViewport = window.innerWidth >= 700 && window.innerWidth <= 1366;
-    return coarsePointer && mediumViewport;
-  }
-
-  function tabletModeEnabled() {
-    const prefs = readUiPrefs();
-    if (typeof prefs.tabletMode === "boolean") return prefs.tabletMode;
-    return detectTabletByDevice();
-  }
-
-  function applyTabletMode(force = null) {
-    const enabled = force == null ? tabletModeEnabled() : !!force;
-    document.body.classList.toggle("tablet-mode", enabled);
-    const btn = $("btnTabletMode");
-    if (btn) {
-      btn.setAttribute("aria-pressed", String(enabled));
-      btn.textContent = enabled ? "Tablet mode on" : "Tablet mode off";
-    }
-    return enabled;
   }
 
   function readFilters() {
@@ -1026,34 +1002,25 @@
 
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
-    const advanced = $("advancedControls");
-    const toggle = $("btnToggleAdvanced");
-    const headerToggle = $("btnHeaderToggle");
+    const controls = $("headerControls");
+    const filterToggle = $("btnFilterMenu");
     const revealHeader = $("btnRevealHeader");
-    if (!header || !advanced || !toggle || !headerToggle || !revealHeader) return;
+    if (!header || !controls || !filterToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
-    let userWantsAdvancedOpen = !!readUiPrefs().advancedOpen;
-    applyTabletMode();
+    let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
 
-    const syncToggleLabel = () => {
-      const open = !advanced.classList.contains("hidden");
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.textContent = open ? "Hide advanced" : "Advanced filters";
-      toggle.setAttribute("aria-label", open ? "Hide advanced controls" : "Show advanced controls");
+    const syncFilterToggle = () => {
+      const open = !controls.classList.contains("hidden");
+      filterToggle.setAttribute("aria-expanded", String(open));
+      filterToggle.textContent = open ? "Hide filters" : "Filters";
     };
 
-    const setAdvancedOpen = (open, persist = true) => {
-      advanced.classList.toggle("hidden", !open);
-      syncToggleLabel();
+    const setFiltersOpen = (open, persist = true) => {
+      controls.classList.toggle("hidden", !open);
+      syncFilterToggle();
       if (!persist) return;
-      userWantsAdvancedOpen = !!open;
-      writeUiPrefs({ advancedOpen: userWantsAdvancedOpen });
-    };
-
-    const syncHeaderToggle = () => {
-      const open = header.classList.contains("header-expanded");
-      headerToggle.setAttribute("aria-expanded", String(open));
-      headerToggle.textContent = open ? "Hide filters" : "Filters";
+      userWantsFiltersOpen = !!open;
+      writeUiPrefs({ filtersOpen: userWantsFiltersOpen });
     };
 
     const syncRevealButton = () => {
@@ -1068,24 +1035,15 @@
       if (typeof active.blur === "function") active.blur();
     };
 
-    toggle.addEventListener("click", () => {
-      setAdvancedOpen(advanced.classList.contains("hidden"));
-    });
-
-    headerToggle.addEventListener("click", () => {
-      if (!header.classList.contains("compact")) {
-        setAdvancedOpen(advanced.classList.contains("hidden"));
-        syncHeaderToggle();
-        return;
-      }
-      header.classList.toggle("header-expanded");
-      syncHeaderToggle();
+    filterToggle.addEventListener("click", () => {
+      const opening = controls.classList.contains("hidden");
+      setFiltersOpen(opening);
+      header.classList.toggle("header-expanded", opening);
     });
 
     revealHeader.addEventListener("click", () => {
       header.classList.remove("header-hidden");
       header.classList.add("header-expanded");
-      syncHeaderToggle();
       syncRevealButton();
     });
 
@@ -1097,17 +1055,13 @@
       const nearTop = y < 72;
 
       if (touchOptimizedHeader()) {
-        header.classList.remove("compact", "header-hidden", "header-expanded");
-        setAdvancedOpen(userWantsAdvancedOpen, false);
-        syncHeaderToggle();
+        header.classList.remove("compact", "header-hidden");
+        setFiltersOpen(userWantsFiltersOpen, false);
         syncRevealButton();
         return;
       }
 
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (shouldCompact && scrollingDown && y > 120) {
-        header.classList.remove("header-expanded");
-      }
       if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
         releaseHeaderFocus();
         header.classList.add("header-hidden");
@@ -1119,16 +1073,12 @@
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        setAdvancedOpen(false, false);
+        setFiltersOpen(header.classList.contains("header-expanded") ? userWantsFiltersOpen : false, false);
       } else {
-        setAdvancedOpen(userWantsAdvancedOpen, false);
-      }
-
-      if (!shouldCompact) {
+        setFiltersOpen(userWantsFiltersOpen, false);
         header.classList.remove("header-expanded");
       }
 
-      syncHeaderToggle();
       syncRevealButton();
     };
 
@@ -1137,7 +1087,6 @@
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
-        applyTabletMode();
         updateCompactMode();
         lastScrollY = window.scrollY;
       });
@@ -1341,18 +1290,6 @@
       });
     });
     runUIStep("quickNav", () => {
-      const tabletBtn = $("btnTabletMode");
-      if (tabletBtn) {
-        tabletBtn.addEventListener("click", () => {
-          const current = tabletModeEnabled();
-          const next = !current;
-          writeUiPrefs(Object.assign(readUiPrefs(), { tabletMode: next }));
-          applyTabletMode(next);
-          window.dispatchEvent(new Event("resize"));
-        });
-      }
-
-      $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       $("btnNext").addEventListener("click", () => {
         const next = nextUnread(getFiltered());
         if (next) scrollToEntry(next.id);
@@ -1527,13 +1464,6 @@
           return;
         }
 
-        if ((e.key === "a" || e.key === "A") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-          if (isTyping) return;
-          e.preventDefault();
-          $("btnToggleAdvanced")?.click();
-          return;
-        }
-
         if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
           if (isTyping) return;
           e.preventDefault();
@@ -1556,7 +1486,7 @@
     const uniqueIds = [
       "chipOpen", "chipRequired", "chipBook",
       "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
-      "btnToggleAdvanced", "advancedControls", "eraJump"
+      "advancedControls", "eraJump"
     ];
 
     for (const id of uniqueIds) {

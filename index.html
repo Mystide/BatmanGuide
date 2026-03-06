@@ -170,7 +170,7 @@
       color: #e5e7eb;
       background: #0f172a;
     }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .tools { margin-top: 10px; }
     .error {
       margin-top: 10px;
@@ -266,24 +266,21 @@
             <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
             <div>
               <h1>Batman Guide</h1>
-              <div class="badge">Tablet friendly</div>
             </div>
           </div>
         </div>
         <div>
           <p class="header-panel-label">Quick actions</p>
           <div class="top-actions">
-          <button class="btn" id="btnHeaderToggle" aria-expanded="false">Filters</button>
+          <button class="btn" id="btnFilterMenu" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnRandom">Random unread</button>
           <button class="btn" id="btnContinue">Continue</button>
-          <button class="btn" id="btnTabletMode" type="button" aria-pressed="false">Tablet mode off</button>
-          <button class="btn" id="btnTop">Top</button>
           </div>
         </div>
       </div>
 
-      <div class="header-controls header-panel">
+      <div class="header-controls header-panel hidden" id="headerControls">
         <div class="row filters">
           <input id="search" class="input" placeholder="Search titles..." />
           <select id="typeFilter" class="select">
@@ -295,18 +292,17 @@
           <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
           <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
           <select id="sortBy" class="select">
-            <option value="order">Default order</option>
+            <option value="order">Reading Order</option>
             <option value="title">Title A → Z</option>
             <option value="progress">Least progress first</option>
           </select>
-          <button class="btn" id="btnToggleAdvanced" aria-expanded="false" aria-label="Show advanced controls">Advanced filters</button>
         </div>
         <div class="quick-filters" aria-label="Quick filters">
           <button class="chip" type="button" id="chipOpen">Open only</button>
           <button class="chip" type="button" id="chipRequired">Required only</button>
           <button class="chip" type="button" id="chipBook">Books</button>
         </div>
-        <div class="row advanced-controls hidden" id="advancedControls">
+        <div class="row advanced-controls" id="advancedControls">
           <select id="eraJump" class="select">
             <option value="">Jump to era…</option>
           </select>
@@ -316,7 +312,7 @@
           <button class="btn" id="btnClearFilters">Clear filters</button>
         </div>
       </div>
-      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search and <span class="kbd">A</span> for advanced filters. Try <span class="kbd">R</span> for a random unread entry.</div>
+      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search. Try <span class="kbd">R</span> for a random unread entry.</div>
 
       <div class="status-strip">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
