@@ -107,7 +107,7 @@
   }
 
   function writeUiPrefs(next) {
-    saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), next));
+    void saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), next));
   }
 
   function detectTabletByDevice() {
@@ -138,7 +138,7 @@
   }
 
   function writeFilters() {
-    saveJSON(KEYS.filters, {
+    void saveJSON(KEYS.filters, {
       search: $("search").value || "",
       type: $("typeFilter").value || "",
       onlyRemaining: !!$("onlyRemaining").checked,
@@ -246,11 +246,17 @@
   }
 
   function saveJSON(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function setError(msg) {
     const box = $("errorBox");
+    if (!box) return;
     box.textContent = msg || "";
     box.classList.toggle("hidden", !msg);
   }
@@ -271,7 +277,9 @@
   function saveState(markDirty = true) {
     state.updatedAt = nowISO();
     state.build = BUILD_ID;
-    saveJSON(KEYS.state, state);
+    if (!saveJSON(KEYS.state, state)) {
+      setSyncStatus("Local save failed (storage unavailable). Changes remain in memory.");
+    }
     if (markDirty) {
       dirty = true;
       scheduleAutoPush();
@@ -295,7 +303,7 @@
   }
 
   function setCfg(cfg) {
-    saveJSON(KEYS.syncCfg, cfg);
+    void saveJSON(KEYS.syncCfg, cfg);
   }
 
   function syncReady(cfg) {
@@ -303,7 +311,8 @@
   }
 
   function setSyncStatus(text) {
-    $("syncStatus").textContent = text;
+    const el = $("syncStatus");
+    if (el) el.textContent = text;
   }
 
   function setText(id, value) {
@@ -421,7 +430,7 @@
   }
 
   function saveOpenState(val) {
-    saveJSON(KEYS.eraOpen, val);
+    void saveJSON(KEYS.eraOpen, val);
   }
 
 
@@ -505,7 +514,7 @@
       const doc = docs.find((d) => Number.isFinite(d?.cover_i));
       if (!doc?.cover_i) return "";
       coverCache[id] = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
-      saveJSON(KEYS.coverCache, coverCache);
+      void saveJSON(KEYS.coverCache, coverCache);
       return coverCache[id];
     } catch {
       // Ignore network failures and keep fallback artwork.
@@ -533,7 +542,7 @@
       if (!image) return "";
       const normalized = image.replace(/^http:\/\//i, "https://");
       coverCache[id] = normalized;
-      saveJSON(KEYS.coverCache, coverCache);
+      void saveJSON(KEYS.coverCache, coverCache);
       return normalized;
     } catch {
       return "";
@@ -573,7 +582,7 @@
     if (forcedOpenLibrary && forcedOpenLibrary !== cached && await loadCoverImage(coverEl, entry, forcedOpenLibrary)) return;
     if (cached) {
       delete coverCache[entry.id];
-      saveJSON(KEYS.coverCache, coverCache);
+      void saveJSON(KEYS.coverCache, coverCache);
     }
 
     const discoveredOpenLibrary = await resolveOpenLibraryCover(entry);
@@ -746,7 +755,9 @@
         return { ok: false, err: "Invalid payload" };
       }
       state = Object.assign(defaultState(), payload.state);
-      saveJSON(KEYS.state, state);
+      if (!saveJSON(KEYS.state, state)) {
+        setSyncStatus("Local save failed (storage unavailable). Changes remain in memory.");
+      }
       return { ok: true };
     } catch (e) {
       return { ok: false, err: e.message || "Parse error" };
