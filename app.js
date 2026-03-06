@@ -1036,11 +1036,14 @@
     };
 
     filterToggle.addEventListener("click", () => {
-      setFiltersOpen(controls.classList.contains("hidden"));
+      const opening = controls.classList.contains("hidden");
+      setFiltersOpen(opening);
+      header.classList.toggle("header-expanded", opening);
     });
 
     revealHeader.addEventListener("click", () => {
       header.classList.remove("header-hidden");
+      header.classList.add("header-expanded");
       syncRevealButton();
     });
 
@@ -1059,7 +1062,7 @@
       }
 
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (shouldCompact && scrollingDown && y > 180) {
+      if (shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
         releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
@@ -1070,9 +1073,10 @@
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        setFiltersOpen(false, false);
+        setFiltersOpen(header.classList.contains("header-expanded") ? userWantsFiltersOpen : false, false);
       } else {
         setFiltersOpen(userWantsFiltersOpen, false);
+        header.classList.remove("header-expanded");
       }
 
       syncRevealButton();
