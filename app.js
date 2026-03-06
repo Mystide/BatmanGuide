@@ -189,7 +189,7 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
-  const coverFetchInFlight = new Set();
+  const coverFetchInFlight = new Map();
 
 
   function clampPullInterval(ms) {
@@ -479,27 +479,33 @@
   async function resolveOpenLibraryCover(entry, opts = {}) {
     const id = entry.id;
     const force = !!opts.force;
-    if (!id || coverFetchInFlight.has(id)) return coverCache[id] || "";
+    if (!id) return "";
     if (!force && coverCache[id]) return coverCache[id] || "";
-    coverFetchInFlight.add(id);
-    try {
-      const query = titleToCoverQuery(entry.title);
-      if (!query) return "";
-      const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
-      if (!res.ok) return "";
-      const data = await res.json();
-      const docs = Array.isArray(data?.docs) ? data.docs : [];
-      const doc = docs.find((d) => Number.isFinite(d?.cover_i));
-      if (!doc?.cover_i) return "";
-      coverCache[id] = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
-      void saveJSON(KEYS.coverCache, coverCache);
-      return coverCache[id];
-    } catch {
-      // Ignore network failures and keep fallback artwork.
-      return "";
-    } finally {
-      coverFetchInFlight.delete(id);
-    }
+    if (coverFetchInFlight.has(id)) return coverFetchInFlight.get(id);
+
+    const request = (async () => {
+      try {
+        const query = titleToCoverQuery(entry.title);
+        if (!query) return "";
+        const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=5`);
+        if (!res.ok) return "";
+        const data = await res.json();
+        const docs = Array.isArray(data?.docs) ? data.docs : [];
+        const doc = docs.find((d) => Number.isFinite(d?.cover_i));
+        if (!doc?.cover_i) return "";
+        coverCache[id] = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
+        void saveJSON(KEYS.coverCache, coverCache);
+        return coverCache[id];
+      } catch {
+        // Ignore network failures and keep fallback artwork.
+        return "";
+      } finally {
+        coverFetchInFlight.delete(id);
+      }
+    })();
+
+    coverFetchInFlight.set(id, request);
+    return request;
   }
 
 
@@ -1078,39 +1084,32 @@
         return;
       }
 
-      if (userWantsFiltersOpen) {
-        header.classList.toggle("compact", shouldCompact);
+      if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
-        header.classList.add("header-expanded");
-        setFiltersOpen(true, false);
-      } else {
-        if (forceVisible || !shouldCompact || y < 48 || nearTop) {
-          setHeaderHidden(false);
-        } else if (shouldCompact && scrollingDown && y > 180) {
-          if (filtersExpanded) {
-            header.classList.remove("header-expanded");
-            setFiltersOpen(false, false);
-          }
-          releaseHeaderFocus();
-          setHeaderHidden(true);
-        } else if (delta < -4) {
-          setHeaderHidden(false);
-        }
-
-        header.classList.toggle("compact", shouldCompact);
-
-        if (shouldCompact && y > 24) {
-          const stillExpanded = header.classList.contains("header-expanded");
-          if (stillExpanded && !headerHidden) {
-            setFiltersOpen(userWantsFiltersOpen, false);
-          } else {
-            setFiltersOpen(false, false);
-          }
-        } else {
-          setHeaderHidden(false);
-          setFiltersOpen(userWantsFiltersOpen, false);
+      } else if (shouldCompact && scrollingDown && y > 180) {
+        if (filtersExpanded) {
           header.classList.remove("header-expanded");
+          setFiltersOpen(false, false);
         }
+        releaseHeaderFocus();
+        setHeaderHidden(true);
+      } else if (delta < -4) {
+        setHeaderHidden(false);
+      }
+
+      header.classList.toggle("compact", shouldCompact);
+
+      if (shouldCompact && y > 24) {
+        const stillExpanded = header.classList.contains("header-expanded");
+        if (stillExpanded && !headerHidden) {
+          setFiltersOpen(userWantsFiltersOpen, false);
+        } else {
+          setFiltersOpen(false, false);
+        }
+      } else {
+        setHeaderHidden(false);
+        setFiltersOpen(userWantsFiltersOpen, false);
+        header.classList.remove("header-expanded");
       }
     };
 
