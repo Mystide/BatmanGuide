@@ -172,6 +172,30 @@
     }
     .hidden { display: none !important; }
     .tools { margin-top: 10px; }
+    .sync-dock {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: min(420px, calc(100vw - 24px));
+      margin: 0;
+      z-index: 65;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .sync-dock > summary {
+      border-bottom: none;
+      border-radius: 14px;
+      align-items: center;
+      padding: 10px 12px;
+    }
+    .sync-dock[open] > summary {
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+    }
+    .sync-dock .items {
+      max-height: min(68vh, 480px);
+      overflow: auto;
+    }
     .error {
       margin-top: 10px;
       border: 1px solid #7f1d1d;
@@ -254,6 +278,11 @@
       .item-link { align-self: auto; margin-left: 0; }
       .progress-fields { grid-template-columns: 1fr; }
       .quick-filters { margin-top: 2px; }
+      .sync-dock {
+        right: 12px;
+        bottom: 12px;
+        width: calc(100vw - 24px);
+      }
     }
   </style>
 </head>
@@ -340,7 +369,7 @@
     <div id="errorBox" class="error hidden"></div>
     <div id="main"></div>
 
-    <details class="tools card" id="syncMenu">
+    <details class="tools card sync-dock" id="syncMenu">
       <summary>Sync settings <span class="muted">(optional)</span></summary>
       <div class="items">
         <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices. Sync runs automatically as soon as Gist ID and token are set.</p>
