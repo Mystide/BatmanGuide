@@ -889,6 +889,11 @@
     if (missing.length) render();
   }
 
+  function touchOptimizedHeader() {
+    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    return coarsePointer && window.innerWidth <= 1366;
+  }
+
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
     const advanced = $("advancedControls");
@@ -955,6 +960,14 @@
       const shouldCompact = y > 24 || window.innerHeight < 860;
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
+
+      if (touchOptimizedHeader()) {
+        header.classList.remove("compact", "header-hidden", "header-expanded");
+        setAdvancedOpen(userWantsAdvancedOpen, false);
+        syncHeaderToggle();
+        syncRevealButton();
+        return;
+      }
 
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
       if (shouldCompact && scrollingDown && y > 120) {
