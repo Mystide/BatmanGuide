@@ -55,7 +55,8 @@
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
-    coverCache: "batman-guide:covers:v2"
+    coverCache: "batman-guide:covers:v2",
+    uiPrefs: "batman-guide:ui:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -93,6 +94,19 @@
     hideOptional: false,
     sortBy: "order"
   });
+
+
+  const defaultUiPrefs = () => ({
+    advancedOpen: false
+  });
+
+  function readUiPrefs() {
+    return loadJSON(KEYS.uiPrefs, defaultUiPrefs());
+  }
+
+  function writeUiPrefs(next) {
+    saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), next));
+  }
 
   function readFilters() {
     return loadJSON(KEYS.filters, defaultFilters());
@@ -883,12 +897,21 @@
     const revealHeader = $("btnRevealHeader");
     if (!header || !advanced || !toggle || !headerToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
+    let userWantsAdvancedOpen = !!readUiPrefs().advancedOpen;
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
       toggle.setAttribute("aria-expanded", String(open));
       toggle.textContent = open ? "Hide advanced" : "Advanced filters";
       toggle.setAttribute("aria-label", open ? "Hide advanced controls" : "Show advanced controls");
+    };
+
+    const setAdvancedOpen = (open, persist = true) => {
+      advanced.classList.toggle("hidden", !open);
+      syncToggleLabel();
+      if (!persist) return;
+      userWantsAdvancedOpen = !!open;
+      writeUiPrefs({ advancedOpen: userWantsAdvancedOpen });
     };
 
     const syncHeaderToggle = () => {
@@ -910,11 +933,9 @@
     };
 
     toggle.addEventListener("click", () => {
-      advanced.classList.toggle("hidden");
-      syncToggleLabel();
+      setAdvancedOpen(advanced.classList.contains("hidden"));
     });
 
-    syncToggleLabel();
     headerToggle.addEventListener("click", () => {
       if (!header.classList.contains("compact")) return;
       header.classList.toggle("header-expanded");
@@ -933,10 +954,9 @@
       const delta = y - lastScrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
       const scrollingDown = delta > 4;
-      const scrollingUp = delta < -4;
-
       const nearTop = y < 72;
-      if (scrollingUp && nearTop) header.classList.remove("header-hidden");
+
+      if (delta < -4 && nearTop) header.classList.remove("header-hidden");
       if (shouldCompact && scrollingDown && y > 120) {
         header.classList.remove("header-expanded");
       }
@@ -949,13 +969,17 @@
       }
 
       header.classList.toggle("compact", shouldCompact);
+
       if (shouldCompact && y > 24) {
-        advanced.classList.add("hidden");
+        setAdvancedOpen(false, false);
+      } else {
+        setAdvancedOpen(userWantsAdvancedOpen, false);
       }
+
       if (!shouldCompact) {
         header.classList.remove("header-expanded");
       }
-      syncToggleLabel();
+
       syncHeaderToggle();
       syncRevealButton();
     };
@@ -1154,8 +1178,6 @@
         syncEraToggleButton();
       });
     });
-  }
-
     runUIStep("quickNav", () => {
       $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       $("btnNext").addEventListener("click", () => {
@@ -1263,11 +1285,20 @@
       });
 
       window.addEventListener("keydown", (e) => {
+        const t = e.target;
+        const isTyping = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+
         if (e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-          const t = e.target;
-          if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+          if (isTyping) return;
           e.preventDefault();
           $("search").focus();
+          return;
+        }
+
+        if ((e.key === "a" || e.key === "A") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          if (isTyping) return;
+          e.preventDefault();
+          $("btnToggleAdvanced")?.click();
         }
       });
 
@@ -1277,6 +1308,7 @@
         if (document.visibilityState === "visible") void runAutoSync("visible");
       });
     });
+
   }
 
 
