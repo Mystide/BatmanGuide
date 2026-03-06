@@ -42,6 +42,28 @@ Die Merge-Helfer sind weiter verfügbar, aber im Solo-Setup meist selten nötig:
 - `./scripts/setup-merge-driver.sh`
 - `./scripts/resolve-known-conflicts.sh`
 
+
+## Cover-Workflow (DCUI, zuverlässig)
+
+Wenn neue Comics ergänzt werden, sollten Cover **nicht geraten** werden.
+Nutze stattdessen den Sync gegen die DCUI-Seiten-Metadaten (`og:image`):
+
+```bash
+node ./scripts/sync-dcui-covers.js
+```
+
+Optional alles neu auflösen (auch vorhandene `cover`-Felder):
+
+```bash
+node ./scripts/sync-dcui-covers.js --refresh
+```
+
+Danach wie gewohnt prüfen:
+
+```bash
+./scripts/smoke-check.sh
+```
+
 ## Mehr Details
 
 - Tests: `TESTING.md`

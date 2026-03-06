@@ -60,6 +60,15 @@ list.forEach((item, index) => {
   if (!/^https?:\/\//.test(item.url)) {
     fail(`${at} has invalid url '${item.url}'`);
   }
+
+  if (typeof item.cover !== "undefined") {
+    if (typeof item.cover !== "string" || item.cover.trim() === "") {
+      fail(`${at} has invalid optional 'cover'`);
+    }
+    if (!/^https?:\/\//.test(item.cover)) {
+      fail(`${at} has invalid cover url '${item.cover}'`);
+    }
+  }
 });
 
 console.log(`[list-validate] ok (${list.length} entries)`);

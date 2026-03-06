@@ -190,6 +190,7 @@
   let randomTargetId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
   const coverFetchInFlight = new Map();
+  const failedCoverCandidates = new Map();
 
 
   function clampPullInterval(ms) {
@@ -496,6 +497,10 @@
       candidates.push(next);
     };
 
+    push(entry?.cover);
+    if (Array.isArray(entry?.covers)) {
+      for (const candidate of entry.covers) push(candidate);
+    }
     push(REAL_COVERS[entry.id]);
 
     const url = String(entry?.url || "");
@@ -505,6 +510,8 @@
       push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/0.jpg`);
       push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/${id}/0.jpg`);
       push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/${id}/0.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/cover.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/cover.jpg`);
     }
 
     const slug = dcuiCollectionSlug(url);
@@ -514,6 +521,29 @@
     }
 
     return candidates;
+  }
+
+  function markCoverCandidateFailure(entryId, url) {
+    if (!entryId || !url) return;
+    if (!failedCoverCandidates.has(entryId)) failedCoverCandidates.set(entryId, new Set());
+    failedCoverCandidates.get(entryId).add(url);
+  }
+
+  function isFailedCoverCandidate(entryId, url) {
+    if (!entryId || !url) return false;
+    return !!failedCoverCandidates.get(entryId)?.has(url);
+  }
+
+  function canLoadImageUrl(url) {
+    return new Promise((resolve) => {
+      if (!url) return resolve(false);
+      const img = new Image();
+      img.loading = "eager";
+      img.referrerPolicy = "no-referrer";
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = normalizeCoverUrl(url);
+    });
   }
 
   function isOfficialCoverUrl(url) {
@@ -527,11 +557,17 @@
     if (!id) return "";
 
     const cached = coverCache[id];
-    if (!force && cached && isOfficialCoverUrl(cached)) return cached;
+    if (!force && cached && isOfficialCoverUrl(cached) && !isFailedCoverCandidate(id, cached)) return cached;
 
     const candidates = buildOfficialCoverCandidates(entry);
     for (const url of candidates) {
       if (!url) continue;
+      if (isFailedCoverCandidate(id, url)) continue;
+      const ok = await canLoadImageUrl(url);
+      if (!ok) {
+        markCoverCandidateFailure(id, url);
+        continue;
+      }
       coverCache[id] = url;
       void saveJSON(KEYS.coverCache, coverCache);
       return url;
@@ -558,6 +594,7 @@
       img.referrerPolicy = "no-referrer";
       img.onload = () => resolve(true);
       img.onerror = () => {
+        markCoverCandidateFailure(entry.id, url);
         img.remove();
         resolve(false);
       };
@@ -566,7 +603,7 @@
   }
 
   async function applyBestCover(coverEl, entry) {
-    const primary = REAL_COVERS[entry.id];
+    const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
 
     if (cached && !isOfficialCoverUrl(cached)) {
