@@ -638,7 +638,7 @@
       const pct = Math.round((done / items.length) * 100);
 
       const summary = document.createElement("summary");
-      summary.innerHTML = `<span>${era}</span><span class="muted">${done}/${items.length} (${pct}%)</span>`;
+      summary.innerHTML = `<span>${escapeHtml(era)}</span><span class="muted">${done}/${items.length} (${pct}%)</span>`;
       details.appendChild(summary);
 
       const list = document.createElement("div");
@@ -663,22 +663,24 @@
 
         const top = document.createElement("div");
         top.className = "item-head";
+        const safeTitle = escapeHtml(entry.title);
+        const safeUrl = escapeAttr(safeExternalUrl(entry.url));
         top.innerHTML = `
           <label class="item-title-row">
             <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-            <span class="title">${entry.title}</span>
+            <span class="title">${safeTitle}</span>
           </label>
-          <a class="item-link" href="${entry.url}" target="_blank" rel="noopener">Open</a>
+          <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
         `;
 
         const tags = document.createElement("div");
         tags.className = "tags";
         tags.innerHTML = `
-          <span class="tag">${entry.type}</span>
+          <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
-          <span class="muted">${entry.id}</span>
+          <span class="muted">${escapeHtml(entry.id)}</span>
         `;
 
         const progress = document.createElement("div");
@@ -737,6 +739,24 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function escapeAttr(v) {
+    return escapeHtml(v).replace(/`/g, "&#96;");
+  }
+
+  function safeExternalUrl(rawUrl) {
+    const str = String(rawUrl || "").trim();
+    if (!str) return "about:blank";
+    try {
+      const parsed = new URL(str, window.location.origin);
+      if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+        return parsed.href;
+      }
+      return "about:blank";
+    } catch {
+      return "about:blank";
+    }
   }
 
   function exportPayload() {
@@ -1012,7 +1032,7 @@
     if (!header || !advanced || !toggle || !headerToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
     let userWantsAdvancedOpen = !!readUiPrefs().advancedOpen;
-    let userWantsTabletMode = applyTabletMode();
+    applyTabletMode();
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -1112,7 +1132,7 @@
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
-        userWantsTabletMode = applyTabletMode();
+        applyTabletMode();
         updateCompactMode();
         lastScrollY = window.scrollY;
       });
