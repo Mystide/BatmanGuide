@@ -107,7 +107,8 @@
   }
 
   function writeUiPrefs(next) {
-    void saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), next));
+    const current = readUiPrefs();
+    void saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), current, next));
   }
 
   function detectTabletByDevice() {
@@ -1072,7 +1073,11 @@
     });
 
     headerToggle.addEventListener("click", () => {
-      if (!header.classList.contains("compact")) return;
+      if (!header.classList.contains("compact")) {
+        setAdvancedOpen(advanced.classList.contains("hidden"));
+        syncHeaderToggle();
+        return;
+      }
       header.classList.toggle("header-expanded");
       syncHeaderToggle();
     });
