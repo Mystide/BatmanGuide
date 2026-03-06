@@ -272,6 +272,7 @@
         <div>
           <p class="header-panel-label">Quick actions</p>
           <div class="top-actions">
+          <button class="btn" id="btnFilterMenu" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnRandom">Random unread</button>
           <button class="btn" id="btnContinue">Continue</button>
@@ -279,7 +280,7 @@
         </div>
       </div>
 
-      <div class="header-controls header-panel">
+      <div class="header-controls header-panel hidden" id="headerControls">
         <div class="row filters">
           <input id="search" class="input" placeholder="Search titles..." />
           <select id="typeFilter" class="select">

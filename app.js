@@ -98,7 +98,7 @@
 
 
   const defaultUiPrefs = () => ({
-    advancedOpen: true
+    filtersOpen: false
   });
 
   function readUiPrefs() {
@@ -1002,14 +1002,25 @@
 
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
-    const advanced = $("advancedControls");
+    const controls = $("headerControls");
+    const filterToggle = $("btnFilterMenu");
     const revealHeader = $("btnRevealHeader");
-    if (!header || !advanced || !revealHeader) return;
+    if (!header || !controls || !filterToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
-    const userWantsAdvancedOpen = true;
+    let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
 
-    const setAdvancedOpen = (open) => {
-      advanced.classList.toggle("hidden", !open);
+    const syncFilterToggle = () => {
+      const open = !controls.classList.contains("hidden");
+      filterToggle.setAttribute("aria-expanded", String(open));
+      filterToggle.textContent = open ? "Hide filters" : "Filters";
+    };
+
+    const setFiltersOpen = (open, persist = true) => {
+      controls.classList.toggle("hidden", !open);
+      syncFilterToggle();
+      if (!persist) return;
+      userWantsFiltersOpen = !!open;
+      writeUiPrefs({ filtersOpen: userWantsFiltersOpen });
     };
 
     const syncRevealButton = () => {
@@ -1023,6 +1034,10 @@
       if (!header.contains(active)) return;
       if (typeof active.blur === "function") active.blur();
     };
+
+    filterToggle.addEventListener("click", () => {
+      setFiltersOpen(controls.classList.contains("hidden"));
+    });
 
     revealHeader.addEventListener("click", () => {
       header.classList.remove("header-hidden");
@@ -1038,7 +1053,7 @@
 
       if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden");
-        setAdvancedOpen(userWantsAdvancedOpen);
+        setFiltersOpen(userWantsFiltersOpen, false);
         syncRevealButton();
         return;
       }
@@ -1055,11 +1070,10 @@
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        setAdvancedOpen(false);
+        setFiltersOpen(false, false);
       } else {
-        setAdvancedOpen(userWantsAdvancedOpen);
+        setFiltersOpen(userWantsFiltersOpen, false);
       }
-
 
       syncRevealButton();
     };
