@@ -1,5 +1,7 @@
 # Konflikte vermeiden (ohne Programmierwissen)
 
+> Hinweis für Solo-Projekte: Wenn du alleine arbeitest, brauchst du diese Regeln meistens nur selten. Nutze sie als Fallback für Ausnahmefälle.
+
 Ziel: Du sollst **nicht mehr raten müssen**, welche Seite bei Konflikten richtig ist.
 
 ## 1) Einmalig einrichten
