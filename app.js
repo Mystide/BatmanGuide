@@ -913,6 +913,11 @@
     if (missing.length) render();
   }
 
+  function touchOptimizedHeader() {
+    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    return coarsePointer && window.innerWidth <= 1366;
+  }
+
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
     const advanced = $("advancedControls");
@@ -981,7 +986,7 @@
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
 
-      if (userWantsTabletMode) {
+      if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden", "header-expanded");
         setAdvancedOpen(userWantsAdvancedOpen, false);
         syncHeaderToggle();
