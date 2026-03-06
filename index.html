@@ -349,13 +349,14 @@
       <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices.</p>
       <div class="stack">
         <input id="gistId" class="input full" placeholder="Gist ID" />
-        <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" />
+        <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" autocomplete="off" autocapitalize="off" spellcheck="false" />
         <label class="row muted"><input type="checkbox" id="rememberToken" /> remember token on this device</label>
         <label class="row muted"><input type="checkbox" id="autoSync" checked /> auto sync</label>
         <div class="row">
           <button id="gistPull" class="btn">Pull</button>
           <button id="gistPush" class="btn">Push</button>
           <button id="gistSync" class="btn">Sync now</button>
+          <button id="clearToken" class="btn">Clear token</button>
           <button id="resetState" class="btn warn">Reset local progress</button>
         </div>
         <div class="row">

@@ -1389,9 +1389,6 @@
           saveCfgFromUI(false);
         });
       }
-      for (const id of ["gistId", "gistToken"]) {
-        $(id).addEventListener("input", saveCfgFromUI);
-      }
 
       $("gistPull").addEventListener("click", () => {
         const nextCfg = readCfgFromUI();
@@ -1415,6 +1412,23 @@
         const runtimeCfg = withRuntimeToken(nextCfg);
         if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
         void gistSync(runtimeCfg).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
+      });
+
+      $("clearToken")?.addEventListener("click", () => {
+        sessionToken = "";
+        $("gistToken").value = "";
+        $("rememberToken").checked = false;
+        const cfgNow = getCfg();
+        const nextCfg = {
+          gistId: cfgNow.gistId || "",
+          gistToken: "",
+          rememberToken: false,
+          auto: cfgNow.auto !== false,
+          pullMs: clampPullInterval(cfgNow.pullMs)
+        };
+        setCfg(nextCfg);
+        startAutoSync();
+        setSyncStatus("Token cleared from this session and local storage.");
       });
     });
 
