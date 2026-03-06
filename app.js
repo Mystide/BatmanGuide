@@ -1074,6 +1074,10 @@
         header.classList.remove("header-hidden");
       }
 
+      if (shouldCompact && scrollingDown && y > 120 && header.classList.contains("header-expanded")) {
+        header.classList.remove("header-expanded");
+      }
+
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
       if (!forceVisible && shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
         releaseHeaderFocus();
