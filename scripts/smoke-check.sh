@@ -60,6 +60,9 @@ grep -q 'window.BATMAN_GUIDE_LIST' /tmp/batman-smoke-list.js || fail "list paylo
 grep -q 'function bootstrap()' /tmp/batman-smoke-app.js || fail "bootstrap function missing"
 grep -q 'NETWORK_FIRST_PATHS' /tmp/batman-smoke-sw.js || fail "service worker marker missing"
 
+echo "[smoke] validate list payload schema"
+node scripts/validate-list.js
+
 echo "[smoke] basic list size check"
 ITEM_COUNT=$(python3 - <<'PY'
 import re

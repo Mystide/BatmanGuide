@@ -11,6 +11,7 @@ Da du alleine am Projekt arbeitest, reicht ein sehr schlanker Ablauf:
    ```bash
    ./scripts/smoke-check.sh
    ```
+   (inkl. Listen-Schema-Validierung via `scripts/validate-list.js`)
 3. Commit + Push.
 
 Damit bekommst du schnell Rückmeldung, ohne unnötigen Prozess-Overhead.
@@ -45,3 +46,11 @@ Die Merge-Helfer sind weiter verfügbar, aber im Solo-Setup meist selten nötig:
 
 - Tests: `TESTING.md`
 - Konfliktregeln: `MERGE_POLICY.md`
+## Weitere Verbesserungen (Ideen/Fixes)
+
+- **Export/Import für Lesefortschritt** (JSON-Datei), damit der Fortschritt unabhängig von Browser-Storage gesichert ist.
+- **Broken-Link-Check** als optionales Script, das alle `url`-Einträge aus `list.js` auf HTTP-Status prüft.
+- **Datenpflege-Workflow**: kleine `npm run`-Kommandos für `format-list`, `validate-list`, `smoke`.
+- **UX**: „Zuletzt gelesen“-Filter/Shortcut, um schneller wieder einzusteigen.
+- **Performance**: Lazy Rendering für sehr große Listen (falls die Liste weiter wächst).
+
