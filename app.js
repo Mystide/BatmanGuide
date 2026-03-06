@@ -362,6 +362,12 @@
     return entries.find((e) => !ensureItemState(e).done) || null;
   }
 
+  function randomUnread(entries) {
+    const unread = entries.filter((e) => !ensureItemState(e).done);
+    if (!unread.length) return null;
+    return unread[Math.floor(Math.random() * unread.length)];
+  }
+
   function continueEntry(entries) {
     const found = entries.find((e) => e.id === state.lastTouchedId);
     return found || nextUnread(entries);
@@ -1299,6 +1305,10 @@
         const next = nextUnread(getFiltered());
         if (next) scrollToEntry(next.id);
       });
+      $("btnRandom").addEventListener("click", () => {
+        const random = randomUnread(getFiltered());
+        if (random) scrollToEntry(random.id);
+      });
       $("btnContinue").addEventListener("click", () => {
         const c = continueEntry(getFiltered());
         if (c) scrollToEntry(c.id);
@@ -1414,6 +1424,13 @@
           if (isTyping) return;
           e.preventDefault();
           $("btnToggleAdvanced")?.click();
+          return;
+        }
+
+        if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          if (isTyping) return;
+          e.preventDefault();
+          $("btnRandom")?.click();
         }
       });
 
