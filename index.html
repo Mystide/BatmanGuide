@@ -340,24 +340,26 @@
     <div id="errorBox" class="error hidden"></div>
     <div id="main"></div>
 
-    <section class="tools card">
-      <h2 style="margin:0 0 8px 0;font-size:18px;">Sync</h2>
-      <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices. Sync runs automatically as soon as Gist ID and token are set.</p>
-      <div class="stack">
-        <input id="gistId" class="input full" placeholder="Gist ID" />
-        <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" autocomplete="off" autocapitalize="off" spellcheck="false" />
-        <label class="row muted"><input type="checkbox" id="rememberToken" /> remember token on this device</label>
-        <div class="row">
-          <button id="clearToken" class="btn">Clear token</button>
-          <button id="exportState" class="btn">Export local backup</button>
-          <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
-          <input id="importStateFile" type="file" accept="application/json" class="hidden" />
-          <button id="resetState" class="btn warn">Reset local progress</button>
+    <details class="tools card" id="syncMenu">
+      <summary>Sync settings <span class="muted">(optional)</span></summary>
+      <div class="items">
+        <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices. Sync runs automatically as soon as Gist ID and token are set.</p>
+        <div class="stack">
+          <input id="gistId" class="input full" placeholder="Gist ID" />
+          <input id="gistToken" class="input full" type="password" placeholder="GitHub token with gist scope" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          <label class="row muted"><input type="checkbox" id="rememberToken" /> remember token on this device</label>
+          <div class="row">
+            <button id="clearToken" class="btn">Clear token</button>
+            <button id="exportState" class="btn">Export local backup</button>
+            <label class="btn" for="importStateFile" style="display:inline-flex; align-items:center;">Import backup</label>
+            <input id="importStateFile" type="file" accept="application/json" class="hidden" />
+            <button id="resetState" class="btn warn">Reset local progress</button>
+          </div>
+          <div id="syncStatus" class="status">Auto-sync is ready once Gist ID and token are filled.</div>
+          <div class="muted" style="font-size:12px;">Tip: leave “remember token” off on shared/public devices.</div>
         </div>
-        <div id="syncStatus" class="status">Auto-sync is ready once Gist ID and token are filled.</div>
-        <div class="muted" style="font-size:12px;">Tip: leave “remember token” off on shared/public devices.</div>
       </div>
-    </section>
+    </details>
   </main>
 
   <script src="list.js"></script>
