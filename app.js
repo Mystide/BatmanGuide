@@ -1079,7 +1079,11 @@
 
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
-      } else if (shouldCompact && scrollingDown && y > 180 && !filtersExpanded) {
+      } else if (shouldCompact && scrollingDown && y > 180) {
+        if (filtersExpanded) {
+          header.classList.remove("header-expanded");
+          setFiltersOpen(false, false);
+        }
         releaseHeaderFocus();
         setHeaderHidden(true);
       } else if (delta < -4) {
@@ -1089,9 +1093,9 @@
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        if (filtersExpanded) {
+        const stillExpanded = header.classList.contains("header-expanded");
+        if (stillExpanded && !headerHidden) {
           setFiltersOpen(userWantsFiltersOpen, false);
-          setHeaderHidden(false);
         } else {
           setFiltersOpen(false, false);
         }
