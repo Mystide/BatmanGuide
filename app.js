@@ -470,67 +470,74 @@
       .trim();
   }
 
-  function coverKeywordsFromUrl(url) {
+  function extractDcuiId(url) {
+    const value = String(url || "");
+    const match = value.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    return match ? match[0] : "";
+  }
+
+  function dcuiCollectionSlug(url) {
     try {
       const pathname = new URL(url).pathname || "";
-      const m = pathname.match(/\/(?:book|series|collections?)\/([^/]+)/i);
-      if (!m?.[1]) return "";
-      return titleToCoverQuery(m[1].replace(/-/g, " "));
+      const m = pathname.match(/\/collections\/([^/?#]+)/i);
+      return m?.[1] ? m[1] : "";
     } catch {
       return "";
     }
   }
 
-  function buildCoverQueries(entry) {
-    const raw = String(entry?.title || "").trim();
-    const base = titleToCoverQuery(raw);
-    const urlWords = coverKeywordsFromUrl(entry?.url || "");
-    const queries = [];
+  function buildOfficialCoverCandidates(entry) {
+    const candidates = [];
     const seen = new Set();
-
-    const push = (value) => {
-      const next = titleToCoverQuery(value);
+    const push = (url) => {
+      const next = normalizeCoverUrl(url);
       if (!next || seen.has(next)) return;
       seen.add(next);
-      queries.push(next);
+      candidates.push(next);
     };
 
-    push(base);
-    push(urlWords);
-    push(raw.replace(/\s+[—-].*$/, " "));
-    push(raw.replace(/^[^:]+:\s*/, " "));
-    push(raw.replace(/^[^:]+:\s*/, " ").replace(/\b(the|a)\b/gi, " "));
-    if (entry?.type === "collection") {
-      push(`${raw} comic`);
-      push(`${raw} graphic novel`);
+    push(REAL_COVERS[entry.id]);
+
+    const url = String(entry?.url || "");
+    const id = extractDcuiId(url);
+    if (id) {
+      push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/0.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/0.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/${id}/0.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/${id}/0.jpg`);
     }
 
-    return queries.slice(0, 6);
+    const slug = dcuiCollectionSlug(url);
+    if (slug) {
+      push(`https://imgix-media.wbdndc.net/ingest/collection/preview/${slug}/0.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/collections/preview/${slug}/0.jpg`);
+    }
+
+    return candidates;
   }
 
-  function scoreTitleMatch(entryTitle, candidateTitle) {
-    const wanted = titleToCoverQuery(entryTitle).toLowerCase();
-    const got = titleToCoverQuery(candidateTitle).toLowerCase();
-    if (!wanted || !got) return 0;
-    if (wanted === got) return 120;
-
-    const wantedWords = wanted.split(" ").filter(Boolean);
-    const gotWords = got.split(" ").filter(Boolean);
-    const wantedSet = new Set(wantedWords);
-    const gotSet = new Set(gotWords);
-
-    let overlap = 0;
-    for (const word of wantedSet) if (gotSet.has(word)) overlap++;
-
-    let score = overlap * 12;
-    if (got.includes(wanted) || wanted.includes(got)) score += 30;
-    if (wantedSet.has("batman") && !gotSet.has("batman")) score -= 40;
-    if (wantedWords.length > 2 && overlap < 2) score -= 20;
-    return score;
+  function isOfficialCoverUrl(url) {
+    const value = String(url || "");
+    return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
   }
 
-  function isAcceptableCoverMatch(score) {
-    return score >= 24;
+  async function resolveOfficialCover(entry, opts = {}) {
+    const id = entry.id;
+    const force = !!opts.force;
+    if (!id) return "";
+
+    const cached = coverCache[id];
+    if (!force && cached && isOfficialCoverUrl(cached)) return cached;
+
+    const candidates = buildOfficialCoverCandidates(entry);
+    for (const url of candidates) {
+      if (!url) continue;
+      coverCache[id] = url;
+      void saveJSON(KEYS.coverCache, coverCache);
+      return url;
+    }
+
+    return "";
   }
 
   function normalizeCoverUrl(url) {
@@ -538,88 +545,6 @@
     if (!url) return "";
     if (!url.includes("covers.openlibrary.org")) return url;
     return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
-  }
-
-  async function resolveOpenLibraryCover(entry, opts = {}) {
-    const id = entry.id;
-    const force = !!opts.force;
-    if (!id) return "";
-    if (!force && coverCache[id]) return coverCache[id] || "";
-    if (coverFetchInFlight.has(id)) return coverFetchInFlight.get(id);
-
-    const request = (async () => {
-      try {
-        let bestCover = "";
-        let bestScore = 0;
-        for (const query of buildCoverQueries(entry)) {
-          const res = await fetch(`https://openlibrary.org/search.json?title=${encodeURIComponent(query)}&limit=10`);
-          if (!res.ok) continue;
-          const data = await res.json();
-          const docs = Array.isArray(data?.docs) ? data.docs : [];
-          for (const doc of docs) {
-            if (!Number.isFinite(doc?.cover_i)) continue;
-            const score = scoreTitleMatch(entry.title, doc?.title);
-            if (score > bestScore) {
-              bestScore = score;
-              bestCover = normalizeCoverUrl(`https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`);
-            }
-          }
-          if (bestScore >= 60) break;
-        }
-        if (!bestCover || !isAcceptableCoverMatch(bestScore)) return "";
-        coverCache[id] = bestCover;
-        void saveJSON(KEYS.coverCache, coverCache);
-        return bestCover;
-      } catch {
-        // Ignore network failures and keep fallback artwork.
-        return "";
-      } finally {
-        coverFetchInFlight.delete(id);
-      }
-    })();
-
-    coverFetchInFlight.set(id, request);
-    return request;
-  }
-
-
-  async function resolveGoogleBooksCover(entry, opts = {}) {
-    const id = entry.id;
-    const force = !!opts.force;
-    if (!id) return "";
-    if (!force && coverCache[id]) return coverCache[id] || "";
-    try {
-      let bestImage = "";
-      let bestScore = 0;
-      for (const query of buildCoverQueries(entry)) {
-        const variants = [`intitle:${query}`, query, `${query} batman`];
-        for (const variant of variants) {
-          const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(variant)}&maxResults=8`);
-          if (!res.ok) continue;
-          const data = await res.json();
-          const items = Array.isArray(data?.items) ? data.items : [];
-          for (const item of items) {
-            const info = item?.volumeInfo || {};
-            const image = info?.imageLinks?.thumbnail || info?.imageLinks?.small || info?.imageLinks?.smallThumbnail || "";
-            if (!image) continue;
-            const score = scoreTitleMatch(entry.title, info?.title);
-            if (score > bestScore) {
-              bestScore = score;
-              bestImage = image;
-            }
-          }
-          if (bestScore >= 60) break;
-        }
-        if (bestScore >= 60) break;
-      }
-      if (!bestImage || !isAcceptableCoverMatch(bestScore)) return "";
-      const normalized = bestImage.replace(/^http:\/\//i, "https://");
-      coverCache[id] = normalized;
-      void saveJSON(KEYS.coverCache, coverCache);
-      return normalized;
-    } catch {
-      return "";
-    }
   }
 
   function loadCoverImage(coverEl, entry, url) {
@@ -641,28 +566,24 @@
   }
 
   async function applyBestCover(coverEl, entry) {
-    const candidates = [];
     const primary = REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
+
+    if (cached && !isOfficialCoverUrl(cached)) {
+      delete coverCache[entry.id];
+      void saveJSON(KEYS.coverCache, coverCache);
+    }
+
+    const candidates = [];
     if (primary) candidates.push(primary);
-    if (cached && cached !== primary) candidates.push(cached);
+    if (cached && isOfficialCoverUrl(cached) && cached !== primary) candidates.push(cached);
 
     for (const url of candidates) {
       if (await loadCoverImage(coverEl, entry, url)) return;
     }
 
-    const forcedOpenLibrary = await resolveOpenLibraryCover(entry, { force: true });
-    if (forcedOpenLibrary && forcedOpenLibrary !== cached && await loadCoverImage(coverEl, entry, forcedOpenLibrary)) return;
-    if (cached) {
-      delete coverCache[entry.id];
-      void saveJSON(KEYS.coverCache, coverCache);
-    }
-
-    const discoveredOpenLibrary = await resolveOpenLibraryCover(entry);
-    if (discoveredOpenLibrary && await loadCoverImage(coverEl, entry, discoveredOpenLibrary)) return;
-
-    const googleDiscovered = await resolveGoogleBooksCover(entry, { force: true });
-    if (googleDiscovered && googleDiscovered !== cached && await loadCoverImage(coverEl, entry, googleDiscovered)) return;
+    const discoveredOfficial = await resolveOfficialCover(entry, { force: true });
+    if (discoveredOfficial && await loadCoverImage(coverEl, entry, discoveredOfficial)) return;
 
     coverEl.classList.add("fallback-logo");
     coverEl.innerHTML = entryLogoFallback(entry);
@@ -1083,10 +1004,9 @@
 
 
   async function upgradeCoversFromDcui() {
-    const missing = LIST.filter((entry) => !REAL_COVERS[entry.id] && !coverCache[entry.id]);
-    for (const entry of missing.slice(0, 12)) {
-      await resolveOpenLibraryCover(entry);
-      if (!coverCache[entry.id]) await resolveGoogleBooksCover(entry);
+    const missing = LIST.filter((entry) => !REAL_COVERS[entry.id] && !isOfficialCoverUrl(coverCache[entry.id]));
+    for (const entry of missing.slice(0, 18)) {
+      await resolveOfficialCover(entry, { force: true });
     }
     if (missing.length) render();
   }
