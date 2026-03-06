@@ -192,13 +192,13 @@
     .sync-dock.is-ready:not([open]) {
       width: auto;
       max-width: calc(100vw - 24px);
-      opacity: .32;
-      transform: translateY(2px);
+      opacity: .16;
+      transform: translateY(8px) scale(.92);
     }
     .sync-dock.is-ready:not([open]):hover,
     .sync-dock.is-ready:not([open]):focus-within {
-      opacity: .72;
-      transform: translateY(0);
+      opacity: .48;
+      transform: translateY(0) scale(1);
     }
     .sync-dock.is-ready:not([open]) > summary {
       border-radius: 999px;
@@ -277,7 +277,7 @@
     .header-reveal {
       position: fixed;
       right: 16px;
-      bottom: 64px;
+      bottom: 84px;
       z-index: 60;
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
     }
@@ -319,7 +319,7 @@
       }
       .header-reveal {
         right: 12px;
-        bottom: 58px;
+        bottom: 80px;
       }
     }
   </style>
