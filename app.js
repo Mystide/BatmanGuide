@@ -1008,6 +1008,7 @@
     if (!header || !controls || !filterToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
     let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
+    let headerHidden = false;
     let forceHeaderVisibleUntil = 0;
 
     const syncFilterToggle = () => {
@@ -1024,8 +1025,14 @@
       writeUiPrefs({ filtersOpen: userWantsFiltersOpen });
     };
 
+    const setHeaderHidden = (hidden) => {
+      headerHidden = !!hidden;
+      header.classList.toggle("header-hidden", headerHidden);
+      syncRevealButton();
+    };
+
     const syncRevealButton = () => {
-      const shouldShow = header.classList.contains("header-hidden");
+      const shouldShow = headerHidden;
       revealHeader.classList.toggle("hidden", !shouldShow);
     };
 
@@ -1041,18 +1048,16 @@
       setFiltersOpen(opening);
       if (opening) {
         forceHeaderVisibleUntil = Date.now() + 900;
-        header.classList.remove("header-hidden");
+        setHeaderHidden(false);
       }
       header.classList.toggle("header-expanded", opening);
-      syncRevealButton();
     });
 
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
-      header.classList.remove("header-hidden");
+      setHeaderHidden(false);
       header.classList.remove("header-expanded");
       setFiltersOpen(false, false);
-      syncRevealButton();
     });
 
     const updateCompactMode = () => {
@@ -1062,41 +1067,43 @@
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
+      const filtersExpanded = header.classList.contains("header-expanded");
 
       if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden");
+        headerHidden = false;
         setFiltersOpen(userWantsFiltersOpen, false);
         syncRevealButton();
         return;
       }
 
-      if (forceVisible) {
-        header.classList.remove("header-hidden");
-      }
-
-      if (shouldCompact && scrollingDown && y > 120 && header.classList.contains("header-expanded")) {
-        header.classList.remove("header-expanded");
-      }
-
-      if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (!forceVisible && shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
+      if (forceVisible || !shouldCompact || y < 48 || nearTop) {
+        setHeaderHidden(false);
+      } else if (shouldCompact && scrollingDown && y > 180) {
+        if (filtersExpanded) {
+          header.classList.remove("header-expanded");
+          setFiltersOpen(false, false);
+        }
         releaseHeaderFocus();
-        header.classList.add("header-hidden");
-      }
-      if (!shouldCompact || y < 48) {
-        header.classList.remove("header-hidden");
+        setHeaderHidden(true);
+      } else if (delta < -4) {
+        setHeaderHidden(false);
       }
 
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        setFiltersOpen(header.classList.contains("header-expanded") ? userWantsFiltersOpen : false, false);
+        const stillExpanded = header.classList.contains("header-expanded");
+        if (stillExpanded && !headerHidden) {
+          setFiltersOpen(userWantsFiltersOpen, false);
+        } else {
+          setFiltersOpen(false, false);
+        }
       } else {
+        setHeaderHidden(false);
         setFiltersOpen(userWantsFiltersOpen, false);
         header.classList.remove("header-expanded");
       }
-
-      syncRevealButton();
     };
 
     let raf = 0;
