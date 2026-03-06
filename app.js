@@ -56,7 +56,8 @@
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
     coverCache: "batman-guide:covers:v2",
-    uiPrefs: "batman-guide:ui:v1"
+    uiPrefs: "batman-guide:ui:v1",
+    syncOnboardingSeen: "batman-guide:sync:onboarding-seen:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -1333,10 +1334,43 @@
 
     runUIStep("syncConfig", () => {
       const cfg = getCfg();
+      const syncMenu = $("syncMenu");
+      const syncMenuTitle = $("syncMenuTitle");
+      const syncMenuHint = $("syncMenuHint");
       sessionToken = cfg.gistToken || "";
       $("gistId").value = cfg.gistId;
       $("gistToken").value = cfg.gistToken;
       $("rememberToken").checked = cfg.rememberToken === true;
+
+      const onboardingSeen = () => {
+        try {
+          return localStorage.getItem(KEYS.syncOnboardingSeen) === "1";
+        } catch {
+          return true;
+        }
+      };
+
+      const markOnboardingSeen = () => {
+        try {
+          localStorage.setItem(KEYS.syncOnboardingSeen, "1");
+        } catch {
+          // ignore localStorage failures
+        }
+      };
+
+      const refreshSyncMenuState = (cfgNow) => {
+        if (!syncMenu) return;
+        const ready = syncReady(cfgNow);
+        syncMenu.classList.toggle("is-onboarding", !ready);
+        if (syncMenuTitle) syncMenuTitle.textContent = ready ? "Sync" : "Sync setup";
+        if (syncMenuHint) syncMenuHint.textContent = ready ? "(edit)" : "(one-time)";
+        if (!ready && !onboardingSeen()) {
+          syncMenu.open = true;
+          markOnboardingSeen();
+        } else if (ready) {
+          syncMenu.open = false;
+        }
+      };
 
       const readCfgFromUI = () => {
         const tokenInput = $("gistToken").value.trim();
@@ -1370,6 +1404,7 @@
           setSyncStatus("Auto-sync active (adaptive polling).");
           if (triggerSyncNow) scheduleSettingsSync();
         }
+        refreshSyncMenuState(nextCfg);
         return nextCfg;
       };
 
@@ -1399,7 +1434,10 @@
         setCfg(nextCfg);
         startAutoSync();
         setSyncStatus("Token cleared from this session and local storage.");
+        refreshSyncMenuState(nextCfg);
       });
+
+      refreshSyncMenuState(cfg);
     });
 
     runUIStep("backupTools", () => {

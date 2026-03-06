@@ -181,12 +181,30 @@
       z-index: 65;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
+      transition: opacity .2s ease, transform .2s ease;
     }
     .sync-dock > summary {
       border-bottom: none;
       border-radius: 14px;
       align-items: center;
       padding: 10px 12px;
+    }
+    .sync-dock:not([open]):not(.is-onboarding) {
+      width: auto;
+      max-width: calc(100vw - 24px);
+      opacity: .55;
+      transform: translateY(2px);
+    }
+    .sync-dock:not([open]):not(.is-onboarding):hover,
+    .sync-dock:not([open]):not(.is-onboarding):focus-within {
+      opacity: .9;
+      transform: translateY(0);
+    }
+    .sync-dock:not([open]):not(.is-onboarding) > summary {
+      border-radius: 999px;
+      padding: 7px 11px;
+      gap: 6px;
+      font-size: 12px;
     }
     .sync-dock[open] > summary {
       border-bottom: 1px solid var(--border);
@@ -196,6 +214,7 @@
       max-height: min(68vh, 480px);
       overflow: auto;
     }
+    .sync-dock-note { font-size: 11px; }
     .error {
       margin-top: 10px;
       border: 1px solid #7f1d1d;
@@ -282,6 +301,9 @@
         right: 12px;
         bottom: 12px;
         width: calc(100vw - 24px);
+      }
+      .sync-dock:not([open]):not(.is-onboarding) {
+        width: auto;
       }
     }
   </style>
@@ -370,7 +392,7 @@
     <div id="main"></div>
 
     <details class="tools card sync-dock" id="syncMenu">
-      <summary>Sync settings <span class="muted">(optional)</span></summary>
+      <summary><span id="syncMenuTitle">Sync settings</span> <span id="syncMenuHint" class="muted">(optional)</span></summary>
       <div class="items">
         <p class="muted" style="margin:0 0 10px 0;">Use a GitHub Gist as your shared save file between devices. Sync runs automatically as soon as Gist ID and token are set.</p>
         <div class="stack">
@@ -385,7 +407,7 @@
             <button id="resetState" class="btn warn">Reset local progress</button>
           </div>
           <div id="syncStatus" class="status">Auto-sync is ready once Gist ID and token are filled.</div>
-          <div class="muted" style="font-size:12px;">Tip: leave “remember token” off on shared/public devices.</div>
+          <div class="muted sync-dock-note">Tip: leave “remember token” off on shared/public devices.</div>
         </div>
       </div>
     </details>
