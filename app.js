@@ -1049,8 +1049,8 @@
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
       header.classList.remove("header-hidden");
-      header.classList.toggle("header-expanded", userWantsFiltersOpen);
-      setFiltersOpen(userWantsFiltersOpen, false);
+      header.classList.remove("header-expanded");
+      setFiltersOpen(false, false);
       syncRevealButton();
     });
 
