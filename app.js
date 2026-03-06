@@ -1355,7 +1355,16 @@
         };
       };
 
-      const saveCfgFromUI = () => {
+      let settingsSyncTimer = null;
+      const scheduleSettingsSync = () => {
+        if (settingsSyncTimer) clearTimeout(settingsSyncTimer);
+        settingsSyncTimer = setTimeout(() => {
+          settingsSyncTimer = null;
+          void runAutoSync("settings");
+        }, 260);
+      };
+
+      const saveCfgFromUI = (triggerSyncNow = false) => {
         const nextCfg = readCfgFromUI();
         setCfg(nextCfg);
         startAutoSync();
@@ -1365,35 +1374,45 @@
           setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
         } else {
           setSyncStatus("Auto-sync active (adaptive polling).");
-          void runAutoSync("settings");
+          if (triggerSyncNow) scheduleSettingsSync();
         }
         return nextCfg;
       };
 
       for (const id of ["gistId", "gistToken", "rememberToken", "autoSync"]) {
-        $(id).addEventListener("change", saveCfgFromUI);
+        $(id).addEventListener("change", () => {
+          saveCfgFromUI(true);
+        });
+      }
+      for (const id of ["gistId", "gistToken"]) {
+        $(id).addEventListener("input", () => {
+          saveCfgFromUI(false);
+        });
       }
       for (const id of ["gistId", "gistToken"]) {
         $(id).addEventListener("input", saveCfgFromUI);
       }
 
       $("gistPull").addEventListener("click", () => {
-        const runtimeCfg = withRuntimeToken(readCfgFromUI());
-        setCfg(runtimeCfg);
+        const nextCfg = readCfgFromUI();
+        setCfg(nextCfg);
+        const runtimeCfg = withRuntimeToken(nextCfg);
         if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
         void gistPull(runtimeCfg, true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
       });
 
       $("gistPush").addEventListener("click", () => {
-        const runtimeCfg = withRuntimeToken(readCfgFromUI());
-        setCfg(runtimeCfg);
+        const nextCfg = readCfgFromUI();
+        setCfg(nextCfg);
+        const runtimeCfg = withRuntimeToken(nextCfg);
         if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
         void gistPush(runtimeCfg).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
       });
 
       $("gistSync").addEventListener("click", () => {
-        const runtimeCfg = withRuntimeToken(readCfgFromUI());
-        setCfg(runtimeCfg);
+        const nextCfg = readCfgFromUI();
+        setCfg(nextCfg);
+        const runtimeCfg = withRuntimeToken(nextCfg);
         if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
         void gistSync(runtimeCfg).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
       });
