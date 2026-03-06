@@ -97,7 +97,8 @@
 
 
   const defaultUiPrefs = () => ({
-    advancedOpen: false
+    advancedOpen: false,
+    tabletMode: null
   });
 
   function readUiPrefs() {
@@ -106,6 +107,29 @@
 
   function writeUiPrefs(next) {
     saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), next));
+  }
+
+  function detectTabletByDevice() {
+    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    const mediumViewport = window.innerWidth >= 700 && window.innerWidth <= 1366;
+    return coarsePointer && mediumViewport;
+  }
+
+  function tabletModeEnabled() {
+    const prefs = readUiPrefs();
+    if (typeof prefs.tabletMode === "boolean") return prefs.tabletMode;
+    return detectTabletByDevice();
+  }
+
+  function applyTabletMode(force = null) {
+    const enabled = force == null ? tabletModeEnabled() : !!force;
+    document.body.classList.toggle("tablet-mode", enabled);
+    const btn = $("btnTabletMode");
+    if (btn) {
+      btn.setAttribute("aria-pressed", String(enabled));
+      btn.textContent = enabled ? "Tablet mode on" : "Tablet mode off";
+    }
+    return enabled;
   }
 
   function readFilters() {
@@ -903,6 +927,7 @@
     if (!header || !advanced || !toggle || !headerToggle || !revealHeader) return;
     let lastScrollY = window.scrollY;
     let userWantsAdvancedOpen = !!readUiPrefs().advancedOpen;
+    let userWantsTabletMode = applyTabletMode();
 
     const syncToggleLabel = () => {
       const open = !advanced.classList.contains("hidden");
@@ -1002,6 +1027,7 @@
       if (raf) return;
       raf = requestAnimationFrame(() => {
         raf = 0;
+        userWantsTabletMode = applyTabletMode();
         updateCompactMode();
         lastScrollY = window.scrollY;
       });
@@ -1192,6 +1218,17 @@
       });
     });
     runUIStep("quickNav", () => {
+      const tabletBtn = $("btnTabletMode");
+      if (tabletBtn) {
+        tabletBtn.addEventListener("click", () => {
+          const current = tabletModeEnabled();
+          const next = !current;
+          writeUiPrefs(Object.assign(readUiPrefs(), { tabletMode: next }));
+          applyTabletMode(next);
+          window.dispatchEvent(new Event("resize"));
+        });
+      }
+
       $("btnTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
       $("btnNext").addEventListener("click", () => {
         const next = nextUnread(getFiltered());
