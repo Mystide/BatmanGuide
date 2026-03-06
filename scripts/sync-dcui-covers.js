@@ -56,6 +56,53 @@ function extractCoverFromHtml(html) {
   return normalizeCoverUrl(imgix && imgix[0]);
 }
 
+function normalizeDcuiContentUrl(url) {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+
+  const unescaped = raw
+    .replace(/\\u002F/gi, "/")
+    .replace(/\\\//g, "/")
+    .replace(/^https?:\/\\/i, (m) => m.replace(/\\/g, ""));
+
+  const absolute = unescaped.startsWith("/")
+    ? `https://www.dcuniverseinfinite.com${unescaped}`
+    : unescaped;
+
+  if (!/^https?:\/\/www\.dcuniverseinfinite\.com\//i.test(absolute)) return "";
+
+  try {
+    const parsed = new URL(absolute);
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+function extractFirstIssueUrlFromCollectionHtml(html) {
+  if (!html) return "";
+
+  const content = String(html)
+    .replace(/&amp;/gi, "&")
+    .replace(/\\u002F/gi, "/")
+    .replace(/\\\//g, "/");
+
+  const patterns = [
+    /https?:\/\/www\.dcuniverseinfinite\.com\/comics\/(?:book|issue)\/[^"'<>\s)\\]+/gi,
+    /\/(?:comics\/(?:book|issue)\/[^"'<>\s)\\]+)/gi
+  ];
+
+  for (const re of patterns) {
+    for (const match of content.matchAll(re)) {
+      const candidate = normalizeDcuiContentUrl(match[0]);
+      if (candidate) return candidate;
+    }
+  }
+
+  return "";
+}
+
 async function fetchHtml(url) {
   const res = await fetch(url, {
     redirect: "follow",
@@ -75,12 +122,25 @@ function writeList(list) {
 }
 
 async function resolveEntryCover(entry) {
+  const isCollectionOrEvent = /^(collection|event)$/i.test(String(entry.type || ""));
+
   for (const url of getUrlCandidates(entry)) {
     try {
       const html = await fetchHtml(url);
       const cover = extractCoverFromHtml(html);
       if (cover) return cover;
-    } catch {
+
+      if (isCollectionOrEvent) {
+        const firstIssueUrl = extractFirstIssueUrlFromCollectionHtml(html);
+        if (firstIssueUrl) {
+          const firstIssueHtml = await fetchHtml(firstIssueUrl);
+          const firstIssueCover = extractCoverFromHtml(firstIssueHtml);
+          if (firstIssueCover) return firstIssueCover;
+        }
+      }
+    } catch (error) {
+      const reason = error && error.message ? error.message : String(error);
+      console.warn(`[cover-sync] WARN ${entry.id || "?"}: fetch failed for ${url} (${reason})`);
       // continue with next URL candidate
     }
   }
