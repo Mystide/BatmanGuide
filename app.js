@@ -1040,6 +1040,7 @@
       const opening = controls.classList.contains("hidden");
       setFiltersOpen(opening);
       if (opening) {
+        forceHeaderVisibleUntil = Date.now() + 900;
         header.classList.remove("header-hidden");
       }
       header.classList.toggle("header-expanded", opening);
@@ -1074,11 +1075,7 @@
       }
 
       if (delta < -4 && nearTop) header.classList.remove("header-hidden");
-      if (!forceVisible && shouldCompact && scrollingDown && y > 180) {
-        if (header.classList.contains("header-expanded")) {
-          header.classList.remove("header-expanded");
-          setFiltersOpen(false, false);
-        }
+      if (!forceVisible && shouldCompact && scrollingDown && y > 180 && !header.classList.contains("header-expanded")) {
         releaseHeaderFocus();
         header.classList.add("header-hidden");
       }
