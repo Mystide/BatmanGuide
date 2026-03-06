@@ -56,7 +56,8 @@
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
     coverCache: "batman-guide:covers:v2",
-    uiPrefs: "batman-guide:ui:v1"
+    uiPrefs: "batman-guide:ui:v1",
+    syncOnboardingSeen: "batman-guide:sync:onboarding-seen:v1"
   };
 
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
@@ -1080,7 +1081,7 @@
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
       } else if (shouldCompact && scrollingDown && y > 180) {
-        if (filtersExpanded) {
+        if (!userWantsFiltersOpen && filtersExpanded) {
           header.classList.remove("header-expanded");
           setFiltersOpen(false, false);
         }
@@ -1093,16 +1094,16 @@
       header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
-        const stillExpanded = header.classList.contains("header-expanded");
-        if (stillExpanded && !headerHidden) {
-          setFiltersOpen(userWantsFiltersOpen, false);
+        if (userWantsFiltersOpen) {
+          header.classList.add("header-expanded");
+          setFiltersOpen(true, false);
         } else {
           setFiltersOpen(false, false);
         }
       } else {
         setHeaderHidden(false);
         setFiltersOpen(userWantsFiltersOpen, false);
-        header.classList.remove("header-expanded");
+        header.classList.toggle("header-expanded", userWantsFiltersOpen);
       }
     };
 
@@ -1333,10 +1334,44 @@
 
     runUIStep("syncConfig", () => {
       const cfg = getCfg();
+      const syncMenu = $("syncMenu");
+      const syncMenuTitle = $("syncMenuTitle");
+      const syncMenuHint = $("syncMenuHint");
       sessionToken = cfg.gistToken || "";
       $("gistId").value = cfg.gistId;
       $("gistToken").value = cfg.gistToken;
       $("rememberToken").checked = cfg.rememberToken === true;
+
+      const onboardingSeen = () => {
+        try {
+          return localStorage.getItem(KEYS.syncOnboardingSeen) === "1";
+        } catch {
+          return true;
+        }
+      };
+
+      const markOnboardingSeen = () => {
+        try {
+          localStorage.setItem(KEYS.syncOnboardingSeen, "1");
+        } catch {
+          // ignore localStorage failures
+        }
+      };
+
+      const refreshSyncMenuState = (cfgNow) => {
+        if (!syncMenu) return;
+        const ready = syncReady(cfgNow);
+        syncMenu.classList.toggle("is-onboarding", !ready);
+        syncMenu.classList.toggle("is-ready", ready);
+        if (syncMenuTitle) syncMenuTitle.textContent = ready ? "☁" : "Sync setup";
+        if (syncMenuHint) syncMenuHint.textContent = ready ? "" : "(one-time)";
+        if (!ready && !onboardingSeen()) {
+          syncMenu.open = true;
+          markOnboardingSeen();
+        } else if (ready) {
+          syncMenu.open = false;
+        }
+      };
 
       const readCfgFromUI = () => {
         const tokenInput = $("gistToken").value.trim();
@@ -1370,6 +1405,7 @@
           setSyncStatus("Auto-sync active (adaptive polling).");
           if (triggerSyncNow) scheduleSettingsSync();
         }
+        refreshSyncMenuState(nextCfg);
         return nextCfg;
       };
 
@@ -1399,7 +1435,10 @@
         setCfg(nextCfg);
         startAutoSync();
         setSyncStatus("Token cleared from this session and local storage.");
+        refreshSyncMenuState(nextCfg);
       });
+
+      refreshSyncMenuState(cfg);
     });
 
     runUIStep("backupTools", () => {
