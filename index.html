@@ -224,6 +224,29 @@
       z-index: 60;
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
     }
+
+    body.tablet-mode {
+      font-size: 17px;
+    }
+    body.tablet-mode .btn,
+    body.tablet-mode .input,
+    body.tablet-mode .select,
+    body.tablet-mode .chip {
+      min-height: 44px;
+      font-size: 15px;
+      padding: 10px 12px;
+    }
+    body.tablet-mode .title { font-size: 20px; }
+    body.tablet-mode .muted { font-size: 14px; }
+    body.tablet-mode .item { padding: 12px; }
+    body.tablet-mode .item-grid { grid-template-columns: 78px 1fr; }
+    body.tablet-mode .cover { width: 78px; height: 112px; }
+    body.tablet-mode .top.header-hidden { transform: translateY(0); opacity: 1; }
+    @media (min-width: 761px) and (max-width: 1180px) {
+      .filters { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+      .advanced-controls { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
+      .top-actions { justify-content: flex-start; }
+    }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
@@ -252,6 +275,7 @@
             <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
             <div>
               <h1>Batman Guide</h1>
+              <div class="badge">Tablet friendly</div>
             </div>
           </div>
         </div>
@@ -261,6 +285,7 @@
           <button class="btn" id="btnHeaderToggle" aria-expanded="false">Filters</button>
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnContinue">Continue</button>
+          <button class="btn" id="btnTabletMode" type="button" aria-pressed="false">Tablet mode off</button>
           <button class="btn" id="btnTop">Top</button>
           </div>
         </div>
