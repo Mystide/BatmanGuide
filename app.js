@@ -1078,27 +1078,25 @@
         return;
       }
 
-      if (forceVisible || !shouldCompact || y < 48 || nearTop) {
+      if (userWantsFiltersOpen) {
+        header.classList.toggle("compact", shouldCompact);
         setHeaderHidden(false);
       } else if (shouldCompact && scrollingDown && y > 180) {
         if (!userWantsFiltersOpen && filtersExpanded) {
           header.classList.remove("header-expanded");
           setFiltersOpen(false, false);
         }
-        releaseHeaderFocus();
-        setHeaderHidden(true);
-      } else if (delta < -4) {
-        setHeaderHidden(false);
-      }
 
-      header.classList.toggle("compact", shouldCompact);
+        header.classList.toggle("compact", shouldCompact);
 
       if (shouldCompact && y > 24) {
         if (userWantsFiltersOpen) {
           header.classList.add("header-expanded");
           setFiltersOpen(true, false);
         } else {
-          setFiltersOpen(false, false);
+          setHeaderHidden(false);
+          setFiltersOpen(userWantsFiltersOpen, false);
+          header.classList.remove("header-expanded");
         }
       } else {
         setHeaderHidden(false);
