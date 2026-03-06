@@ -1337,7 +1337,6 @@
       $("gistId").value = cfg.gistId;
       $("gistToken").value = cfg.gistToken;
       $("rememberToken").checked = cfg.rememberToken === true;
-      $("autoSync").checked = cfg.auto !== false;
 
       const readCfgFromUI = () => {
         const tokenInput = $("gistToken").value.trim();
@@ -1347,7 +1346,7 @@
           gistId: $("gistId").value.trim(),
           gistToken: rememberToken ? tokenInput : "",
           rememberToken,
-          auto: $("autoSync").checked,
+          auto: true,
           pullMs: clampPullInterval(getCfg().pullMs)
         };
       };
@@ -1366,9 +1365,7 @@
         setCfg(nextCfg);
         startAutoSync();
         if (!syncReady(nextCfg)) {
-          setSyncStatus("Auto-sync is off until Gist ID and token are filled.");
-        } else if (!nextCfg.auto) {
-          setSyncStatus("Auto-sync paused. Use Pull/Push/Sync now for manual sync.");
+          setSyncStatus("Auto-sync is ready once Gist ID and token are filled.");
         } else {
           setSyncStatus("Auto-sync active (adaptive polling).");
           if (triggerSyncNow) scheduleSettingsSync();
@@ -1376,7 +1373,7 @@
         return nextCfg;
       };
 
-      for (const id of ["gistId", "gistToken", "rememberToken", "autoSync"]) {
+      for (const id of ["gistId", "gistToken", "rememberToken"]) {
         $(id).addEventListener("change", () => {
           saveCfgFromUI(true);
         });
@@ -1387,30 +1384,6 @@
         });
       }
 
-      $("gistPull").addEventListener("click", () => {
-        const nextCfg = readCfgFromUI();
-        setCfg(nextCfg);
-        const runtimeCfg = withRuntimeToken(nextCfg);
-        if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
-        void gistPull(runtimeCfg, true).catch((e) => setSyncStatus(`Pull failed: ${String(e.message || e)}`));
-      });
-
-      $("gistPush").addEventListener("click", () => {
-        const nextCfg = readCfgFromUI();
-        setCfg(nextCfg);
-        const runtimeCfg = withRuntimeToken(nextCfg);
-        if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
-        void gistPush(runtimeCfg).catch((e) => setSyncStatus(`Push failed: ${String(e.message || e)}`));
-      });
-
-      $("gistSync").addEventListener("click", () => {
-        const nextCfg = readCfgFromUI();
-        setCfg(nextCfg);
-        const runtimeCfg = withRuntimeToken(nextCfg);
-        if (!syncReady(runtimeCfg)) return setSyncStatus("Set Gist ID and token first.");
-        void gistSync(runtimeCfg).catch((e) => setSyncStatus(`Sync failed: ${String(e.message || e)}`));
-      });
-
       $("clearToken")?.addEventListener("click", () => {
         sessionToken = "";
         $("gistToken").value = "";
@@ -1420,7 +1393,7 @@
           gistId: cfgNow.gistId || "",
           gistToken: "",
           rememberToken: false,
-          auto: cfgNow.auto !== false,
+          auto: true,
           pullMs: clampPullInterval(cfgNow.pullMs)
         };
         setCfg(nextCfg);
