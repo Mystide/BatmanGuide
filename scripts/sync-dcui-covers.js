@@ -56,6 +56,35 @@ function extractCoverFromHtml(html) {
   return normalizeCoverUrl(imgix && imgix[0]);
 }
 
+function normalizeDcuiContentUrl(url) {
+  const value = String(url || "").replace(/\\\//g, "/").trim();
+  if (!/^https?:\/\/www\.dcuniverseinfinite\.com\//i.test(value)) return "";
+  return value;
+}
+
+function extractFirstIssueUrlFromCollectionHtml(html) {
+  if (!html) return "";
+
+  const patterns = [
+    /https?:\\\/\\\/www\.dcuniverseinfinite\.com\\\/comics\\\/(?:book|issue)\\\/[^"]+/gi,
+    /https?:\/\/www\.dcuniverseinfinite\.com\/comics\/(?:book|issue)\/[^"'<>\s)]+/gi,
+    /\/(comics\/(?:book|issue)\/[^"'<>\s)]+)/gi
+  ];
+
+  for (const re of patterns) {
+    const matches = html.match(re) || [];
+    for (const m of matches) {
+      const absolute = m.startsWith("/")
+        ? `https://www.dcuniverseinfinite.com${m}`
+        : m;
+      const normalized = normalizeDcuiContentUrl(absolute);
+      if (normalized) return normalized;
+    }
+  }
+
+  return "";
+}
+
 async function fetchHtml(url) {
   const res = await fetch(url, {
     redirect: "follow",
@@ -80,6 +109,15 @@ async function resolveEntryCover(entry) {
       const html = await fetchHtml(url);
       const cover = extractCoverFromHtml(html);
       if (cover) return cover;
+
+      if (/^(collection|event)$/i.test(String(entry.type || ""))) {
+        const firstIssueUrl = extractFirstIssueUrlFromCollectionHtml(html);
+        if (firstIssueUrl) {
+          const firstIssueHtml = await fetchHtml(firstIssueUrl);
+          const firstIssueCover = extractCoverFromHtml(firstIssueHtml);
+          if (firstIssueCover) return firstIssueCover;
+        }
+      }
     } catch {
       // continue with next URL candidate
     }
