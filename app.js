@@ -61,6 +61,7 @@
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
     coverCache: "batman-guide:covers:v2",
+    fallbackCoverCache: "batman-guide:fallback-covers:v1",
     uiPrefs: "batman-guide:ui:v1",
     syncOnboardingSeen: "batman-guide:sync:onboarding-seen:v1"
   };
@@ -194,6 +195,7 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
+  const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
 
@@ -546,6 +548,52 @@
     return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
   }
 
+  function escapeSvgText(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function generatedCoverDataUrl(entry) {
+    const safeTitle = escapeSvgText(entry?.title || "Batman");
+    const safeType = escapeSvgText(entryCoverLabel(entry));
+    const safeId = escapeSvgText(entry?.id || "");
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="320" height="460" viewBox="0 0 320 460" role="img" aria-label="${safeTitle} cover">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+        </defs>
+        <rect width="320" height="460" fill="url(#g)" />
+        <rect x="18" y="18" width="284" height="424" rx="18" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" />
+        <text x="28" y="70" fill="#f8fafc" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="700" letter-spacing="1">${safeType}</text>
+        <foreignObject x="28" y="92" width="264" height="300">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:32px;line-height:1.15;font-weight:800;">${safeTitle}</div>
+        </foreignObject>
+        <text x="28" y="430" fill="rgba(248,250,252,.85)" font-family="Arial,Helvetica,sans-serif" font-size="14" letter-spacing=".8">${safeId}</text>
+      </svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+
+  function resolveFallbackCover(entry, opts = {}) {
+    const id = entry.id;
+    const force = !!opts.force;
+    if (!id) return "";
+
+    const cached = normalizeCoverUrl(fallbackCoverCache[id]);
+    if (!force && cached && !isFailedCoverCandidate(id, cached)) return cached;
+
+    const generated = generatedCoverDataUrl(entry);
+    fallbackCoverCache[id] = generated;
+    void saveJSON(KEYS.fallbackCoverCache, fallbackCoverCache);
+    return generated;
+  }
+
   async function resolveOfficialCover(entry, opts = {}) {
     const id = entry.id;
     const force = !!opts.force;
@@ -600,6 +648,7 @@
   async function applyBestCover(coverEl, entry) {
     const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
+    const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
 
     if (cached && !isOfficialCoverUrl(cached)) {
       delete coverCache[entry.id];
@@ -609,6 +658,7 @@
     const candidates = [];
     if (primary) candidates.push(primary);
     if (cached && isOfficialCoverUrl(cached) && cached !== primary) candidates.push(cached);
+    if (fallbackCached && fallbackCached !== primary && fallbackCached !== cached) candidates.push(fallbackCached);
 
     for (const url of candidates) {
       if (await loadCoverImage(coverEl, entry, url)) return;
