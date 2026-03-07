@@ -141,7 +141,7 @@
         type: ["", "book", "series", "collection"].includes(type) ? type : "",
         onlyRemaining: params.get("remaining") === "1",
         hideOptional: params.get("required") === "1",
-        sortBy: ["order", "title", "progress"].includes(sortBy) ? sortBy : "order"
+        sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order"
       };
     } catch {
       return defaultFilters();
@@ -347,6 +347,13 @@
         const ta = Date.parse(sa.touchedAt || "") || 0;
         const tb = Date.parse(sb.touchedAt || "") || 0;
         return ta - tb;
+      });
+    } else if (sortBy === "recent") {
+      filtered.sort((a, b) => {
+        const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
+        const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
+        if (ta !== tb) return tb - ta;
+        return LIST.indexOf(a) - LIST.indexOf(b);
       });
     }
 
