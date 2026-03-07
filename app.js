@@ -79,6 +79,7 @@
     build: BUILD_ID,
     updatedAt: null,
     lastTouchedId: null,
+    customCovers: {},
     items: {}
   });
 
