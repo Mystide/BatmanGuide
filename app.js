@@ -10,18 +10,23 @@
     "E1-02": "https://books.google.com/books/content?id=yJf0DQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E1-03": "https://books.google.com/books/content?id=NVUwDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E1-04": "https://books.google.com/books/content?id=RnxJDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E1-05": "https://imgix-media.wbdndc.net/ingest/book/preview/9a319085-3586-413b-9c59-e54845d2514b/0.jpg",
     "E1-06": "https://books.google.com/books/content?id=yjyZwgEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "E1-07": "https://covers.openlibrary.org/b/id/12415426-M.jpg",
     "E2-01": "https://covers.openlibrary.org/b/id/7803421-M.jpg",
     "E3-01": "https://books.google.com/books/content?id=K6qn0QEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     "E3-02": "https://books.google.com/books/content?id=Zvg4AgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E3-03": "https://imgix-media.wbdndc.net/ingest/collection/preview/story-batman-strange-apparitions/0.jpg",
+    "E3-04": "https://imgix-media.wbdndc.net/ingest/collection/preview/story-batman-thenightbatmandied/0.jpg",
     "E4-00": "https://covers.openlibrary.org/b/id/749280-M.jpg",
     "E4-01": "https://covers.openlibrary.org/b/isbn/9781401207526-M.jpg",
     "E4-02": "https://covers.openlibrary.org/b/id/11026165-M.jpg",
     "E4-02A": "https://books.google.com/books/content?id=Rxt3EQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "E4-03": "https://imgix-media.wbdndc.net/ingest/collection/preview/story-batman-shaman/0.jpg",
     "E4-03A": "https://books.google.com/books/content?id=oZaVBgAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-03B": "https://books.google.com/books/content?id=CKHWAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-03C": "https://books.google.com/books/content?id=PE7yngEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "E4-04": "https://imgix-media.wbdndc.net/ingest/book/preview/f2a3bcf5-ecc4-494c-88bd-7e44f303dba5/0.jpg",
     "E4-05": "https://covers.openlibrary.org/b/id/15166226-M.jpg",
     "E4-06": "https://books.google.com/books/content?id=jpV0DwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
     "E4-07": "https://covers.openlibrary.org/b/isbn/9781563894695-M.jpg",
@@ -461,16 +466,6 @@
     `;
   }
 
-  function titleToCoverQuery(title) {
-    return String(title || "")
-      .replace(/\(.*?\)/g, " ")
-      .replace(/[—:]/g, " ")
-      .replace(/\bvol\.?\b/gi, "volume")
-      .replace(/[^a-zA-Z0-9 ]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
   function extractDcuiId(url) {
     const value = String(url || "");
     const match = value.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
@@ -621,6 +616,7 @@
 
     const discoveredOfficial = await resolveOfficialCover(entry, { force: true });
     if (discoveredOfficial && await loadCoverImage(coverEl, entry, discoveredOfficial)) return;
+
 
     coverEl.classList.add("fallback-logo");
     coverEl.innerHTML = entryLogoFallback(entry);
