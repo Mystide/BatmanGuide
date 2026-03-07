@@ -809,11 +809,15 @@
         const top = document.createElement("div");
         top.className = "item-head";
         const safeTitle = escapeHtml(entry.title);
+        const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
         const safeUrl = escapeAttr(safeExternalUrl(entry.url));
         top.innerHTML = `
           <label class="item-title-row">
             <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-            <span class="title">${safeTitle}</span>
+            <span class="title-wrap">
+              <span class="title">${safeTitle}</span>
+              ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
+            </span>
           </label>
           <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
         `;
