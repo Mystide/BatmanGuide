@@ -463,16 +463,6 @@
     `;
   }
 
-  function titleToCoverQuery(title) {
-    return String(title || "")
-      .replace(/\(.*?\)/g, " ")
-      .replace(/[—:]/g, " ")
-      .replace(/\bvol\.?\b/gi, "volume")
-      .replace(/[^a-zA-Z0-9 ]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
   function extractDcuiId(url) {
     const value = String(url || "");
     const match = value.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
@@ -553,17 +543,39 @@
     return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
   }
 
-  async function fetchJson(url) {
-    try {
-      const res = await fetch(url, { headers: { accept: "application/json" } });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch {
-      return null;
-    }
+  function escapeSvgText(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
-  async function resolveFallbackCover(entry, opts = {}) {
+  function generatedCoverDataUrl(entry) {
+    const safeTitle = escapeSvgText(entry?.title || "Batman");
+    const safeType = escapeSvgText(entryCoverLabel(entry));
+    const safeId = escapeSvgText(entry?.id || "");
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="320" height="460" viewBox="0 0 320 460" role="img" aria-label="${safeTitle} cover">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+        </defs>
+        <rect width="320" height="460" fill="url(#g)" />
+        <rect x="18" y="18" width="284" height="424" rx="18" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" />
+        <text x="28" y="70" fill="#f8fafc" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="700" letter-spacing="1">${safeType}</text>
+        <foreignObject x="28" y="92" width="264" height="300">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:32px;line-height:1.15;font-weight:800;">${safeTitle}</div>
+        </foreignObject>
+        <text x="28" y="430" fill="rgba(248,250,252,.85)" font-family="Arial,Helvetica,sans-serif" font-size="14" letter-spacing=".8">${safeId}</text>
+      </svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }
+
+  function resolveFallbackCover(entry, opts = {}) {
     const id = entry.id;
     const force = !!opts.force;
     if (!id) return "";
@@ -571,47 +583,10 @@
     const cached = normalizeCoverUrl(fallbackCoverCache[id]);
     if (!force && cached && !isFailedCoverCandidate(id, cached)) return cached;
 
-    const titleQuery = titleToCoverQuery(entry.title);
-    if (!titleQuery) return "";
-
-    const candidates = [];
-    const seen = new Set();
-    const add = (url) => {
-      const normalized = normalizeCoverUrl(url);
-      if (!normalized || seen.has(normalized)) return;
-      seen.add(normalized);
-      candidates.push(normalized);
-    };
-
-    const openLibrary = await fetchJson(`https://openlibrary.org/search.json?title=${encodeURIComponent(titleQuery)}&limit=5`);
-    if (Array.isArray(openLibrary?.docs)) {
-      for (const doc of openLibrary.docs) {
-        if (doc?.cover_i) add(`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`);
-      }
-    }
-
-    const googleBooks = await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(`intitle:${titleQuery}`)}&maxResults=5`);
-    if (Array.isArray(googleBooks?.items)) {
-      for (const item of googleBooks.items) {
-        const links = item?.volumeInfo?.imageLinks || {};
-        add(links.thumbnail);
-        add(links.smallThumbnail);
-      }
-    }
-
-    for (const url of candidates) {
-      if (isFailedCoverCandidate(id, url)) continue;
-      const ok = await canLoadImageUrl(url);
-      if (!ok) {
-        markCoverCandidateFailure(id, url);
-        continue;
-      }
-      fallbackCoverCache[id] = url;
-      void saveJSON(KEYS.fallbackCoverCache, fallbackCoverCache);
-      return url;
-    }
-
-    return "";
+    const generated = generatedCoverDataUrl(entry);
+    fallbackCoverCache[id] = generated;
+    void saveJSON(KEYS.fallbackCoverCache, fallbackCoverCache);
+    return generated;
   }
 
   async function resolveOfficialCover(entry, opts = {}) {
@@ -687,7 +662,7 @@
     const discoveredOfficial = await resolveOfficialCover(entry, { force: true });
     if (discoveredOfficial && await loadCoverImage(coverEl, entry, discoveredOfficial)) return;
 
-    const discoveredFallback = await resolveFallbackCover(entry, { force: true });
+    const discoveredFallback = resolveFallbackCover(entry, { force: true });
     if (discoveredFallback && await loadCoverImage(coverEl, entry, discoveredFallback)) return;
 
     coverEl.classList.add("fallback-logo");
