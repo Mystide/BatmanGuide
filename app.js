@@ -655,6 +655,10 @@
     void saveJSON(KEYS.customCovers, customCovers);
   }
 
+  function hasSavedManualCover(entryId) {
+    return !!getManualCoverUrl(entryId);
+  }
+
   function loadCoverImage(coverEl, entry, url) {
     return new Promise((resolve) => {
       if (!coverEl || !url) return resolve(false);
@@ -762,7 +766,8 @@
         const item = document.createElement("div");
         const isContinueTarget = continueId && entry.id === continueId;
         const isRandomTarget = randomTargetId && entry.id === randomTargetId;
-        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}`;
+        const hasSavedCover = hasSavedManualCover(entry.id);
+        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
         item.dataset.id = entry.id;
 
         const cover = document.createElement("div");
@@ -790,6 +795,7 @@
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
           <span class="muted">${escapeHtml(entry.id)}</span>
