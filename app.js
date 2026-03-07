@@ -96,7 +96,9 @@
     type: "",
     onlyRemaining: false,
     hideOptional: false,
-    sortBy: "order"
+    sortBy: "order",
+    track: "",
+    character: ""
   });
 
 
@@ -126,7 +128,9 @@
       type: $("typeFilter").value || "",
       onlyRemaining: !!$("onlyRemaining").checked,
       hideOptional: !!$("hideOptional").checked,
-      sortBy: $("sortBy").value || "order"
+      sortBy: $("sortBy").value || "order",
+      track: $("trackFilter").value || "",
+      character: $("characterFilter").value || ""
     });
   }
 
@@ -135,12 +139,16 @@
       const params = new URLSearchParams(window.location.search || "");
       const type = params.get("type") || "";
       const sortBy = params.get("sort") || "order";
+      const track = params.get("track") || "";
+      const character = params.get("character") || "";
       return {
         search: params.get("q") || "",
         type: ["", "book", "series", "collection"].includes(type) ? type : "",
         onlyRemaining: params.get("remaining") === "1",
         hideOptional: params.get("required") === "1",
-        sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order"
+        sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order",
+        track: ["", "main", "batfamily"].includes(track) ? track : "",
+        character: character
       };
     } catch {
       return defaultFilters();
@@ -154,7 +162,9 @@
         type: $("typeFilter").value || "",
         onlyRemaining: !!$("onlyRemaining").checked,
         hideOptional: !!$("hideOptional").checked,
-        sortBy: $("sortBy").value || "order"
+        sortBy: $("sortBy").value || "order",
+        track: $("trackFilter").value || "",
+        character: $("characterFilter").value || ""
       };
       const defaults = defaultFilters();
       const next = new URLSearchParams(window.location.search || "");
@@ -173,6 +183,12 @@
 
       if (filters.sortBy && filters.sortBy !== defaults.sortBy) next.set("sort", filters.sortBy);
       else next.delete("sort");
+
+      if (filters.track && filters.track !== defaults.track) next.set("track", filters.track);
+      else next.delete("track");
+
+      if (filters.character && filters.character !== defaults.character) next.set("character", filters.character);
+      else next.delete("character");
 
       const nextQuery = next.toString();
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
@@ -325,6 +341,8 @@
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
     const sortBy = $("sortBy").value;
+    const track = $("trackFilter").value;
+    const character = $("characterFilter").value;
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
@@ -332,6 +350,12 @@
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
       if (hideOptional && entry.optional) return false;
+      if (track === "main" && entry.track === "batfamily") return false;
+      if (track === "batfamily" && entry.track !== "batfamily") return false;
+      if (character) {
+        const chars = Array.isArray(entry.characters) ? entry.characters : [];
+        if (!chars.includes(character)) return false;
+      }
       return true;
     });
 
@@ -809,11 +833,15 @@
         const top = document.createElement("div");
         top.className = "item-head";
         const safeTitle = escapeHtml(entry.title);
+        const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
         const safeUrl = escapeAttr(safeExternalUrl(entry.url));
         top.innerHTML = `
           <label class="item-title-row">
             <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-            <span class="title">${safeTitle}</span>
+            <span class="title-wrap">
+              <span class="title">${safeTitle}</span>
+              ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
+            </span>
           </label>
           <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
         `;
@@ -823,6 +851,7 @@
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
           ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
@@ -1469,9 +1498,11 @@
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
     const chipBook = $("chipBook");
+    const chipFamily = $("chipFamily");
     if (chipOpen) chipOpen.classList.toggle("active", $("onlyRemaining").checked);
     if (chipRequired) chipRequired.classList.toggle("active", $("hideOptional").checked);
     if (chipBook) chipBook.classList.toggle("active", $("typeFilter").value === "book");
+    if (chipFamily) chipFamily.classList.toggle("active", $("trackFilter").value === "batfamily");
   }
 
   function bindUI() {
@@ -1493,7 +1524,7 @@
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
-      const hasURLFilters = ["q", "type", "remaining", "required", "sort"].some((key) => params.has(key));
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "character"].some((key) => params.has(key));
       const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
 
       $("search").value = activeFilters.search || "";
@@ -1501,6 +1532,8 @@
       $("onlyRemaining").checked = !!activeFilters.onlyRemaining;
       $("hideOptional").checked = !!activeFilters.hideOptional;
       $("sortBy").value = activeFilters.sortBy || "order";
+      $("trackFilter").value = activeFilters.track || "";
+      $("characterFilter").value = activeFilters.character || "";
       syncQuickFilterChips();
       writeFilters();
       writeFiltersToURL();
@@ -1522,7 +1555,7 @@
     });
 
     runUIStep("filterInputs", () => {
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter"]) {
         $(id).addEventListener("input", () => {
           writeFilters();
           writeFiltersToURL();
@@ -1544,6 +1577,7 @@
       const chipOpen = $("chipOpen");
       const chipRequired = $("chipRequired");
       const chipBook = $("chipBook");
+      const chipFamily = $("chipFamily");
       if (chipOpen) {
         chipOpen.addEventListener("click", () => {
           $("onlyRemaining").checked = !$("onlyRemaining").checked;
@@ -1567,6 +1601,16 @@
       if (chipBook) {
         chipBook.addEventListener("click", () => {
           $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+          writeFilters();
+          writeFiltersToURL();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      }
+      if (chipFamily) {
+        chipFamily.addEventListener("click", () => {
+          $("trackFilter").value = $("trackFilter").value === "batfamily" ? "" : "batfamily";
           writeFilters();
           writeFiltersToURL();
           syncQuickFilterChips();
@@ -1641,6 +1685,8 @@
         $("onlyRemaining").checked = false;
         $("hideOptional").checked = false;
         $("sortBy").value = "order";
+        $("trackFilter").value = "";
+        $("characterFilter").value = "";
         writeFilters();
         writeFiltersToURL();
         syncQuickFilterChips();
@@ -1855,7 +1901,7 @@
 
   function normalizeDomConflicts() {
     const uniqueIds = [
-      "chipOpen", "chipRequired", "chipBook",
+      "chipOpen", "chipRequired", "chipBook", "chipFamily", "trackFilter", "characterFilter",
       "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
       "advancedControls", "eraJump"
     ];
