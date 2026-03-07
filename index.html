@@ -377,8 +377,6 @@
           <select id="eraJump" class="select">
             <option value="">Jump to era…</option>
           </select>
-          <label class="row muted"><input type="checkbox" id="showCoverEditor" /> cover editor</label>
-          <label class="row muted"><input type="checkbox" id="coverEditorOnlyMissing" checked /> only for entries without cover</label>
           <button class="btn" id="btnToggleAllEras" aria-label="Toggle all era sections">Collapse all eras</button>
           <button class="btn hidden" id="btnExpandAll" type="button" tabindex="-1" aria-hidden="true">Expand all</button>
           <button class="btn hidden" id="btnCollapseAll" type="button" tabindex="-1" aria-hidden="true">Collapse all</button>
@@ -429,8 +427,8 @@
             <input id="importStateFile" type="file" accept="application/json" class="hidden" />
             <button id="resetState" class="btn warn">Reset local progress</button>
           </div>
-          <div id="syncStatus" class="status">Auto-sync is ready once Gist ID and token are filled.</div>
-          <div class="muted sync-dock-note">Tip: leave “remember token” off on shared/public devices.</div>
+          <div id="syncStatus" class="status">Covers load automatically from GitHub source. Gist ID + token are only needed to save updates.</div>
+          <div class="muted sync-dock-note">Tip: first load already pulls cover links from the GitHub source file; use Gist ID + token only if you want to write your own cover changes back to GitHub.</div>
         </div>
       </div>
     </details>

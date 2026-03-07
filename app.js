@@ -645,16 +645,32 @@
     return normalizeCoverUrl(customCovers?.[entryId]);
   }
 
-  function setManualCoverUrl(entryId, url) {
-    if (!entryId) return;
+  function setManualCoverUrl(entryId, url, options = {}) {
+    if (!entryId) return "";
+    const { markDirty = true } = options;
     const next = sanitizeManualCoverUrl(url);
+    const prev = getManualCoverUrl(entryId);
+
     if (!next) {
+      if (!prev) return "";
       delete customCovers[entryId];
       void saveJSON(KEYS.customCovers, customCovers);
-      return;
+      if (markDirty) {
+        dirty = true;
+        scheduleAutoPush();
+      }
+      return "";
     }
+
+    if (prev === next) return next;
+
     customCovers[entryId] = next;
     void saveJSON(KEYS.customCovers, customCovers);
+    if (markDirty) {
+      dirty = true;
+      scheduleAutoPush();
+    }
+    return next;
   }
 
   function hasSavedManualCover(entryId) {
@@ -850,7 +866,7 @@
           const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
           const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
 
-          saveCoverBtn.addEventListener("click", () => {
+          saveCoverBtn.addEventListener("click", async () => {
             const next = sanitizeManualCoverUrl(coverInput.value);
             if (!next) {
               setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
@@ -862,17 +878,19 @@
             state.lastTouchedId = entry.id;
             saveState();
             render();
-            setSyncStatus(`Saved manual cover for ${entry.id}.`);
+            const pushed = await pushCoversToGitHub();
+            if (!pushed) setSyncStatus(`Saved manual cover locally for ${entry.id}.`);
           });
 
-          clearCoverBtn.addEventListener("click", () => {
+          clearCoverBtn.addEventListener("click", async () => {
             setManualCoverUrl(entry.id, "");
             failedCoverCandidates.delete(entry.id);
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();
             render();
-            setSyncStatus(`Cleared manual cover for ${entry.id}.`);
+            const pushed = await pushCoversToGitHub();
+            if (!pushed) setSyncStatus(`Cleared manual cover locally for ${entry.id}.`);
           });
         }
 
@@ -923,6 +941,7 @@
     }
   }
 
+
   function exportPayload() {
     return JSON.stringify({
       app: "Batman Guide",
@@ -933,7 +952,7 @@
     }, null, 2);
   }
 
-  function importPayload(text) {
+  function importPayload(text, options = {}) {
     try {
       const payload = JSON.parse(text);
       if (!payload || !payload.state || typeof payload.state !== "object") {
@@ -944,7 +963,7 @@
         ? payload.customCovers
         : {};
       for (const [entryId, url] of Object.entries(importedCustomCovers)) {
-        setManualCoverUrl(entryId, url);
+        setManualCoverUrl(entryId, url, options);
       }
       if (!saveJSON(KEYS.state, state)) {
         setSyncStatus("Local save failed (storage unavailable). Changes remain in memory.");
@@ -957,6 +976,7 @@
 
   const GIST_FILE = "batmanguide_progress.json";
   const GIST_COVERS_FILE = "batmanguide_covers.json";
+  const PUBLIC_COVERS_FILE = "batmanguide_covers.json";
 
   function exportCustomCoversPayload() {
     return JSON.stringify({
@@ -967,14 +987,14 @@
     }, null, 2);
   }
 
-  function importCustomCoversPayload(text) {
+  function importCustomCoversPayload(text, options = {}) {
     try {
       const payload = JSON.parse(String(text || ""));
       const covers = payload?.customCovers && typeof payload.customCovers === "object"
         ? payload.customCovers
         : {};
       for (const [entryId, url] of Object.entries(covers)) {
-        setManualCoverUrl(entryId, url);
+        setManualCoverUrl(entryId, url, options);
       }
       return { ok: true };
     } catch (e) {
@@ -982,11 +1002,18 @@
     }
   }
 
-  async function gistFetch(cfg, opts = {}) {
+  function gistHeaders(cfg, opts = {}) {
     const headers = {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${cfg.gistToken}`
+      Accept: "application/vnd.github+json"
     };
+    const token = getEffectiveToken(cfg);
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (opts.requireToken && !token) throw new Error("GitHub token required for this action.");
+    return headers;
+  }
+
+  async function gistFetch(cfg, opts = {}) {
+    const headers = gistHeaders(cfg);
     if (opts.allowNotModified && gistETag) {
       headers["If-None-Match"] = gistETag;
     }
@@ -1014,7 +1041,7 @@
     if (typeof file.content === "string") return { notModified: false, text: file.content };
     if (file.raw_url) {
       const rr = await fetch(file.raw_url, {
-        headers: { Authorization: `Bearer ${cfg.gistToken}` }
+        headers: gistHeaders(cfg)
       });
       if (!rr.ok) throw new Error(`Raw file fetch failed (${rr.status})`);
       return { notModified: false, text: await rr.text() };
@@ -1029,7 +1056,7 @@
     if (typeof file.content === "string") return { found: true, text: file.content };
     if (file.raw_url) {
       const rr = await fetch(file.raw_url, {
-        headers: { Authorization: `Bearer ${cfg.gistToken}` }
+        headers: gistHeaders(cfg)
       });
       if (!rr.ok) throw new Error(`Raw file fetch failed (${rr.status})`);
       return { found: true, text: await rr.text() };
@@ -1050,11 +1077,9 @@
     };
     const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${cfg.gistToken}`
-      },
+      headers: Object.assign({
+        "Content-Type": "application/json"
+      }, gistHeaders(cfg, { requireToken: true })),
       body: JSON.stringify(body)
     });
     if (!r.ok) {
@@ -1063,6 +1088,75 @@
     }
     dirty = false;
     setSyncStatus("Push complete.");
+  }
+
+  async function pushCoversToGitHub() {
+    const cfg = withRuntimeToken(getCfg());
+    if (!(cfg?.gistId || "").trim()) {
+      setSyncStatus("Saving to GitHub requires a Gist ID + token.");
+      return false;
+    }
+    try {
+      const body = {
+        files: {
+          [GIST_COVERS_FILE]: {
+            content: exportCustomCoversPayload()
+          }
+        }
+      };
+      const r = await fetch(`https://api.github.com/gists/${cfg.gistId}`, {
+        method: "PATCH",
+        headers: Object.assign({
+          "Content-Type": "application/json"
+        }, gistHeaders(cfg, { requireToken: true })),
+        body: JSON.stringify(body)
+      });
+      if (!r.ok) {
+        const msg = await r.text().catch(() => "");
+        throw new Error(`Cover push failed (${r.status}) ${msg.slice(0, 200)}`);
+      }
+      setSyncStatus("Cover saved to GitHub.");
+      return true;
+    } catch (e) {
+      setSyncStatus(`GitHub save failed: ${String(e.message || e)}`);
+      return false;
+    }
+  }
+
+  async function pullCoversFromPublicSource() {
+    try {
+      const r = await fetch(PUBLIC_COVERS_FILE, { cache: "no-store" });
+      if (!r.ok) return false;
+      const text = await r.text();
+      const imported = importCustomCoversPayload(text, { markDirty: false });
+      if (!imported.ok) throw new Error(imported.err);
+      render();
+      setSyncStatus("Covers loaded from GitHub source.");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function pullCoversFromGitHub() {
+    const cfg = withRuntimeToken(getCfg());
+    if (!(cfg?.gistId || "").trim()) return pullCoversFromPublicSource();
+    try {
+      const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
+      if (!coverPayload.found) {
+        setSyncStatus("No cover file found on GitHub gist yet.");
+        return false;
+      }
+      const imported = importCustomCoversPayload(coverPayload.text, { markDirty: false });
+      if (!imported.ok) throw new Error(imported.err);
+      render();
+      setSyncStatus("Covers loaded from GitHub.");
+      return true;
+    } catch (e) {
+      const fallback = await pullCoversFromPublicSource();
+      if (!fallback) setSyncStatus(`GitHub cover load failed: ${String(e.message || e)}`);
+      return fallback;
+    }
   }
 
   function parseDate(value) {
@@ -1089,12 +1183,12 @@
     const localAt = parseDate(state.updatedAt);
 
     if (remoteAt > localAt || force) {
-      const imported = importPayload(text);
+      const imported = importPayload(text, { markDirty: false });
       if (!imported.ok) throw new Error(imported.err);
       try {
         const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
         if (coverPayload.found) {
-          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          const importedCovers = importCustomCoversPayload(coverPayload.text, { markDirty: false });
           if (!importedCovers.ok) throw new Error(importedCovers.err);
         }
       } catch {
@@ -1147,12 +1241,12 @@
     }
 
     if (remoteAt > localAt) {
-      const imported = importPayload(remoteText);
+      const imported = importPayload(remoteText, { markDirty: false });
       if (!imported.ok) throw new Error(imported.err);
       try {
         const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
         if (coverPayload.found) {
-          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          const importedCovers = importCustomCoversPayload(coverPayload.text, { markDirty: false });
           if (!importedCovers.ok) throw new Error(importedCovers.err);
         }
       } catch {
@@ -1667,8 +1761,9 @@
         const nextCfg = readCfgFromUI();
         setCfg(nextCfg);
         startAutoSync();
+        void pullCoversFromGitHub();
         if (!syncReady(nextCfg)) {
-          setSyncStatus("Auto-sync is ready once Gist ID and token are filled.");
+          setSyncStatus("Covers load automatically from GitHub source. Gist ID + token are only needed to save updates.");
         } else {
           setSyncStatus("Auto-sync active (adaptive polling).");
           if (triggerSyncNow) scheduleSettingsSync();
@@ -1873,6 +1968,7 @@
     if (!runStartupStep("render", render, true)) return;
 
     runStartupStep("bindUI", bindUI, false);
+    setTimeout(() => { void pullCoversFromGitHub(); }, 120);
     runStartupStep("bindAdaptiveHeader", bindAdaptiveHeader, false);
     runStartupStep("startAutoSync", startAutoSync, false);
     runStartupStep("initPWA", initPWA, false);
