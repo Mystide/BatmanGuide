@@ -126,6 +126,8 @@
     .item-head { display:flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
     .item-title-row { display:flex; gap:10px; align-items:center; flex: 1; min-width: 0; }
     .item-title-row input[type="checkbox"] { margin: 0; width: 18px; height: 18px; accent-color: #60a5fa; }
+    .title-wrap { display:flex; flex-direction:column; min-width:0; gap:2px; }
+    .item-hint { color: var(--muted); font-size: 12px; line-height: 1.25; }
     .item-link {
       flex-shrink: 0;
       white-space: nowrap;
@@ -362,6 +364,11 @@
           </select>
           <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
           <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
+          <select id="trackFilter" class="select">
+            <option value="">All tracks</option>
+            <option value="main">Mainline only</option>
+            <option value="batfamily">Bat-family companion</option>
+          </select>
           <select id="sortBy" class="select">
             <option value="order">Reading Order</option>
             <option value="title">Title A → Z</option>
@@ -373,6 +380,7 @@
           <button class="chip" type="button" id="chipOpen">Open only</button>
           <button class="chip" type="button" id="chipRequired">Required only</button>
           <button class="chip" type="button" id="chipBook">Books</button>
+          <button class="chip" type="button" id="chipFamily">Bat-family</button>
         </div>
         <div class="row advanced-controls" id="advancedControls">
           <select id="eraJump" class="select">
