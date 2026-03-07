@@ -103,8 +103,7 @@
 
   const defaultUiPrefs = () => ({
     filtersOpen: false,
-    showCoverEditor: false,
-    coverEditorOnlyMissing: true
+    showCoverEditor: false
   });
 
   function readUiPrefs() {
@@ -656,15 +655,6 @@
     void saveJSON(KEYS.customCovers, customCovers);
   }
 
-  function entryHasStoredCover(entry) {
-    return !!(
-      getManualCoverUrl(entry.id)
-      || normalizeCoverUrl(entry?.cover)
-      || normalizeCoverUrl(REAL_COVERS[entry.id])
-      || normalizeCoverUrl(coverCache[entry.id])
-    );
-  }
-
   function loadCoverImage(coverEl, entry, url) {
     return new Promise((resolve) => {
       if (!coverEl || !url) return resolve(false);
@@ -719,7 +709,6 @@
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
-    const coverEditorOnlyMissing = !!uiPrefs.coverEditorOnlyMissing;
     const filtered = getFiltered();
     const root = $("main");
     root.innerHTML = "";
@@ -813,7 +802,7 @@
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
-        const shouldShowEditor = showCoverEditor && (!coverEditorOnlyMissing || !entryHasStoredCover(entry));
+        const shouldShowEditor = showCoverEditor;
         let manualCover = null;
         if (shouldShowEditor) {
           manualCover = document.createElement("div");
@@ -1446,20 +1435,11 @@
     runUIStep("coverEditorPrefs", () => {
       const prefs = readUiPrefs();
       const showToggle = $("showCoverEditor");
-      const missingToggle = $("coverEditorOnlyMissing");
       if (showToggle) showToggle.checked = !!prefs.showCoverEditor;
-      if (missingToggle) missingToggle.checked = !!prefs.coverEditorOnlyMissing;
 
       if (showToggle) {
         showToggle.addEventListener("change", () => {
           writeUiPrefs({ showCoverEditor: !!showToggle.checked });
-          render();
-        });
-      }
-
-      if (missingToggle) {
-        missingToggle.addEventListener("change", () => {
-          writeUiPrefs({ coverEditorOnlyMissing: !!missingToggle.checked });
           render();
         });
       }
