@@ -65,7 +65,6 @@
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
   const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
-  const PULL_THROTTLE_MS = 2500;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
 
@@ -190,7 +189,6 @@
   let autoPullTimer = null;
   let syncInFlight = false;
   let syncQueued = false;
-  let lastPullAt = 0;
   let gistETag = "";
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
@@ -337,6 +335,11 @@
       return true;
     });
 
+    const baseOrder = new Map();
+    for (let i = 0; i < LIST.length; i += 1) {
+      baseOrder.set(LIST[i].id, i);
+    }
+
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -353,7 +356,7 @@
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
         if (ta !== tb) return tb - ta;
-        return LIST.indexOf(a) - LIST.indexOf(b);
+        return (baseOrder.get(a.id) || 0) - (baseOrder.get(b.id) || 0);
       });
     }
 
@@ -1169,44 +1172,6 @@
   function parseDate(value) {
     const t = Date.parse(value || "");
     return Number.isFinite(t) ? t : 0;
-  }
-
-  async function gistPull(cfg, force = false) {
-    const now = Date.now();
-    if (!force && now - lastPullAt < PULL_THROTTLE_MS) return;
-    lastPullAt = now;
-
-    const pulled = await gistGetText(cfg, { allowNotModified: !force });
-    if (pulled.notModified) {
-      setSyncStatus("No remote updates.");
-      return;
-    }
-
-    const text = pulled.text;
-    const incoming = JSON.parse(text);
-    if (!incoming?.state) throw new Error("Remote payload invalid");
-
-    const remoteAt = parseDate(incoming.state.updatedAt);
-    const localAt = parseDate(state.updatedAt);
-
-    if (remoteAt > localAt || force) {
-      const imported = importPayload(text, { markDirty: false });
-      if (!imported.ok) throw new Error(imported.err);
-      try {
-        const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
-        if (coverPayload.found) {
-          const importedCovers = importCustomCoversPayload(coverPayload.text, { markDirty: false });
-          if (!importedCovers.ok) throw new Error(importedCovers.err);
-        }
-      } catch {
-        // optional file; ignore when missing/unavailable
-      }
-      dirty = false;
-      render();
-      setSyncStatus("Pulled newer state.");
-    } else {
-      setSyncStatus("Local state already up to date.");
-    }
   }
 
   async function gistSync(cfg) {
