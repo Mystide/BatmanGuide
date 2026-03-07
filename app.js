@@ -645,16 +645,32 @@
     return normalizeCoverUrl(customCovers?.[entryId]);
   }
 
-  function setManualCoverUrl(entryId, url) {
-    if (!entryId) return;
+  function setManualCoverUrl(entryId, url, options = {}) {
+    if (!entryId) return "";
+    const { markDirty = true } = options;
     const next = sanitizeManualCoverUrl(url);
+    const prev = getManualCoverUrl(entryId);
+
     if (!next) {
+      if (!prev) return "";
       delete customCovers[entryId];
       void saveJSON(KEYS.customCovers, customCovers);
-      return;
+      if (markDirty) {
+        dirty = true;
+        scheduleAutoPush();
+      }
+      return "";
     }
+
+    if (prev === next) return next;
+
     customCovers[entryId] = next;
     void saveJSON(KEYS.customCovers, customCovers);
+    if (markDirty) {
+      dirty = true;
+      scheduleAutoPush();
+    }
+    return next;
   }
 
   function hasSavedManualCover(entryId) {
@@ -933,7 +949,7 @@
     }, null, 2);
   }
 
-  function importPayload(text) {
+  function importPayload(text, options = {}) {
     try {
       const payload = JSON.parse(text);
       if (!payload || !payload.state || typeof payload.state !== "object") {
@@ -944,7 +960,7 @@
         ? payload.customCovers
         : {};
       for (const [entryId, url] of Object.entries(importedCustomCovers)) {
-        setManualCoverUrl(entryId, url);
+        setManualCoverUrl(entryId, url, options);
       }
       if (!saveJSON(KEYS.state, state)) {
         setSyncStatus("Local save failed (storage unavailable). Changes remain in memory.");
@@ -967,14 +983,14 @@
     }, null, 2);
   }
 
-  function importCustomCoversPayload(text) {
+  function importCustomCoversPayload(text, options = {}) {
     try {
       const payload = JSON.parse(String(text || ""));
       const covers = payload?.customCovers && typeof payload.customCovers === "object"
         ? payload.customCovers
         : {};
       for (const [entryId, url] of Object.entries(covers)) {
-        setManualCoverUrl(entryId, url);
+        setManualCoverUrl(entryId, url, options);
       }
       return { ok: true };
     } catch (e) {
@@ -1089,12 +1105,12 @@
     const localAt = parseDate(state.updatedAt);
 
     if (remoteAt > localAt || force) {
-      const imported = importPayload(text);
+      const imported = importPayload(text, { markDirty: false });
       if (!imported.ok) throw new Error(imported.err);
       try {
         const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
         if (coverPayload.found) {
-          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          const importedCovers = importCustomCoversPayload(coverPayload.text, { markDirty: false });
           if (!importedCovers.ok) throw new Error(importedCovers.err);
         }
       } catch {
@@ -1147,12 +1163,12 @@
     }
 
     if (remoteAt > localAt) {
-      const imported = importPayload(remoteText);
+      const imported = importPayload(remoteText, { markDirty: false });
       if (!imported.ok) throw new Error(imported.err);
       try {
         const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
         if (coverPayload.found) {
-          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          const importedCovers = importCustomCoversPayload(coverPayload.text, { markDirty: false });
           if (!importedCovers.ok) throw new Error(importedCovers.err);
         }
       } catch {
