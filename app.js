@@ -56,6 +56,7 @@
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
     coverCache: "batman-guide:covers:v2",
+    fallbackCoverCache: "batman-guide:fallback-covers:v1",
     uiPrefs: "batman-guide:ui:v1",
     syncOnboardingSeen: "batman-guide:sync:onboarding-seen:v1"
   };
@@ -189,6 +190,7 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
+  const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
 
@@ -551,6 +553,67 @@
     return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
   }
 
+  async function fetchJson(url) {
+    try {
+      const res = await fetch(url, { headers: { accept: "application/json" } });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  async function resolveFallbackCover(entry, opts = {}) {
+    const id = entry.id;
+    const force = !!opts.force;
+    if (!id) return "";
+
+    const cached = normalizeCoverUrl(fallbackCoverCache[id]);
+    if (!force && cached && !isFailedCoverCandidate(id, cached)) return cached;
+
+    const titleQuery = titleToCoverQuery(entry.title);
+    if (!titleQuery) return "";
+
+    const candidates = [];
+    const seen = new Set();
+    const add = (url) => {
+      const normalized = normalizeCoverUrl(url);
+      if (!normalized || seen.has(normalized)) return;
+      seen.add(normalized);
+      candidates.push(normalized);
+    };
+
+    const openLibrary = await fetchJson(`https://openlibrary.org/search.json?title=${encodeURIComponent(titleQuery)}&limit=5`);
+    if (Array.isArray(openLibrary?.docs)) {
+      for (const doc of openLibrary.docs) {
+        if (doc?.cover_i) add(`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`);
+      }
+    }
+
+    const googleBooks = await fetchJson(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(`intitle:${titleQuery}`)}&maxResults=5`);
+    if (Array.isArray(googleBooks?.items)) {
+      for (const item of googleBooks.items) {
+        const links = item?.volumeInfo?.imageLinks || {};
+        add(links.thumbnail);
+        add(links.smallThumbnail);
+      }
+    }
+
+    for (const url of candidates) {
+      if (isFailedCoverCandidate(id, url)) continue;
+      const ok = await canLoadImageUrl(url);
+      if (!ok) {
+        markCoverCandidateFailure(id, url);
+        continue;
+      }
+      fallbackCoverCache[id] = url;
+      void saveJSON(KEYS.fallbackCoverCache, fallbackCoverCache);
+      return url;
+    }
+
+    return "";
+  }
+
   async function resolveOfficialCover(entry, opts = {}) {
     const id = entry.id;
     const force = !!opts.force;
@@ -605,6 +668,7 @@
   async function applyBestCover(coverEl, entry) {
     const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
+    const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
 
     if (cached && !isOfficialCoverUrl(cached)) {
       delete coverCache[entry.id];
@@ -614,6 +678,7 @@
     const candidates = [];
     if (primary) candidates.push(primary);
     if (cached && isOfficialCoverUrl(cached) && cached !== primary) candidates.push(cached);
+    if (fallbackCached && fallbackCached !== primary && fallbackCached !== cached) candidates.push(fallbackCached);
 
     for (const url of candidates) {
       if (await loadCoverImage(coverEl, entry, url)) return;
@@ -621,6 +686,9 @@
 
     const discoveredOfficial = await resolveOfficialCover(entry, { force: true });
     if (discoveredOfficial && await loadCoverImage(coverEl, entry, discoveredOfficial)) return;
+
+    const discoveredFallback = await resolveFallbackCover(entry, { force: true });
+    if (discoveredFallback && await loadCoverImage(coverEl, entry, discoveredFallback)) return;
 
     coverEl.classList.add("fallback-logo");
     coverEl.innerHTML = entryLogoFallback(entry);
