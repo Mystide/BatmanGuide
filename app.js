@@ -106,13 +106,15 @@
     showCoverEditor: false
   });
 
+  let runtimeUiPrefs = loadJSON(KEYS.uiPrefs, defaultUiPrefs());
+
   function readUiPrefs() {
-    return loadJSON(KEYS.uiPrefs, defaultUiPrefs());
+    return Object.assign(defaultUiPrefs(), runtimeUiPrefs || {});
   }
 
   function writeUiPrefs(next) {
-    const current = readUiPrefs();
-    void saveJSON(KEYS.uiPrefs, Object.assign(defaultUiPrefs(), current, next));
+    runtimeUiPrefs = Object.assign(defaultUiPrefs(), readUiPrefs(), next || {});
+    void saveJSON(KEYS.uiPrefs, runtimeUiPrefs);
   }
 
   function readFilters() {
@@ -1444,10 +1446,12 @@
       if (showToggle) showToggle.checked = !!prefs.showCoverEditor;
 
       if (showToggle) {
-        showToggle.addEventListener("change", () => {
+        const onCoverToggle = () => {
           writeUiPrefs({ showCoverEditor: !!showToggle.checked });
           render();
-        });
+        };
+        showToggle.addEventListener("change", onCoverToggle);
+        showToggle.addEventListener("input", onCoverToggle);
       }
     });
 
