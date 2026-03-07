@@ -96,7 +96,8 @@
     type: "",
     onlyRemaining: false,
     hideOptional: false,
-    sortBy: "order"
+    sortBy: "order",
+    track: ""
   });
 
 
@@ -126,7 +127,8 @@
       type: $("typeFilter").value || "",
       onlyRemaining: !!$("onlyRemaining").checked,
       hideOptional: !!$("hideOptional").checked,
-      sortBy: $("sortBy").value || "order"
+      sortBy: $("sortBy").value || "order",
+      track: $("trackFilter").value || ""
     });
   }
 
@@ -135,12 +137,14 @@
       const params = new URLSearchParams(window.location.search || "");
       const type = params.get("type") || "";
       const sortBy = params.get("sort") || "order";
+      const track = params.get("track") || "";
       return {
         search: params.get("q") || "",
         type: ["", "book", "series", "collection"].includes(type) ? type : "",
         onlyRemaining: params.get("remaining") === "1",
         hideOptional: params.get("required") === "1",
-        sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order"
+        sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order",
+        track: ["", "main", "batfamily"].includes(track) ? track : ""
       };
     } catch {
       return defaultFilters();
@@ -154,7 +158,8 @@
         type: $("typeFilter").value || "",
         onlyRemaining: !!$("onlyRemaining").checked,
         hideOptional: !!$("hideOptional").checked,
-        sortBy: $("sortBy").value || "order"
+        sortBy: $("sortBy").value || "order",
+        track: $("trackFilter").value || ""
       };
       const defaults = defaultFilters();
       const next = new URLSearchParams(window.location.search || "");
@@ -173,6 +178,9 @@
 
       if (filters.sortBy && filters.sortBy !== defaults.sortBy) next.set("sort", filters.sortBy);
       else next.delete("sort");
+
+      if (filters.track && filters.track !== defaults.track) next.set("track", filters.track);
+      else next.delete("track");
 
       const nextQuery = next.toString();
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
@@ -325,6 +333,7 @@
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
     const sortBy = $("sortBy").value;
+    const track = $("trackFilter").value;
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
@@ -332,6 +341,8 @@
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
       if (hideOptional && entry.optional) return false;
+      if (track === "main" && entry.track === "batfamily") return false;
+      if (track === "batfamily" && entry.track !== "batfamily") return false;
       return true;
     });
 
@@ -827,6 +838,7 @@
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
+          ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
           ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
@@ -1473,9 +1485,11 @@
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
     const chipBook = $("chipBook");
+    const chipFamily = $("chipFamily");
     if (chipOpen) chipOpen.classList.toggle("active", $("onlyRemaining").checked);
     if (chipRequired) chipRequired.classList.toggle("active", $("hideOptional").checked);
     if (chipBook) chipBook.classList.toggle("active", $("typeFilter").value === "book");
+    if (chipFamily) chipFamily.classList.toggle("active", $("trackFilter").value === "batfamily");
   }
 
   function bindUI() {
@@ -1497,7 +1511,7 @@
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
-      const hasURLFilters = ["q", "type", "remaining", "required", "sort"].some((key) => params.has(key));
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track"].some((key) => params.has(key));
       const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
 
       $("search").value = activeFilters.search || "";
@@ -1505,6 +1519,7 @@
       $("onlyRemaining").checked = !!activeFilters.onlyRemaining;
       $("hideOptional").checked = !!activeFilters.hideOptional;
       $("sortBy").value = activeFilters.sortBy || "order";
+      $("trackFilter").value = activeFilters.track || "";
       syncQuickFilterChips();
       writeFilters();
       writeFiltersToURL();
@@ -1526,7 +1541,7 @@
     });
 
     runUIStep("filterInputs", () => {
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy"]) {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter"]) {
         $(id).addEventListener("input", () => {
           writeFilters();
           writeFiltersToURL();
@@ -1548,6 +1563,7 @@
       const chipOpen = $("chipOpen");
       const chipRequired = $("chipRequired");
       const chipBook = $("chipBook");
+      const chipFamily = $("chipFamily");
       if (chipOpen) {
         chipOpen.addEventListener("click", () => {
           $("onlyRemaining").checked = !$("onlyRemaining").checked;
@@ -1571,6 +1587,16 @@
       if (chipBook) {
         chipBook.addEventListener("click", () => {
           $("typeFilter").value = $("typeFilter").value === "book" ? "" : "book";
+          writeFilters();
+          writeFiltersToURL();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      }
+      if (chipFamily) {
+        chipFamily.addEventListener("click", () => {
+          $("trackFilter").value = $("trackFilter").value === "batfamily" ? "" : "batfamily";
           writeFilters();
           writeFiltersToURL();
           syncQuickFilterChips();
@@ -1645,6 +1671,7 @@
         $("onlyRemaining").checked = false;
         $("hideOptional").checked = false;
         $("sortBy").value = "order";
+        $("trackFilter").value = "";
         writeFilters();
         writeFiltersToURL();
         syncQuickFilterChips();
@@ -1859,7 +1886,7 @@
 
   function normalizeDomConflicts() {
     const uniqueIds = [
-      "chipOpen", "chipRequired", "chipBook",
+      "chipOpen", "chipRequired", "chipBook", "chipFamily", "trackFilter",
       "btnToggleAllEras", "btnExpandAll", "btnCollapseAll",
       "advancedControls", "eraJump"
     ];

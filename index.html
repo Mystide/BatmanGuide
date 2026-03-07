@@ -364,6 +364,11 @@
           </select>
           <label class="row muted"><input type="checkbox" id="onlyRemaining" /> only remaining</label>
           <label class="row muted"><input type="checkbox" id="hideOptional" /> hide optional</label>
+          <select id="trackFilter" class="select">
+            <option value="">All tracks</option>
+            <option value="main">Mainline only</option>
+            <option value="batfamily">Bat-family companion</option>
+          </select>
           <select id="sortBy" class="select">
             <option value="order">Reading Order</option>
             <option value="title">Title A → Z</option>
@@ -375,6 +380,7 @@
           <button class="chip" type="button" id="chipOpen">Open only</button>
           <button class="chip" type="button" id="chipRequired">Required only</button>
           <button class="chip" type="button" id="chipBook">Books</button>
+          <button class="chip" type="button" id="chipFamily">Bat-family</button>
         </div>
         <div class="row advanced-controls" id="advancedControls">
           <select id="eraJump" class="select">
