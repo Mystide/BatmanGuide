@@ -64,6 +64,10 @@ Danach wie gewohnt prüfen:
 ./scripts/smoke-check.sh
 ```
 
+Wenn GitHub-Gist-Sync aktiviert ist, werden manuelle Cover-Links zusätzlich in einer
+separaten Datei im Gist gespeichert (`batmanguide_covers.json`). Dadurch bleiben
+sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespielt werden.
+
 ### Troubleshooting Cover-Sync
 
 - Wenn im Log `ENETUNREACH`, `ETIMEDOUT` oder ähnliche Netzwerkfehler stehen,
