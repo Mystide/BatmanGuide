@@ -34,6 +34,21 @@ Für Solo-Projekte ist ein kleiner Backup-Rhythmus oft hilfreicher als komplexe 
 - Regelmäßig eine Kopie von `list.js` sichern (z. B. als Datums-Datei).
 - Vor größeren Inhaltsänderungen einen separaten Commit machen.
 
+## Optional: Broken-Link-Check (URL-Qualität)
+
+Wenn du nach größeren Listen-Änderungen prüfen willst, ob die hinterlegten Links erreichbar sind:
+
+```bash
+node ./scripts/check-links.js
+```
+
+Nützliche Optionen:
+
+- `--max 30` → prüft nur die ersten 30 Links (schneller Spot-Check)
+- `--concurrency 4` → weniger parallele Requests
+- `--timeout-ms 15000` → längeres Timeout bei langsamen Hosts
+- `--include-covers` → prüft zusätzlich vorhandene `cover`-URLs
+
 ## Optional (nur wenn du Konflikte hast)
 
 Die Merge-Helfer sind weiter verfügbar, aber im Solo-Setup meist selten nötig:
@@ -84,7 +99,7 @@ sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespie
 ## Weitere Verbesserungen (Ideen/Fixes)
 
 - **Export/Import für Lesefortschritt** (JSON-Datei), damit der Fortschritt unabhängig von Browser-Storage gesichert ist.
-- **Broken-Link-Check** als optionales Script, das alle `url`-Einträge aus `list.js` auf HTTP-Status prüft.
+- **Optionaler CI-Job für Link-Checks** (z. B. nightly), damit externe Ausfälle früh sichtbar werden.
 - **Datenpflege-Workflow**: kleine `npm run`-Kommandos für `format-list`, `validate-list`, `smoke`.
 - **UX**: „Zuletzt gelesen“-Filter/Shortcut, um schneller wieder einzusteigen.
 - **Performance**: Lazy Rendering für sehr große Listen (falls die Liste weiter wächst).
