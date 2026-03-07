@@ -55,6 +55,7 @@
     eraOpen: "batman-guide:era-open:v3",
     syncCfg: "batman-guide:sync:v3",
     filters: "batman-guide:filters:v1",
+    customCovers: "batman-guide:custom-covers:v1",
     coverCache: "batman-guide:covers:v2",
     fallbackCoverCache: "batman-guide:fallback-covers:v1",
     uiPrefs: "batman-guide:ui:v1",
@@ -100,7 +101,9 @@
 
 
   const defaultUiPrefs = () => ({
-    filtersOpen: false
+    filtersOpen: false,
+    showCoverEditor: false,
+    coverEditorOnlyMissing: true
   });
 
   function readUiPrefs() {
@@ -179,6 +182,7 @@
   }
 
   let state = loadJSON(KEYS.state, defaultState());
+  const customCovers = loadJSON(KEYS.customCovers, {});
   let dirty = false;
   let autoPushTimer = null;
   let autoPullTimer = null;
@@ -193,6 +197,14 @@
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
+
+  // Migration: older builds stored custom covers inside the sync state payload.
+  if (state.customCovers && typeof state.customCovers === "object") {
+    Object.assign(customCovers, state.customCovers);
+    delete state.customCovers;
+    void saveJSON(KEYS.customCovers, customCovers);
+    void saveJSON(KEYS.state, state);
+  }
 
 
   function clampPullInterval(ms) {
@@ -621,6 +633,37 @@
     return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
   }
 
+  function sanitizeManualCoverUrl(url) {
+    const value = String(url || "").trim();
+    if (!/^https?:\/\//i.test(value)) return "";
+    return normalizeCoverUrl(value);
+  }
+
+  function getManualCoverUrl(entryId) {
+    return normalizeCoverUrl(customCovers?.[entryId]);
+  }
+
+  function setManualCoverUrl(entryId, url) {
+    if (!entryId) return;
+    const next = sanitizeManualCoverUrl(url);
+    if (!next) {
+      delete customCovers[entryId];
+      void saveJSON(KEYS.customCovers, customCovers);
+      return;
+    }
+    customCovers[entryId] = next;
+    void saveJSON(KEYS.customCovers, customCovers);
+  }
+
+  function entryHasStoredCover(entry) {
+    return !!(
+      getManualCoverUrl(entry.id)
+      || normalizeCoverUrl(entry?.cover)
+      || normalizeCoverUrl(REAL_COVERS[entry.id])
+      || normalizeCoverUrl(coverCache[entry.id])
+    );
+  }
+
   function loadCoverImage(coverEl, entry, url) {
     return new Promise((resolve) => {
       if (!coverEl || !url) return resolve(false);
@@ -641,6 +684,7 @@
   }
 
   async function applyBestCover(coverEl, entry) {
+    const manual = getManualCoverUrl(entry.id);
     const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
     const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
@@ -651,6 +695,7 @@
     }
 
     const candidates = [];
+    if (manual) candidates.push(manual);
     if (primary) candidates.push(primary);
     if (cached && isOfficialCoverUrl(cached) && cached !== primary) candidates.push(cached);
     if (fallbackCached && fallbackCached !== primary && fallbackCached !== cached) candidates.push(fallbackCached);
@@ -671,6 +716,9 @@
 
   function render() {
     setError("");
+    const uiPrefs = readUiPrefs();
+    const showCoverEditor = !!uiPrefs.showCoverEditor;
+    const coverEditorOnlyMissing = !!uiPrefs.coverEditorOnlyMissing;
     const filtered = getFiltered();
     const root = $("main");
     root.innerHTML = "";
@@ -764,6 +812,18 @@
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
+        const shouldShowEditor = showCoverEditor && (!coverEditorOnlyMissing || !entryHasStoredCover(entry));
+        let manualCover = null;
+        if (shouldShowEditor) {
+          manualCover = document.createElement("div");
+          manualCover.className = "manual-cover-fields";
+          manualCover.innerHTML = `
+            <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
+            <button class="btn" type="button" data-action="save-cover">Save cover</button>
+            <button class="btn" type="button" data-action="clear-cover">Clear</button>
+          `;
+        }
+
         top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
           st.done = e.target.checked;
           st.touchedAt = nowISO();
@@ -787,7 +847,39 @@
           saveState();
         });
 
+        if (manualCover) {
+          const coverInput = manualCover.querySelector('[data-action="cover-url"]');
+          const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
+          const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
+
+          saveCoverBtn.addEventListener("click", () => {
+            const next = sanitizeManualCoverUrl(coverInput.value);
+            if (!next) {
+              setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
+              return;
+            }
+            setManualCoverUrl(entry.id, next);
+            failedCoverCandidates.delete(entry.id);
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+            render();
+            setSyncStatus(`Saved manual cover for ${entry.id}.`);
+          });
+
+          clearCoverBtn.addEventListener("click", () => {
+            setManualCoverUrl(entry.id, "");
+            failedCoverCandidates.delete(entry.id);
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+            render();
+            setSyncStatus(`Cleared manual cover for ${entry.id}.`);
+          });
+        }
+
         content.append(top, tags, progress);
+        if (manualCover) content.append(manualCover);
 
         const layout = document.createElement("div");
         layout.className = "item-grid";
@@ -838,6 +930,7 @@
       app: "Batman Guide",
       version: 1,
       updatedAt: nowISO(),
+      customCovers,
       state
     }, null, 2);
   }
@@ -849,6 +942,12 @@
         return { ok: false, err: "Invalid payload" };
       }
       state = Object.assign(defaultState(), payload.state);
+      const importedCustomCovers = payload.customCovers && typeof payload.customCovers === "object"
+        ? payload.customCovers
+        : {};
+      for (const [entryId, url] of Object.entries(importedCustomCovers)) {
+        setManualCoverUrl(entryId, url);
+      }
       if (!saveJSON(KEYS.state, state)) {
         setSyncStatus("Local save failed (storage unavailable). Changes remain in memory.");
       }
@@ -859,6 +958,31 @@
   }
 
   const GIST_FILE = "batmanguide_progress.json";
+  const GIST_COVERS_FILE = "batmanguide_covers.json";
+
+  function exportCustomCoversPayload() {
+    return JSON.stringify({
+      app: "Batman Guide",
+      version: 1,
+      updatedAt: nowISO(),
+      customCovers
+    }, null, 2);
+  }
+
+  function importCustomCoversPayload(text) {
+    try {
+      const payload = JSON.parse(String(text || ""));
+      const covers = payload?.customCovers && typeof payload.customCovers === "object"
+        ? payload.customCovers
+        : {};
+      for (const [entryId, url] of Object.entries(covers)) {
+        setManualCoverUrl(entryId, url);
+      }
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, err: e.message || "Parse error" };
+    }
+  }
 
   async function gistFetch(cfg, opts = {}) {
     const headers = {
@@ -900,11 +1024,29 @@
     throw new Error("No content in gist file");
   }
 
+  async function gistGetTextFromFile(cfg, fileName) {
+    const { gist } = await gistFetch(cfg, { allowNotModified: false });
+    const file = gist.files?.[fileName];
+    if (!file) return { found: false, text: "" };
+    if (typeof file.content === "string") return { found: true, text: file.content };
+    if (file.raw_url) {
+      const rr = await fetch(file.raw_url, {
+        headers: { Authorization: `Bearer ${cfg.gistToken}` }
+      });
+      if (!rr.ok) throw new Error(`Raw file fetch failed (${rr.status})`);
+      return { found: true, text: await rr.text() };
+    }
+    return { found: false, text: "" };
+  }
+
   async function gistPush(cfg) {
     const body = {
       files: {
         [GIST_FILE]: {
           content: exportPayload()
+        },
+        [GIST_COVERS_FILE]: {
+          content: exportCustomCoversPayload()
         }
       }
     };
@@ -951,6 +1093,15 @@
     if (remoteAt > localAt || force) {
       const imported = importPayload(text);
       if (!imported.ok) throw new Error(imported.err);
+      try {
+        const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
+        if (coverPayload.found) {
+          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          if (!importedCovers.ok) throw new Error(importedCovers.err);
+        }
+      } catch {
+        // optional file; ignore when missing/unavailable
+      }
       dirty = false;
       render();
       setSyncStatus("Pulled newer state.");
@@ -1000,6 +1151,15 @@
     if (remoteAt > localAt) {
       const imported = importPayload(remoteText);
       if (!imported.ok) throw new Error(imported.err);
+      try {
+        const coverPayload = await gistGetTextFromFile(cfg, GIST_COVERS_FILE);
+        if (coverPayload.found) {
+          const importedCovers = importCustomCoversPayload(coverPayload.text);
+          if (!importedCovers.ok) throw new Error(importedCovers.err);
+        }
+      } catch {
+        // optional file; ignore when missing/unavailable
+      }
       dirty = false;
       render();
       setSyncStatus("Sync complete (pulled newer remote).");
@@ -1280,6 +1440,28 @@
       syncQuickFilterChips();
       writeFilters();
       writeFiltersToURL();
+    });
+
+    runUIStep("coverEditorPrefs", () => {
+      const prefs = readUiPrefs();
+      const showToggle = $("showCoverEditor");
+      const missingToggle = $("coverEditorOnlyMissing");
+      if (showToggle) showToggle.checked = !!prefs.showCoverEditor;
+      if (missingToggle) missingToggle.checked = !!prefs.coverEditorOnlyMissing;
+
+      if (showToggle) {
+        showToggle.addEventListener("change", () => {
+          writeUiPrefs({ showCoverEditor: !!showToggle.checked });
+          render();
+        });
+      }
+
+      if (missingToggle) {
+        missingToggle.addEventListener("change", () => {
+          writeUiPrefs({ coverEditorOnlyMissing: !!missingToggle.checked });
+          render();
+        });
+      }
     });
 
     runUIStep("filterInputs", () => {

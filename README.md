@@ -64,6 +64,19 @@ Danach wie gewohnt prüfen:
 ./scripts/smoke-check.sh
 ```
 
+Wenn GitHub-Gist-Sync aktiviert ist, werden manuelle Cover-Links zusätzlich in einer
+separaten Datei im Gist gespeichert (`batmanguide_covers.json`). Dadurch bleiben
+sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespielt werden.
+
+### Troubleshooting Cover-Sync
+
+- Wenn im Log `ENETUNREACH`, `ETIMEDOUT` oder ähnliche Netzwerkfehler stehen,
+  kann die Umgebung DCUI temporär nicht erreichen (Routing/DNS/Firewall).
+- Das Sync-Script bevorzugt bereits IPv4 (`ipv4first`), um typische IPv6-
+  Routingprobleme zu reduzieren.
+- In so einem Fall kannst du `cover` pro Eintrag manuell setzen, wenn du die
+  offizielle `imgix-media.wbdndc.net`-URL von der DCUI-Seite hast.
+
 ## Mehr Details
 
 - Tests: `TESTING.md`
@@ -75,4 +88,3 @@ Danach wie gewohnt prüfen:
 - **Datenpflege-Workflow**: kleine `npm run`-Kommandos für `format-list`, `validate-list`, `smoke`.
 - **UX**: „Zuletzt gelesen“-Filter/Shortcut, um schneller wieder einzusteigen.
 - **Performance**: Lazy Rendering für sehr große Listen (falls die Liste weiter wächst).
-
