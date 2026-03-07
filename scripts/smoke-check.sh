@@ -63,6 +63,9 @@ grep -q 'NETWORK_FIRST_PATHS' /tmp/batman-smoke-sw.js || fail "service worker ma
 echo "[smoke] validate list payload schema"
 node scripts/validate-list.js
 
+echo "[smoke] validate real cover mapping"
+node scripts/validate-real-covers.js
+
 echo "[smoke] basic list size check"
 ITEM_COUNT=$(python3 - <<'PY'
 import re
