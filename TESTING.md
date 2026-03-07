@@ -17,3 +17,13 @@ This verifies:
 
 A GitHub Actions workflow runs the same smoke check on push/PR:
 - `.github/workflows/smoke.yml`
+
+## Optional quality check: external links
+
+```bash
+node ./scripts/check-links.js
+```
+
+Useful flags:
+- `--max 30` for a quick sample
+- `--include-covers` to also validate cover image URLs
