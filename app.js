@@ -78,6 +78,7 @@
     build: BUILD_ID,
     updatedAt: null,
     lastTouchedId: null,
+    customCovers: {},
     items: {}
   });
 
@@ -621,6 +622,27 @@
     return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
   }
 
+  function sanitizeManualCoverUrl(url) {
+    const value = String(url || "").trim();
+    if (!/^https?:\/\//i.test(value)) return "";
+    return normalizeCoverUrl(value);
+  }
+
+  function getManualCoverUrl(entryId) {
+    return normalizeCoverUrl(state?.customCovers?.[entryId]);
+  }
+
+  function setManualCoverUrl(entryId, url) {
+    if (!entryId) return;
+    if (!state.customCovers || typeof state.customCovers !== "object") state.customCovers = {};
+    const next = sanitizeManualCoverUrl(url);
+    if (!next) {
+      delete state.customCovers[entryId];
+      return;
+    }
+    state.customCovers[entryId] = next;
+  }
+
   function loadCoverImage(coverEl, entry, url) {
     return new Promise((resolve) => {
       if (!coverEl || !url) return resolve(false);
@@ -641,6 +663,7 @@
   }
 
   async function applyBestCover(coverEl, entry) {
+    const manual = getManualCoverUrl(entry.id);
     const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
     const cached = coverCache[entry.id];
     const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
@@ -651,6 +674,7 @@
     }
 
     const candidates = [];
+    if (manual) candidates.push(manual);
     if (primary) candidates.push(primary);
     if (cached && isOfficialCoverUrl(cached) && cached !== primary) candidates.push(cached);
     if (fallbackCached && fallbackCached !== primary && fallbackCached !== cached) candidates.push(fallbackCached);
@@ -764,6 +788,14 @@
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
+        const manualCover = document.createElement("div");
+        manualCover.className = "manual-cover-fields";
+        manualCover.innerHTML = `
+          <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(state?.customCovers?.[entry.id] || "")}" />
+          <button class="btn" type="button" data-action="save-cover">Save cover</button>
+          <button class="btn" type="button" data-action="clear-cover">Clear</button>
+        `;
+
         top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
           st.done = e.target.checked;
           st.touchedAt = nowISO();
@@ -787,7 +819,37 @@
           saveState();
         });
 
-        content.append(top, tags, progress);
+        const coverInput = manualCover.querySelector('[data-action="cover-url"]');
+        const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
+        const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
+
+        saveCoverBtn.addEventListener("click", () => {
+          const next = sanitizeManualCoverUrl(coverInput.value);
+          if (!next) {
+            setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
+            return;
+          }
+          setManualCoverUrl(entry.id, next);
+          failedCoverCandidates.delete(entry.id);
+          st.touchedAt = nowISO();
+          state.lastTouchedId = entry.id;
+          saveState();
+          void applyBestCover(cover, entry);
+          setSyncStatus(`Saved manual cover for ${entry.id}.`);
+        });
+
+        clearCoverBtn.addEventListener("click", () => {
+          setManualCoverUrl(entry.id, "");
+          failedCoverCandidates.delete(entry.id);
+          st.touchedAt = nowISO();
+          state.lastTouchedId = entry.id;
+          saveState();
+          coverInput.value = "";
+          void applyBestCover(cover, entry);
+          setSyncStatus(`Cleared manual cover for ${entry.id}.`);
+        });
+
+        content.append(top, tags, progress, manualCover);
 
         const layout = document.createElement("div");
         layout.className = "item-grid";
