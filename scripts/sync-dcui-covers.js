@@ -3,9 +3,24 @@
 
 const fs = require("fs");
 const path = require("path");
+const dns = require("dns");
 
 const repoRoot = path.resolve(__dirname, "..");
 const listPath = path.join(repoRoot, "list.js");
+
+// Some environments resolve IPv6 first but cannot route it reliably.
+// Prefer IPv4 before DNS lookup returns alternatives.
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
+function formatErrorReason(error) {
+  if (!error) return "unknown error";
+  const cause = error.cause || {};
+  const code = error.code || cause.code;
+  const msg = error.message || String(error);
+  return code ? `${msg} [${code}]` : msg;
+}
 
 function loadList() {
   global.window = {};
@@ -139,7 +154,7 @@ async function resolveEntryCover(entry) {
         }
       }
     } catch (error) {
-      const reason = error && error.message ? error.message : String(error);
+      const reason = formatErrorReason(error);
       console.warn(`[cover-sync] WARN ${entry.id || "?"}: fetch failed for ${url} (${reason})`);
       // continue with next URL candidate
     }
