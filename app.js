@@ -348,7 +348,7 @@
   // Optional: set the 7 era symbol image URLs here (e.g. raw GitHub image links).
   // You can also override at runtime with: window.BATMAN_ERA_SYMBOLS = ["...", ...].
   const ERA_BAT_ICON_URLS = [
-    "./assets/batsymbols/Era1.png",
+    "./assets/batsmbols/era-1.png",
     "",
     "",
     "",
