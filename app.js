@@ -348,7 +348,7 @@
   // Optional: set the 7 era symbol image URLs here (e.g. raw GitHub image links).
   // You can also override at runtime with: window.BATMAN_ERA_SYMBOLS = ["...", ...].
   const ERA_BAT_ICON_URLS = [
-    "",
+    "./assets/batsymbols/Era1.png",
     "",
     "",
     "",
@@ -381,7 +381,7 @@
     if (!iconUrl) {
       return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))}" aria-hidden="true">${escapeHtml(symbol)}</span>`;
     }
-    return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))} has-icon" aria-label="${escapeAttr(symbol)}"><img class="era-bat-icon" src="${escapeAttr(iconUrl)}" alt="" loading="lazy" decoding="async" /></span>`;
+    return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))} has-icon" data-fallback-symbol="${escapeAttr(symbol)}" aria-label="${escapeAttr(symbol)}"><img class="era-bat-icon" src="${escapeAttr(iconUrl)}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;const host=this.parentElement;if(host){host.classList.remove('has-icon');host.setAttribute('aria-hidden','true');host.removeAttribute('aria-label');host.textContent=host.getAttribute('data-fallback-symbol')||'🦇';}" /></span>`;
   }
 
   function getCfg() {
