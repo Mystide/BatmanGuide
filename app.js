@@ -906,8 +906,13 @@
         const progress = document.createElement("div");
         progress.className = "progress-fields";
         progress.innerHTML = `
-          <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-          <div class="muted progress-unit-hint">Progress unit: ${escapeHtml(progressUnitLabel(st.unit))}</div>
+          <div class="progress-pos-group">
+            <div class="progress-pos-meta">
+              <span class="muted">Where you stopped</span>
+              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+            </div>
+            <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+          </div>
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
