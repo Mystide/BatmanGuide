@@ -349,12 +349,12 @@
   // You can also override at runtime with: window.BATMAN_ERA_SYMBOLS = ["...", ...].
   const ERA_BAT_ICON_URLS = [
     "./assets/batsymbols/Era1.png",
-    "",
-    "",
-    "",
-    "",
-    "",
-    ""
+    "./assets/batsymbols/Era2.png",
+    "./assets/batsymbols/Era3.png",
+    "./assets/batsymbols/Era4.png",
+    "./assets/batsymbols/Era5.png",
+    "./assets/batsymbols/Era6.png",
+    "./assets/batsymbols/Era7.png"
   ];
 
   function eraNumber(era) {
