@@ -143,6 +143,20 @@
       white-space: nowrap;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
     }
+    .era-bat.has-icon {
+      padding: 0;
+      min-width: 0;
+      width: 58px;
+      height: 24px;
+      overflow: hidden;
+    }
+    .era-bat-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display:block;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+    }
     .era-bat-1 { color: #fde68a; border-color: #b45309; background: rgba(120, 53, 15, .34); }
     .era-bat-2 { color: #e2e8f0; border-color: #94a3b8; background: rgba(71, 85, 105, .32); }
     .era-bat-3 { color: #fdba74; border-color: #c2410c; background: rgba(124, 45, 18, .34); }
@@ -357,6 +371,7 @@
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
       .era-bat { min-width: 50px; font-size: 10px; padding: 2px 7px; }
+      .era-bat.has-icon { width: 50px; height: 20px; padding: 0; }
       .btn, .input, .select { width: 100%; }
       .filters { display: flex; }
       .advanced-controls { grid-template-columns: 1fr; }
