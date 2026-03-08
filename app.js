@@ -344,6 +344,20 @@
     return String(era || "unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   }
 
+  const ERA_BAT_SYMBOLS = ["🦇 I", "🦇 II", "🦇 III", "🦇 IV", "🦇 V", "🦇 VI", "🦇 VII"];
+
+  function eraNumber(era) {
+    const m = String(era || "").match(/Era\s+(\d+)/i);
+    if (!m) return 0;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function eraBatSymbol(era) {
+    const idx = eraNumber(era) - 1;
+    return ERA_BAT_SYMBOLS[idx] || "🦇";
+  }
+
   function getCfg() {
     return loadJSON(KEYS.syncCfg, defaultCfg());
   }
@@ -851,7 +865,13 @@
       const pct = Math.round((done / items.length) * 100);
 
       const summary = document.createElement("summary");
-      summary.innerHTML = `<span>${escapeHtml(era)}</span><span class="muted">${done}/${items.length} (${pct}%)</span>`;
+      summary.innerHTML = `
+        <span class="era-summary-title">
+          <span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))}" aria-hidden="true">${escapeHtml(eraBatSymbol(era))}</span>
+          <span>${escapeHtml(era)}</span>
+        </span>
+        <span class="muted">${done}/${items.length} (${pct}%)</span>
+      `;
       details.appendChild(summary);
 
       const list = document.createElement("div");
