@@ -77,10 +77,10 @@
   };
 
   const PROGRESS_PLACEHOLDER_BY_UNIT = {
-    page: "where you stopped (page)",
-    issue: "where you stopped (issue/story)",
-    chapter: "where you stopped (chapter)",
-    story: "where you stopped (story)"
+    page: "page",
+    issue: "issue/story",
+    chapter: "chapter",
+    story: "story"
   };
 
   const PROGRESS_LABEL_BY_UNIT = {
@@ -305,7 +305,7 @@
 
   function progressPlaceholder(unit) {
     const clean = String(unit || "").trim().toLowerCase();
-    return PROGRESS_PLACEHOLDER_BY_UNIT[clean] || "where you stopped";
+    return PROGRESS_PLACEHOLDER_BY_UNIT[clean] || "position";
   }
 
   function progressUnitLabel(unit) {
@@ -913,7 +913,10 @@
             </div>
             <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
           </div>
-          <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
+          <label class="progress-note-group">
+            <span class="muted progress-note-label">Note</span>
+            <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
+          </label>
         `;
 
         const shouldShowEditor = showCoverEditor;
