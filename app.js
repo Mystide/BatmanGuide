@@ -83,6 +83,13 @@
     story: "where you stopped (story)"
   };
 
+  const PROGRESS_LABEL_BY_UNIT = {
+    page: "page",
+    issue: "issue/story",
+    chapter: "chapter",
+    story: "story"
+  };
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -299,6 +306,11 @@
   function progressPlaceholder(unit) {
     const clean = String(unit || "").trim().toLowerCase();
     return PROGRESS_PLACEHOLDER_BY_UNIT[clean] || "where you stopped";
+  }
+
+  function progressUnitLabel(unit) {
+    const clean = String(unit || "").trim().toLowerCase();
+    return PROGRESS_LABEL_BY_UNIT[clean] || clean || "entry";
   }
 
   function ensureItemState(entry) {
@@ -895,6 +907,7 @@
         progress.className = "progress-fields";
         progress.innerHTML = `
           <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+          <div class="muted progress-unit-hint">Progress unit: ${escapeHtml(progressUnitLabel(st.unit))}</div>
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
