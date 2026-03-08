@@ -70,6 +70,26 @@
 
   const $ = (id) => document.getElementById(id);
 
+  const PROGRESS_UNIT_BY_TYPE = {
+    book: "page",
+    series: "issue",
+    collection: "issue"
+  };
+
+  const PROGRESS_PLACEHOLDER_BY_UNIT = {
+    page: "where you stopped (page)",
+    issue: "where you stopped (issue/story)",
+    chapter: "where you stopped (chapter)",
+    story: "where you stopped (story)"
+  };
+
+  const PROGRESS_LABEL_BY_UNIT = {
+    page: "page",
+    issue: "issue/story",
+    chapter: "chapter",
+    story: "story"
+  };
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -270,15 +290,40 @@
     box.classList.toggle("hidden", !msg);
   }
 
+  function preferredProgressUnit(entry) {
+    const explicit = String(entry?.progressUnit || "").trim().toLowerCase();
+    if (explicit) return explicit;
+    return PROGRESS_UNIT_BY_TYPE[entry?.type] || "page";
+  }
+
+  function normalizeProgressUnit(unit, entry) {
+    const clean = String(unit || "").trim().toLowerCase();
+    if (!clean) return preferredProgressUnit(entry);
+    if (clean === "item") return preferredProgressUnit(entry);
+    return clean;
+  }
+
+  function progressPlaceholder(unit) {
+    const clean = String(unit || "").trim().toLowerCase();
+    return PROGRESS_PLACEHOLDER_BY_UNIT[clean] || "where you stopped";
+  }
+
+  function progressUnitLabel(unit) {
+    const clean = String(unit || "").trim().toLowerCase();
+    return PROGRESS_LABEL_BY_UNIT[clean] || clean || "entry";
+  }
+
   function ensureItemState(entry) {
     if (!state.items[entry.id]) {
       state.items[entry.id] = {
         done: false,
         pos: "",
         note: "",
-        unit: entry.type === "series" ? "issue" : entry.type === "collection" ? "item" : "page",
+        unit: preferredProgressUnit(entry),
         touchedAt: null
       };
+    } else {
+      state.items[entry.id].unit = normalizeProgressUnit(state.items[entry.id].unit, entry);
     }
     return state.items[entry.id];
   }
@@ -861,7 +906,13 @@
         const progress = document.createElement("div");
         progress.className = "progress-fields";
         progress.innerHTML = `
-          <input class="input" data-action="pos" placeholder="where you stopped" value="${escapeHtml(st.pos || "")}" />
+          <div class="progress-pos-group">
+            <div class="progress-pos-meta">
+              <span class="muted">Where you stopped</span>
+              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+            </div>
+            <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+          </div>
           <input class="input" data-action="note" placeholder="note" value="${escapeHtml(st.note || "")}" />
         `;
 
