@@ -146,15 +146,21 @@
     .era-bat.has-icon {
       padding: 0;
       min-width: 0;
-      width: 96px;
-      height: 36px;
-      overflow: hidden;
+      width: 180px;
+      height: 56px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
     }
     .era-bat-icon {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      object-position: center;
       display:block;
+      transform: translateX(-12%) scale(1.45);
+      transform-origin: center;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,.45));
     }
     .era-bat-1 { color: #fde68a; border-color: #b45309; background: rgba(120, 53, 15, .34); }
@@ -371,7 +377,7 @@
       h1 { font-size: 24px; }
       .container { padding: 10px 12px; }
       .era-bat { min-width: 56px; font-size: 10px; padding: 2px 8px; }
-      .era-bat.has-icon { width: 76px; height: 28px; padding: 0; }
+      .era-bat.has-icon { width: 132px; height: 42px; padding: 0; }
       .btn, .input, .select { width: 100%; }
       .filters { display: flex; }
       .advanced-controls { grid-template-columns: 1fr; }
