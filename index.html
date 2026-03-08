@@ -162,17 +162,21 @@
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 12px; color: #fde68a; border: 1px solid #725f0a; border-radius: 999px; padding: 1px 8px; }
     .cover-saved-tag { color: #bbf7d0; border-color: #166534; background: rgba(22, 163, 74, .18); }
-    .progress-fields { margin-top: 10px; display:grid; grid-template-columns: minmax(180px, 240px) minmax(240px, 1fr); gap: 8px; align-items: start; }
-    .progress-pos-group { display: grid; gap: 6px; }
-    .progress-pos-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 20px; }
+    .progress-fields { margin-top: 10px; display:grid; grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.35fr); gap: 10px; align-items: end; }
+    .progress-pos-group,
+    .progress-note-group { display: grid; gap: 6px; }
+    .progress-pos-meta,
+    .progress-note-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; font-size: 12px; letter-spacing: .15px; }
     .progress-unit-pill {
       display: inline-flex;
       align-items: center;
       border: 1px solid rgba(148,163,184,.5);
       border-radius: 999px;
-      padding: 1px 8px;
-      font-size: 11px;
-      color: #cbd5e1;
+      padding: 2px 8px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .35px;
+      color: #dbeafe;
       background: rgba(15,23,42,.65);
       white-space: nowrap;
     }
