@@ -345,6 +345,17 @@
   }
 
   const ERA_BAT_SYMBOLS = ["🦇 I", "🦇 II", "🦇 III", "🦇 IV", "🦇 V", "🦇 VI", "🦇 VII"];
+  // Optional: set the 7 era symbol image URLs here (e.g. raw GitHub image links).
+  // You can also override at runtime with: window.BATMAN_ERA_SYMBOLS = ["...", ...].
+  const ERA_BAT_ICON_URLS = [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+  ];
 
   function eraNumber(era) {
     const m = String(era || "").match(/Era\s+(\d+)/i);
@@ -356,6 +367,21 @@
   function eraBatSymbol(era) {
     const idx = eraNumber(era) - 1;
     return ERA_BAT_SYMBOLS[idx] || "🦇";
+  }
+
+  function eraBatIconUrl(era) {
+    const idx = eraNumber(era) - 1;
+    const fromWindow = Array.isArray(window.BATMAN_ERA_SYMBOLS) ? window.BATMAN_ERA_SYMBOLS[idx] : "";
+    return String(fromWindow || ERA_BAT_ICON_URLS[idx] || "").trim();
+  }
+
+  function eraBatMarkup(era) {
+    const symbol = eraBatSymbol(era);
+    const iconUrl = eraBatIconUrl(era);
+    if (!iconUrl) {
+      return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))}" aria-hidden="true">${escapeHtml(symbol)}</span>`;
+    }
+    return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))} has-icon" aria-label="${escapeAttr(symbol)}"><img class="era-bat-icon" src="${escapeAttr(iconUrl)}" alt="" loading="lazy" decoding="async" /></span>`;
   }
 
   function getCfg() {
@@ -867,7 +893,7 @@
       const summary = document.createElement("summary");
       summary.innerHTML = `
         <span class="era-summary-title">
-          <span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))}" aria-hidden="true">${escapeHtml(eraBatSymbol(era))}</span>
+          ${eraBatMarkup(era)}
           <span>${escapeHtml(era)}</span>
         </span>
         <span class="muted">${done}/${items.length} (${pct}%)</span>
