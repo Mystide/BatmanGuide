@@ -28,6 +28,37 @@ if (list.length < 20) {
 
 const allowedTypes = new Set(["book", "series", "collection"]);
 const ids = new Set();
+let previousOrder = null;
+
+function parseOrderFromId(id) {
+  const match = /^E(\d+)-(\d+)([A-Z]*)$/.exec(id);
+  if (!match) return null;
+  return {
+    era: Number(match[1]),
+    number: Number(match[2]),
+    suffix: match[3] || ""
+  };
+}
+
+function compareOrder(a, b) {
+  if (a.era !== b.era) return a.era - b.era;
+  if (a.number !== b.number) return a.number - b.number;
+  return a.suffix.localeCompare(b.suffix);
+}
+
+
+function validateTypeUrlConsistency(item, at) {
+  const url = item.url;
+  if (item.type === "collection" && !/\/collections\//.test(url)) {
+    fail(`${at} is marked as 'collection' but url is not a DCUI collection link`);
+  }
+  if (item.type === "book" && !/\/comics\/book\//.test(url)) {
+    fail(`${at} is marked as 'book' but url is not a DCUI book link`);
+  }
+  if (item.type === "series" && !/\/comics\/series\//.test(url)) {
+    fail(`${at} is marked as 'series' but url is not a DCUI series link`);
+  }
+}
 
 list.forEach((item, index) => {
   const at = `entry #${index + 1}`;
@@ -44,6 +75,20 @@ list.forEach((item, index) => {
     fail(`${at} has invalid id format '${item.id}'`);
   }
 
+  const order = parseOrderFromId(item.id);
+  if (!order) {
+    fail(`${at} has unparseable order id '${item.id}'`);
+  }
+
+  if (!item.era.startsWith(`Era ${order.era} `)) {
+    fail(`${at} has mismatching era label '${item.era}' for id '${item.id}'`);
+  }
+
+  if (previousOrder && compareOrder(order, previousOrder) < 0) {
+    fail(`${at} is out of reading order ('${item.id}' appears after a later id)`);
+  }
+  previousOrder = order;
+
   if (ids.has(item.id)) {
     fail(`${at} has duplicate id '${item.id}'`);
   }
@@ -52,6 +97,8 @@ list.forEach((item, index) => {
   if (!allowedTypes.has(item.type)) {
     fail(`${at} has unsupported type '${item.type}'`);
   }
+
+  validateTypeUrlConsistency(item, at);
 
   if (typeof item.optional !== "boolean") {
     fail(`${at} has non-boolean 'optional'`);
