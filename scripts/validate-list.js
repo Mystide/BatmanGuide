@@ -28,6 +28,23 @@ if (list.length < 20) {
 
 const allowedTypes = new Set(["book", "series", "collection"]);
 const ids = new Set();
+let previousOrder = null;
+
+function parseOrderFromId(id) {
+  const match = /^E(\d+)-(\d+)([A-Z]*)$/.exec(id);
+  if (!match) return null;
+  return {
+    era: Number(match[1]),
+    number: Number(match[2]),
+    suffix: match[3] || ""
+  };
+}
+
+function compareOrder(a, b) {
+  if (a.era !== b.era) return a.era - b.era;
+  if (a.number !== b.number) return a.number - b.number;
+  return a.suffix.localeCompare(b.suffix);
+}
 
 list.forEach((item, index) => {
   const at = `entry #${index + 1}`;
@@ -43,6 +60,20 @@ list.forEach((item, index) => {
   if (!/^E\d+-[0-9A-Z]+$/.test(item.id)) {
     fail(`${at} has invalid id format '${item.id}'`);
   }
+
+  const order = parseOrderFromId(item.id);
+  if (!order) {
+    fail(`${at} has unparseable order id '${item.id}'`);
+  }
+
+  if (!item.era.startsWith(`Era ${order.era} `)) {
+    fail(`${at} has mismatching era label '${item.era}' for id '${item.id}'`);
+  }
+
+  if (previousOrder && compareOrder(order, previousOrder) < 0) {
+    fail(`${at} is out of reading order ('${item.id}' appears after a later id)`);
+  }
+  previousOrder = order;
 
   if (ids.has(item.id)) {
     fail(`${at} has duplicate id '${item.id}'`);
