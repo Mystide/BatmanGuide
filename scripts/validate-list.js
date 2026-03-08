@@ -46,6 +46,20 @@ function compareOrder(a, b) {
   return a.suffix.localeCompare(b.suffix);
 }
 
+
+function validateTypeUrlConsistency(item, at) {
+  const url = item.url;
+  if (item.type === "collection" && !/\/collections\//.test(url)) {
+    fail(`${at} is marked as 'collection' but url is not a DCUI collection link`);
+  }
+  if (item.type === "book" && !/\/comics\/book\//.test(url)) {
+    fail(`${at} is marked as 'book' but url is not a DCUI book link`);
+  }
+  if (item.type === "series" && !/\/comics\/series\//.test(url)) {
+    fail(`${at} is marked as 'series' but url is not a DCUI series link`);
+  }
+}
+
 list.forEach((item, index) => {
   const at = `entry #${index + 1}`;
   if (!item || typeof item !== "object") fail(`${at} is not an object`);
@@ -83,6 +97,8 @@ list.forEach((item, index) => {
   if (!allowedTypes.has(item.type)) {
     fail(`${at} has unsupported type '${item.type}'`);
   }
+
+  validateTypeUrlConsistency(item, at);
 
   if (typeof item.optional !== "boolean") {
     fail(`${at} has non-boolean 'optional'`);
