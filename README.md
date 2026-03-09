@@ -99,7 +99,7 @@ sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespie
 ## Weitere Verbesserungen (Ideen/Fixes)
 
 - **Export/Import für Lesefortschritt** (JSON-Datei), damit der Fortschritt unabhängig von Browser-Storage gesichert ist.
-- **Optionaler CI-Job für Link-Checks** (z. B. nightly), damit externe Ausfälle früh sichtbar werden.
+- **Nightly-CI-Job für Link-Checks** aktiv, damit externe Ausfälle früh sichtbar werden (`.github/workflows/link-check-nightly.yml`).
 - **Datenpflege-Workflow**: kleine `npm run`-Kommandos für `format-list`, `validate-list`, `smoke`.
 - **UX**: „Zuletzt gelesen“-Filter/Shortcut, um schneller wieder einzusteigen.
 - **Performance**: Lazy Rendering für sehr große Listen (falls die Liste weiter wächst).
