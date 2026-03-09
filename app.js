@@ -2014,6 +2014,13 @@
           if (isTyping) return;
           e.preventDefault();
           $("btnRandom")?.click();
+          return;
+        }
+
+        if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          if (isTyping) return;
+          e.preventDefault();
+          $("btnContinue")?.click();
         }
       });
 
