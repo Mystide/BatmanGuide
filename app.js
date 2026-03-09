@@ -118,8 +118,11 @@
     hideOptional: false,
     sortBy: "order",
     track: "",
-    character: ""
+    character: "",
+    era: ""
   });
+
+  const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
 
 
   const defaultUiPrefs = () => ({
@@ -150,7 +153,8 @@
       hideOptional: !!$("hideOptional").checked,
       sortBy: $("sortBy").value || "order",
       track: $("trackFilter").value || "",
-      character: $("characterFilter").value || ""
+      character: $("characterFilter").value || "",
+      era: $("eraFilter").value || ""
     });
   }
 
@@ -161,6 +165,7 @@
       const sortBy = params.get("sort") || "order";
       const track = params.get("track") || "";
       const character = params.get("character") || "";
+      const era = params.get("era") || "";
       return {
         search: params.get("q") || "",
         type: ["", "book", "series", "collection"].includes(type) ? type : "",
@@ -168,7 +173,8 @@
         hideOptional: params.get("required") === "1",
         sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order",
         track: ["", "main", "batfamily"].includes(track) ? track : "",
-        character: character
+        character: character,
+        era: ERA_OPTIONS.includes(era) ? era : ""
       };
     } catch {
       return defaultFilters();
@@ -184,7 +190,8 @@
         hideOptional: !!$("hideOptional").checked,
         sortBy: $("sortBy").value || "order",
         track: $("trackFilter").value || "",
-        character: $("characterFilter").value || ""
+        character: $("characterFilter").value || "",
+        era: $("eraFilter").value || ""
       };
       const defaults = defaultFilters();
       const next = new URLSearchParams(window.location.search || "");
@@ -209,6 +216,9 @@
 
       if (filters.character && filters.character !== defaults.character) next.set("character", filters.character);
       else next.delete("character");
+
+      if (filters.era && filters.era !== defaults.era) next.set("era", filters.era);
+      else next.delete("era");
 
       const nextQuery = next.toString();
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
@@ -428,6 +438,7 @@
     const sortBy = $("sortBy").value;
     const track = $("trackFilter").value;
     const character = $("characterFilter").value;
+    const era = $("eraFilter").value;
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
@@ -437,6 +448,7 @@
       if (hideOptional && entry.optional) return false;
       if (track === "main" && entry.track === "batfamily") return false;
       if (track === "batfamily" && entry.track !== "batfamily") return false;
+      if (era && entry.era !== era) return false;
       if (character) {
         const chars = Array.isArray(entry.characters) ? entry.characters : [];
         if (!chars.includes(character)) return false;
@@ -1594,6 +1606,20 @@
     box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)}`;
   }
 
+  function populateEraFilter() {
+    const select = $("eraFilter");
+    if (!select) return;
+    const selected = select.value || "";
+    select.innerHTML = '<option value="">All eras</option>';
+    for (const era of ERA_OPTIONS) {
+      const opt = document.createElement("option");
+      opt.value = era;
+      opt.textContent = era;
+      select.appendChild(opt);
+    }
+    select.value = ERA_OPTIONS.includes(selected) ? selected : "";
+  }
+
   function syncQuickFilterChips() {
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
@@ -1621,10 +1647,11 @@
     let syncEraToggleButton = () => {};
 
     runUIStep("restoreFilters", () => {
+      populateEraFilter();
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
-      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "character"].some((key) => params.has(key));
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "character", "era"].some((key) => params.has(key));
       const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
 
       $("search").value = activeFilters.search || "";
@@ -1634,6 +1661,7 @@
       $("sortBy").value = activeFilters.sortBy || "order";
       $("trackFilter").value = activeFilters.track || "";
       $("characterFilter").value = activeFilters.character || "";
+      $("eraFilter").value = ERA_OPTIONS.includes(activeFilters.era) ? activeFilters.era : "";
       syncQuickFilterChips();
       writeFilters();
       writeFiltersToURL();
@@ -1655,7 +1683,7 @@
     });
 
     runUIStep("filterInputs", () => {
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter"]) {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter", "eraFilter"]) {
         $(id).addEventListener("input", () => {
           writeFilters();
           writeFiltersToURL();
@@ -1787,6 +1815,7 @@
         $("sortBy").value = "order";
         $("trackFilter").value = "";
         $("characterFilter").value = "";
+        $("eraFilter").value = "";
         writeFilters();
         writeFiltersToURL();
         syncQuickFilterChips();
@@ -1985,6 +2014,13 @@
           if (isTyping) return;
           e.preventDefault();
           $("btnRandom")?.click();
+          return;
+        }
+
+        if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          if (isTyping) return;
+          e.preventDefault();
+          $("btnContinue")?.click();
         }
       });
 
