@@ -216,6 +216,11 @@
     .cover-fallback-label { position: absolute; left: 4px; right: 4px; bottom: 4px; border-radius: 999px; font-size: 9px; text-align:center; color: #f8fafc; background: rgba(2,6,23,.7); border: 1px solid rgba(148,163,184,.35); padding: 1px 4px; text-transform: uppercase; letter-spacing: .35px; }
     .item:hover { border-color: #6f86b1; transform: translateY(-1px); background: rgba(19, 31, 57, .86); }
     .item.done { opacity: .72; border-style: dashed; }
+    body.compact-cards .item-grid { grid-template-columns: 54px 1fr; gap: 10px; }
+    body.compact-cards .cover { width: 54px; height: 78px; }
+    body.compact-cards .item-hint,
+    body.compact-cards .progress-note-group,
+    body.compact-cards .tags .muted { display: none; }
     .item.cover-saved { border-color: #16a34a; box-shadow: 0 0 0 1px rgba(22,163,74,.22), var(--shadow-soft); }
     .title { font-weight: 700; line-height: 1.25; font-size: 18px; }
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -459,6 +464,7 @@
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnRandom">Random unread</button>
           <button class="btn" id="btnContinue">Continue</button>
+          <button class="btn" id="btnCompact">Compact cards: off</button>
           </div>
         </div>
       </div>
