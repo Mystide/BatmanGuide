@@ -1858,22 +1858,6 @@
         if (c) scrollToEntry(c.id);
       });
 
-      const applyCompactCards = (enabled) => {
-        document.body.classList.toggle("compact-cards", !!enabled);
-        const btn = $("btnCompact");
-        if (!btn) return;
-        btn.textContent = `Compact cards: ${enabled ? "on" : "off"}`;
-        btn.setAttribute("aria-pressed", String(!!enabled));
-      };
-
-      let compactCards = !!readUiPrefs().compactCards;
-      applyCompactCards(compactCards);
-      $("btnCompact")?.addEventListener("click", () => {
-        compactCards = !compactCards;
-        writeUiPrefs({ compactCards });
-        applyCompactCards(compactCards);
-      });
-
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
         if (!scrollTopBtn) return;
