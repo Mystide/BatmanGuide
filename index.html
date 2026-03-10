@@ -65,6 +65,7 @@
       box-shadow: inset 0 1px 0 rgba(148, 163, 184, .07);
     }
     .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .top-actions .btn { min-width: 122px; }
     .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
@@ -102,6 +103,7 @@
     .progress-track { height: 10px; background: #162132; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
     .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
     .status-row { margin-top: 5px; gap: 10px; }
+    .filter-summary { margin-top: 6px; font-size: 12px; color: var(--muted); }
     .status-pills { display:flex; gap:6px; flex-wrap:wrap; }
     .status-pill { font-size: 11px; border:1px solid var(--border); border-radius:999px; padding: 1px 7px; color: var(--muted); }
     .status-pill strong { color: var(--text); font-size: 12px; }
@@ -271,7 +273,7 @@
     .sync-dock.is-ready:not([open]) {
       width: auto;
       max-width: calc(100vw - 24px);
-      opacity: .16;
+      opacity: .35;
       transform: translateY(8px) scale(.92);
     }
     .sync-dock.is-ready:not([open]):hover,
@@ -354,16 +356,44 @@
     .debug-health { margin-top: 8px; border: 1px dashed rgba(148,163,184,.45); border-radius: 10px; padding: 6px 8px; font-size: 12px; color: #cbd5e1; background: rgba(15, 23, 42, .35); }
     .debug-health strong { color: #f8fafc; }
     .controls-hint { margin-top: 2px; }
-    .header-reveal {
+    .floating-actions {
       position: fixed;
       right: 16px;
-      bottom: 84px;
-      z-index: 60;
+      bottom: 74px;
+      z-index: 70;
+      display: grid;
+      gap: 8px;
+      justify-items: end;
+    }
+    .floating-actions .btn { min-width: 122px; }
+    .header-reveal {
+      position: static;
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
+    .scroll-top {
+      position: static;
+      border-radius: 999px;
+      min-height: 44px;
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 1280px) {
+      .item { padding: 9px; }
+      .item-grid { grid-template-columns: 58px 1fr; gap: 10px; }
+      .cover { width: 58px; height: 84px; }
+      .title { font-size: 17px; }
+      .top-actions .btn,
+      .floating-actions .btn { min-width: 0; }
+    }
+
+    @media (max-width: 980px) {
+      .item-hint,
+      .progress-note-group,
+      .tags .muted { display: none; }
     }
 
     @media (min-width: 761px) and (max-width: 1180px) {
-      .filters { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+      .filters { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
       .advanced-controls { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
       .top-actions { justify-content: flex-start; }
       .btn, .input, .select, .chip { min-height: 44px; font-size: 15px; padding: 10px 12px; }
@@ -379,7 +409,7 @@
       .era-bat { min-width: 56px; font-size: 10px; padding: 2px 8px; }
       .era-bat.has-icon { width: 132px; height: 42px; padding: 0; }
       .btn, .input, .select { width: 100%; }
-      .filters { display: flex; }
+      .filters { grid-template-columns: 1fr; }
       .advanced-controls { grid-template-columns: 1fr; }
       .top-actions { justify-content: stretch; }
       .top-actions .btn { flex: 1 1 110px; }
@@ -392,6 +422,8 @@
       .progress-fields { grid-template-columns: 1fr; }
       .manual-cover-fields { grid-template-columns: 1fr; }
       .quick-filters { margin-top: 2px; }
+      .status-row { display: grid; gap: 6px; }
+      .status-pills { gap: 4px; }
       .sync-dock {
         right: 12px;
         bottom: 12px;
@@ -400,10 +432,11 @@
       .sync-dock.is-ready:not([open]) {
         width: auto;
       }
-      .header-reveal {
+      .floating-actions {
         right: 12px;
-        bottom: 80px;
+        bottom: 84px;
       }
+      .floating-actions .btn { min-width: 0; width: auto; padding: 8px 12px; }
     }
   </style>
 </head>
@@ -483,7 +516,7 @@
           <button class="btn" id="btnClearFilters">Clear filters</button>
         </div>
       </div>
-      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> for continue.</div>
+      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">N</span> for next unread, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> for continue.</div>
 
       <div class="status-strip">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
@@ -499,13 +532,17 @@
             <span class="status-pill">Required <strong id="statRequired">-</strong></span>
           </div>
         </div>
+        <div id="filterSummary" class="filter-summary">No active filters.</div>
       </div>
         <div id="debugHealth" class="debug-health hidden" role="status" aria-live="polite"></div>
       </div>
     </div>
   </header>
 
-  <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
+  <div class="floating-actions" aria-label="Page actions">
+    <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
+    <button class="btn hidden scroll-top" id="btnScrollTop" type="button" aria-label="Scroll to top">↑ Top</button>
+  </div>
 
   <main class="container">
     <div id="errorBox" class="error hidden"></div>
