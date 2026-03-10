@@ -127,7 +127,8 @@
 
   const defaultUiPrefs = () => ({
     filtersOpen: false,
-    showCoverEditor: false
+    showCoverEditor: false,
+    compactCards: false
   });
 
   let runtimeUiPrefs = loadJSON(KEYS.uiPrefs, defaultUiPrefs());
