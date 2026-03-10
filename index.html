@@ -65,6 +65,7 @@
       box-shadow: inset 0 1px 0 rgba(148, 163, 184, .07);
     }
     .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .top-actions .btn { min-width: 122px; }
     .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
@@ -277,7 +278,7 @@
     .sync-dock.is-ready:not([open]) {
       width: auto;
       max-width: calc(100vw - 24px);
-      opacity: .16;
+      opacity: .35;
       transform: translateY(8px) scale(.92);
     }
     .sync-dock.is-ready:not([open]):hover,
@@ -362,13 +363,14 @@
     .controls-hint { margin-top: 2px; }
     .floating-actions {
       position: fixed;
-      left: 16px;
-      bottom: 16px;
+      right: 16px;
+      bottom: 74px;
       z-index: 70;
       display: grid;
       gap: 8px;
-      justify-items: start;
+      justify-items: end;
     }
+    .floating-actions .btn { min-width: 122px; }
     .header-reveal {
       position: static;
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
@@ -385,6 +387,8 @@
       .item-grid { grid-template-columns: 58px 1fr; gap: 10px; }
       .cover { width: 58px; height: 84px; }
       .title { font-size: 17px; }
+      .top-actions .btn,
+      .floating-actions .btn { min-width: 0; }
     }
 
     @media (max-width: 980px) {
@@ -394,7 +398,7 @@
     }
 
     @media (min-width: 761px) and (max-width: 1180px) {
-      .filters { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+      .filters { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
       .advanced-controls { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
       .top-actions { justify-content: flex-start; }
       .btn, .input, .select, .chip { min-height: 44px; font-size: 15px; padding: 10px 12px; }
@@ -410,7 +414,7 @@
       .era-bat { min-width: 56px; font-size: 10px; padding: 2px 8px; }
       .era-bat.has-icon { width: 132px; height: 42px; padding: 0; }
       .btn, .input, .select { width: 100%; }
-      .filters { display: flex; }
+      .filters { grid-template-columns: 1fr; }
       .advanced-controls { grid-template-columns: 1fr; }
       .top-actions { justify-content: stretch; }
       .top-actions .btn { flex: 1 1 110px; }
@@ -423,6 +427,8 @@
       .progress-fields { grid-template-columns: 1fr; }
       .manual-cover-fields { grid-template-columns: 1fr; }
       .quick-filters { margin-top: 2px; }
+      .status-row { display: grid; gap: 6px; }
+      .status-pills { gap: 4px; }
       .sync-dock {
         right: 12px;
         bottom: 12px;
@@ -432,9 +438,10 @@
         width: auto;
       }
       .floating-actions {
-        left: 12px;
-        bottom: 12px;
+        right: 12px;
+        bottom: 84px;
       }
+      .floating-actions .btn { min-width: 0; width: auto; padding: 8px 12px; }
     }
   </style>
 </head>
