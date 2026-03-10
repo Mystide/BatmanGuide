@@ -102,6 +102,7 @@
     .progress-track { height: 10px; background: #162132; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
     .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #facc15, #fde68a); }
     .status-row { margin-top: 5px; gap: 10px; }
+    .filter-summary { margin-top: 6px; font-size: 12px; color: var(--muted); }
     .status-pills { display:flex; gap:6px; flex-wrap:wrap; }
     .status-pill { font-size: 11px; border:1px solid var(--border); border-radius:999px; padding: 1px 7px; color: var(--muted); }
     .status-pill strong { color: var(--text); font-size: 12px; }
@@ -214,6 +215,11 @@
     .cover-fallback-label { position: absolute; left: 4px; right: 4px; bottom: 4px; border-radius: 999px; font-size: 9px; text-align:center; color: #f8fafc; background: rgba(2,6,23,.7); border: 1px solid rgba(148,163,184,.35); padding: 1px 4px; text-transform: uppercase; letter-spacing: .35px; }
     .item:hover { border-color: #6f86b1; transform: translateY(-1px); background: rgba(19, 31, 57, .86); }
     .item.done { opacity: .72; border-style: dashed; }
+    body.compact-cards .item-grid { grid-template-columns: 54px 1fr; gap: 10px; }
+    body.compact-cards .cover { width: 54px; height: 78px; }
+    body.compact-cards .item-hint,
+    body.compact-cards .progress-note-group,
+    body.compact-cards .tags .muted { display: none; }
     .item.cover-saved { border-color: #16a34a; box-shadow: 0 0 0 1px rgba(22,163,74,.22), var(--shadow-soft); }
     .title { font-weight: 700; line-height: 1.25; font-size: 18px; }
     .tags { margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -361,6 +367,15 @@
       z-index: 60;
       box-shadow: 0 10px 26px rgba(0,0,0,.35);
     }
+    .scroll-top {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 70;
+      border-radius: 999px;
+      min-height: 44px;
+      box-shadow: var(--shadow);
+    }
 
     @media (min-width: 761px) and (max-width: 1180px) {
       .filters { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
@@ -426,6 +441,7 @@
           <button class="btn" id="btnNext">Next unread</button>
           <button class="btn" id="btnRandom">Random unread</button>
           <button class="btn" id="btnContinue">Continue</button>
+          <button class="btn" id="btnCompact">Compact cards: off</button>
           </div>
         </div>
       </div>
@@ -483,7 +499,7 @@
           <button class="btn" id="btnClearFilters">Clear filters</button>
         </div>
       </div>
-      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> for continue.</div>
+      <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">N</span> for next unread, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> for continue.</div>
 
       <div class="status-strip">
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
@@ -499,6 +515,7 @@
             <span class="status-pill">Required <strong id="statRequired">-</strong></span>
           </div>
         </div>
+        <div id="filterSummary" class="filter-summary">No active filters.</div>
       </div>
         <div id="debugHealth" class="debug-health hidden" role="status" aria-live="polite"></div>
       </div>
@@ -506,6 +523,7 @@
   </header>
 
   <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
+  <button class="btn hidden scroll-top" id="btnScrollTop" type="button" aria-label="Scroll to top">↑ Top</button>
 
   <main class="container">
     <div id="errorBox" class="error hidden"></div>

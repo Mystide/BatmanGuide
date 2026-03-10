@@ -127,7 +127,8 @@
 
   const defaultUiPrefs = () => ({
     filtersOpen: false,
-    showCoverEditor: false
+    showCoverEditor: false,
+    compactCards: false
   });
 
   let runtimeUiPrefs = loadJSON(KEYS.uiPrefs, defaultUiPrefs());
@@ -484,6 +485,22 @@
     return filtered;
   }
 
+  function activeFilterSummary() {
+    const labels = [];
+    const search = $("search")?.value.trim();
+    if (search) labels.push(`Search: ${search}`);
+    if ($("typeFilter")?.value) labels.push(`Type: ${$("typeFilter").value}`);
+    if ($("onlyRemaining")?.checked) labels.push("Open only");
+    if ($("hideOptional")?.checked) labels.push("Required only");
+    if ($("trackFilter")?.value) labels.push(`Track: ${$("trackFilter").value}`);
+    if ($("characterFilter")?.value) labels.push(`Character: ${$("characterFilter").value}`);
+    if ($("eraFilter")?.value) labels.push(`Era: ${$("eraFilter").value}`);
+    if (($("sortBy")?.value || "order") !== "order") labels.push(`Sort: ${$("sortBy").value}`);
+
+    if (!labels.length) return "No active filters.";
+    return `${labels.length} active filter${labels.length > 1 ? "s" : ""}: ${labels.join(" • ")}`;
+  }
+
   function groupedByEra(entries) {
     const out = new Map();
     for (const e of entries) {
@@ -549,6 +566,7 @@
     setText("statDone", String(s.done));
     setText("statRemaining", String(Math.max(0, s.total - s.done)));
     setText("statRequired", String(requiredRemaining));
+    setText("filterSummary", activeFilterSummary());
   }
 
   function loadOpenState() {
@@ -1839,6 +1857,33 @@
         const c = continueEntry(getFiltered());
         if (c) scrollToEntry(c.id);
       });
+
+      const applyCompactCards = (enabled) => {
+        document.body.classList.toggle("compact-cards", !!enabled);
+        const btn = $("btnCompact");
+        if (!btn) return;
+        btn.textContent = `Compact cards: ${enabled ? "on" : "off"}`;
+        btn.setAttribute("aria-pressed", String(!!enabled));
+      };
+
+      let compactCards = !!readUiPrefs().compactCards;
+      applyCompactCards(compactCards);
+      $("btnCompact")?.addEventListener("click", () => {
+        compactCards = !compactCards;
+        writeUiPrefs({ compactCards });
+        applyCompactCards(compactCards);
+      });
+
+      const scrollTopBtn = $("btnScrollTop");
+      const syncScrollTopVisibility = () => {
+        if (!scrollTopBtn) return;
+        scrollTopBtn.classList.toggle("hidden", window.scrollY <= 480);
+      };
+      scrollTopBtn?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      window.addEventListener("scroll", syncScrollTopVisibility, { passive: true });
+      syncScrollTopVisibility();
     });
 
     runUIStep("syncConfig", () => {
@@ -2021,6 +2066,13 @@
           if (isTyping) return;
           e.preventDefault();
           $("btnContinue")?.click();
+          return;
+        }
+
+        if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          if (isTyping) return;
+          e.preventDefault();
+          $("btnNext")?.click();
         }
       });
 
