@@ -1114,7 +1114,9 @@
     const list = wrap.querySelector(".collection-issues-list");
     issues.forEach((issue) => {
       const li = document.createElement("li");
-      li.innerHTML = `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a>`;
+      const isSearch = /\/search\?/i.test(issue.url);
+      const label = isSearch ? `${issue.title} (search)` : issue.title;
+      li.innerHTML = `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
       list.appendChild(li);
     });
     return wrap;

@@ -88,6 +88,16 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Collection — read everything inside. DCUI order tip: read Batman (1940) issues block first, then Detective Comics block.",
     "characters": [
       "batman"
+    ],
+    "issues": [
+      {
+        "title": "Batman (1940) — Silver Age block",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Batman%201940%20Silver%20Age"
+      },
+      {
+        "title": "Detective Comics (1937) — Silver Age block",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Detective%20Comics%201937%20Silver%20Age"
+      }
     ]
   },
   {
@@ -100,6 +110,20 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Collection — read everything inside. DCUI order tip: Batman (1940) issues → Detective Comics issues → The Brave and the Bold issues.",
     "characters": [
       "batman"
+    ],
+    "issues": [
+      {
+        "title": "Batman (1940) — Bronze Age block",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Batman%201940%20Bronze%20Age"
+      },
+      {
+        "title": "Detective Comics (1937) — Bronze Age block",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Detective%20Comics%201937%20Bronze%20Age"
+      },
+      {
+        "title": "The Brave and the Bold — Bronze Age block",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Brave%20and%20the%20Bold%20Batman%20Bronze%20Age"
+      }
     ]
   },
   {
@@ -221,19 +245,24 @@ window.BATMAN_GUIDE_LIST = [
     ],
     "issues": [
       {
-        "title": "Legends of the Dark Knight (1989) #11"
+        "title": "Legends of the Dark Knight (1989) #11",
+        "url": "https://www.dcuniverseinfinite.com/comics/book/batman-legends-of-the-dark-knight-1989-2007-1/34b279b6-3843-4b91-842f-1c157da1ff54/c"
       },
       {
-        "title": "Legends of the Dark Knight (1989) #12"
+        "title": "Legends of the Dark Knight (1989) #12",
+        "url": "https://www.dcuniverseinfinite.com/comics/book/batman-legends-of-the-dark-knight-1989-2/786c207c-bda5-4f12-96f3-d8d490a97909/c"
       },
       {
-        "title": "Legends of the Dark Knight (1989) #13"
+        "title": "Legends of the Dark Knight (1989) #13",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2313"
       },
       {
-        "title": "Legends of the Dark Knight (1989) #14"
+        "title": "Legends of the Dark Knight (1989) #14",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2314"
       },
       {
-        "title": "Legends of the Dark Knight (1989) #15"
+        "title": "Legends of the Dark Knight (1989) #15",
+        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2315"
       }
     ]
   },
