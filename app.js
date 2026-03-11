@@ -995,6 +995,8 @@
           </label>
         `;
 
+        const collectionIssues = renderCollectionIssues(entry);
+
         const shouldShowEditor = showCoverEditor;
         let manualCover = null;
         if (shouldShowEditor) {
@@ -1064,6 +1066,7 @@
         }
 
         content.append(top, tags, progress);
+        if (collectionIssues) content.append(collectionIssues);
         if (manualCover) content.append(manualCover);
 
         const layout = document.createElement("div");
@@ -1081,6 +1084,40 @@
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
     updateDebugHealth();
+  }
+
+  function renderCollectionIssues(entry) {
+    if (entry?.type !== "collection" || !Array.isArray(entry.issues) || !entry.issues.length) {
+      return null;
+    }
+
+    const issues = entry.issues
+      .filter((issue) => issue && typeof issue === "object")
+      .map((issue) => {
+        const title = String(issue.title || "").trim();
+        if (!title) return null;
+        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
+        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
+        return { title, url };
+      })
+      .filter(Boolean);
+
+    if (!issues.length) return null;
+
+    const wrap = document.createElement("details");
+    wrap.className = "collection-issues";
+    wrap.innerHTML = `
+      <summary>Show issues (${issues.length})</summary>
+      <ul class="collection-issues-list"></ul>
+    `;
+
+    const list = wrap.querySelector(".collection-issues-list");
+    issues.forEach((issue) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a>`;
+      list.appendChild(li);
+    });
+    return wrap;
   }
 
   function escapeHtml(v) {
