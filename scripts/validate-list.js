@@ -116,6 +116,24 @@ list.forEach((item, index) => {
       fail(`${at} has invalid cover url '${item.cover}'`);
     }
   }
+
+  if (typeof item.issues !== "undefined") {
+    if (!Array.isArray(item.issues)) {
+      fail(`${at} has non-array 'issues'`);
+    }
+    item.issues.forEach((issue, issueIndex) => {
+      const issueAt = `${at} issue #${issueIndex + 1}`;
+      if (!issue || typeof issue !== "object") fail(`${issueAt} is not an object`);
+      if (typeof issue.title !== "string" || issue.title.trim() === "") {
+        fail(`${issueAt} has invalid 'title'`);
+      }
+      if (typeof issue.url !== "undefined") {
+        if (typeof issue.url !== "string" || !/^https?:\/\//.test(issue.url)) {
+          fail(`${issueAt} has invalid optional 'url'`);
+        }
+      }
+    });
+  }
 });
 
 console.log(`[list-validate] ok (${list.length} entries)`);
