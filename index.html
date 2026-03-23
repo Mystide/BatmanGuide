@@ -94,6 +94,11 @@
       transition: transform .14s ease, border-color .14s ease, filter .14s ease;
     }
     .btn:hover { border-color: #4c638b; transform: translateY(-1px); filter: brightness(1.06); }
+    .btn[aria-disabled="true"] {
+      opacity: .45;
+      pointer-events: none;
+      filter: saturate(.7);
+    }
     .btn.primary { border-color: #7c640f; background: linear-gradient(180deg, #4a3c17, #332b14); color: #fde68a; }
     .btn.warn { border-color: #7f1d1d; background: linear-gradient(180deg,#4a1414,#341010); color: #fecaca; }
     .input, .select { min-width: 150px; }
@@ -229,6 +234,9 @@
     .progress-fields { margin-top: 10px; display:grid; grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.35fr); gap: 10px; align-items: end; }
     .collection-issues { margin-top: 10px; border: 1px solid rgba(148,163,184,.35); border-radius: 10px; background: rgba(15,23,42,.45); }
     .collection-issues > summary { cursor: pointer; padding: 8px 10px; font-size: 13px; color: #bfdbfe; }
+    .collection-issues-toolbar { display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; padding: 0 10px 8px; }
+    .collection-issues-toolbar .btn { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+    .collection-issues-status { font-size: 12px; color: #cbd5e1; }
     .collection-issues-list { margin: 0; padding: 0 14px 10px 28px; display: grid; gap: 6px; }
     .collection-issues-list a { color: #dbeafe; text-decoration: none; }
     .collection-issues-list a:hover,
@@ -623,11 +631,11 @@
           <div class="reading-focus-copy">
             <div class="reading-focus-label">Pick up where you left off</div>
             <div id="focusTitle" class="reading-focus-title">Loading…</div>
-            <div id="focusMeta" class="reading-focus-meta">We’ll show your next best reading target here.</div>
+            <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
           </div>
           <div class="reading-focus-actions">
             <button class="btn primary" id="btnResumeFocus">Resume reading</button>
-            <a class="btn" id="btnOpenFocus" href="about:blank" target="_blank" rel="noopener noreferrer">Open in DCUI</a>
+            <a class="btn" id="btnOpenFocus" href="about:blank" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open in DCUI</a>
           </div>
         </div>
         <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>

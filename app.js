@@ -92,19 +92,26 @@
 
   const SEARCH_SYNONYMS = {
     bruce: "batman",
+    wayne: "batman",
     brucewayne: "batman",
     damian: "robin",
+    alfred: "batman",
+    grayson: "nightwing",
     damianwayne: "robin",
     dick: "nightwing",
     dickgrayson: "nightwing",
     babs: "batgirl",
     barbara: "batgirl",
+    gordon: "batgirl",
     barbaragordon: "batgirl",
     jason: "redhood",
+    todd: "redhood",
     jasontodd: "redhood",
     selina: "catwoman",
+    kyle: "catwoman",
     selinakyle: "catwoman",
     clark: "superman",
+    kent: "superman",
     clarkkent: "superman"
   };
 
@@ -145,6 +152,7 @@
 
   const defaultUiPrefs = () => ({
     filtersOpen: false,
+    advancedFiltersOpen: false,
     showCoverEditor: false,
     compactCards: false
   });
@@ -369,10 +377,10 @@
     const raw = String(rawQuery || "").trim().toLowerCase();
     if (!raw) return [];
     const parts = raw.split(/\s+/).filter(Boolean);
-    const out = new Set(parts);
+    const out = new Set();
     parts.forEach((part) => {
       const normalized = normalizeSearchToken(part);
-      if (SEARCH_SYNONYMS[normalized]) out.add(SEARCH_SYNONYMS[normalized]);
+      out.add(SEARCH_SYNONYMS[normalized] || part);
     });
     return [...out];
   }
@@ -390,6 +398,10 @@
       chars,
       issueTitles
     ].filter(Boolean).join(" ").toLowerCase();
+  }
+
+  function normalizeSearchBlob(text) {
+    return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ");
   }
 
   function collectionIssues(entry) {
@@ -521,7 +533,8 @@
       const st = ensureItemState(entry);
       if (searchTerms.length) {
         const blob = entrySearchBlob(entry);
-        if (!searchTerms.every((term) => blob.includes(term))) return false;
+        const normalizedBlob = normalizeSearchBlob(blob);
+        if (!searchTerms.every((term) => blob.includes(term) || normalizedBlob.includes(normalizeSearchBlob(term).trim()))) return false;
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
@@ -637,7 +650,10 @@
       $("continueText").textContent = "Continue: -";
       if (focusTitle) focusTitle.textContent = "Everything in this view is complete";
       if (focusMeta) focusMeta.textContent = "Try clearing filters or jump to a different era.";
-      if (focusOpen) focusOpen.setAttribute("href", "about:blank");
+      if (focusOpen) {
+        focusOpen.setAttribute("href", "about:blank");
+        focusOpen.setAttribute("aria-disabled", "true");
+      }
       if (focusResume) focusResume.disabled = true;
     } else {
       const st = ensureItemState(cont);
@@ -657,7 +673,10 @@
         ].filter(Boolean);
         focusMeta.textContent = parts.join(" • ");
       }
-      if (focusOpen) focusOpen.setAttribute("href", safeExternalUrl(cont.url));
+      if (focusOpen) {
+        focusOpen.setAttribute("href", safeExternalUrl(cont.url));
+        focusOpen.setAttribute("aria-disabled", "false");
+      }
       if (focusResume) focusResume.disabled = false;
     }
 
@@ -1208,13 +1227,37 @@
       return null;
     }
     const progress = collectionIssueStats(entry, st);
+    const nextLabel = progress.nextTitle ? `Next: ${progress.nextTitle}` : "Collection complete";
 
     const wrap = document.createElement("details");
     wrap.className = "collection-issues";
     wrap.innerHTML = `
       <summary>Issue checklist (${progress.done}/${issues.length})</summary>
+      <div class="collection-issues-toolbar">
+        <span class="collection-issues-status">${escapeHtml(nextLabel)}</span>
+        <span class="row" style="gap:8px;">
+          <button class="btn" type="button" data-action="issues-complete">Mark all read</button>
+          <button class="btn" type="button" data-action="issues-reset">Clear</button>
+        </span>
+      </div>
       <ul class="collection-issues-list"></ul>
     `;
+
+    wrap.querySelector('[data-action="issues-complete"]').addEventListener("click", () => {
+      issues.forEach((issue) => {
+        st.issueStates[issue.title] = true;
+      });
+      st.done = true;
+      if (typeof onChange === "function") onChange();
+    });
+
+    wrap.querySelector('[data-action="issues-reset"]').addEventListener("click", () => {
+      issues.forEach((issue) => {
+        delete st.issueStates[issue.title];
+      });
+      st.done = false;
+      if (typeof onChange === "function") onChange();
+    });
 
     const list = wrap.querySelector(".collection-issues-list");
     issues.forEach((issue) => {
@@ -1861,6 +1904,17 @@
         showToggle.addEventListener("change", onCoverToggle);
         showToggle.addEventListener("input", onCoverToggle);
       }
+    });
+
+    runUIStep("advancedFilterPrefs", () => {
+      const panel = $("advancedFiltersPanel");
+      if (!panel) return;
+      const prefs = readUiPrefs();
+      const hasAdvancedFilters = !!($("trackFilter").value || $("characterFilter").value || $("eraFilter").value || ($("sortBy").value || "order") !== "order");
+      panel.open = hasAdvancedFilters || !!prefs.advancedFiltersOpen;
+      panel.addEventListener("toggle", () => {
+        writeUiPrefs({ advancedFiltersOpen: panel.open });
+      });
     });
 
     runUIStep("filterInputs", () => {
