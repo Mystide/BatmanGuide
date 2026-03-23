@@ -90,6 +90,24 @@
     story: "story"
   };
 
+  const SEARCH_SYNONYMS = {
+    bruce: "batman",
+    brucewayne: "batman",
+    damian: "robin",
+    damianwayne: "robin",
+    dick: "nightwing",
+    dickgrayson: "nightwing",
+    babs: "batgirl",
+    barbara: "batgirl",
+    barbaragordon: "batgirl",
+    jason: "redhood",
+    jasontodd: "redhood",
+    selina: "catwoman",
+    selinakyle: "catwoman",
+    clark: "superman",
+    clarkkent: "superman"
+  };
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -331,12 +349,69 @@
         pos: "",
         note: "",
         unit: preferredProgressUnit(entry),
-        touchedAt: null
+        touchedAt: null,
+        issueStates: {}
       };
     } else {
       state.items[entry.id].unit = normalizeProgressUnit(state.items[entry.id].unit, entry);
+      if (!state.items[entry.id].issueStates || typeof state.items[entry.id].issueStates !== "object") {
+        state.items[entry.id].issueStates = {};
+      }
     }
     return state.items[entry.id];
+  }
+
+  function normalizeSearchToken(value) {
+    return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+
+  function expandSearchTerms(rawQuery) {
+    const raw = String(rawQuery || "").trim().toLowerCase();
+    if (!raw) return [];
+    const parts = raw.split(/\s+/).filter(Boolean);
+    const out = new Set(parts);
+    parts.forEach((part) => {
+      const normalized = normalizeSearchToken(part);
+      if (SEARCH_SYNONYMS[normalized]) out.add(SEARCH_SYNONYMS[normalized]);
+    });
+    return [...out];
+  }
+
+  function entrySearchBlob(entry) {
+    const issueTitles = Array.isArray(entry.issues) ? entry.issues.map((issue) => issue?.title || "").join(" ") : "";
+    const chars = Array.isArray(entry.characters) ? entry.characters.join(" ") : "";
+    return [
+      entry.id,
+      entry.title,
+      entry.hint,
+      entry.era,
+      entry.type,
+      entry.track,
+      chars,
+      issueTitles
+    ].filter(Boolean).join(" ").toLowerCase();
+  }
+
+  function collectionIssues(entry) {
+    if (entry?.type !== "collection" || !Array.isArray(entry.issues)) return [];
+    return entry.issues
+      .filter((issue) => issue && typeof issue === "object")
+      .map((issue) => {
+        const title = String(issue.title || "").trim();
+        if (!title) return null;
+        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
+        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
+        return { title, url };
+      })
+      .filter(Boolean);
+  }
+
+  function collectionIssueStats(entry, st = ensureItemState(entry)) {
+    const issues = collectionIssues(entry);
+    if (!issues.length) return { total: 0, done: 0, nextTitle: "" };
+    const done = issues.filter((issue) => st.issueStates?.[issue.title] === true).length;
+    const nextIssue = issues.find((issue) => st.issueStates?.[issue.title] !== true);
+    return { total: issues.length, done, nextTitle: nextIssue?.title || "" };
   }
 
   function saveState(markDirty = true) {
@@ -433,6 +508,7 @@
 
   function getFiltered() {
     const q = $("search").value.trim().toLowerCase();
+    const searchTerms = expandSearchTerms(q);
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
@@ -443,7 +519,10 @@
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
-      if (q && !entry.title.toLowerCase().includes(q)) return false;
+      if (searchTerms.length) {
+        const blob = entrySearchBlob(entry);
+        if (!searchTerms.every((term) => blob.includes(term))) return false;
+      }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
       if (hideOptional && entry.optional) return false;
@@ -550,12 +629,36 @@
     $("nextText").textContent = `Next: ${next ? next.title : "All done"}`;
 
     const cont = continueEntry(filtered);
+    const focusTitle = $("focusTitle");
+    const focusMeta = $("focusMeta");
+    const focusOpen = $("btnOpenFocus");
+    const focusResume = $("btnResumeFocus");
     if (!cont) {
       $("continueText").textContent = "Continue: -";
+      if (focusTitle) focusTitle.textContent = "Everything in this view is complete";
+      if (focusMeta) focusMeta.textContent = "Try clearing filters or jump to a different era.";
+      if (focusOpen) focusOpen.setAttribute("href", "about:blank");
+      if (focusResume) focusResume.disabled = true;
     } else {
       const st = ensureItemState(cont);
-      const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
-      $("continueText").textContent = `Continue: ${cont.title}${where}`;
+      const collectionStats = collectionIssueStats(cont, st);
+      const where = st.pos ? `${st.pos} ${st.unit}` : "";
+      const issueProgress = collectionStats.total ? `${collectionStats.done}/${collectionStats.total} issues` : "";
+      $("continueText").textContent = `Continue: ${cont.title}${where ? ` (${where})` : ""}`;
+      if (focusTitle) focusTitle.textContent = cont.title;
+      if (focusMeta) {
+        const parts = [
+          cont.era || "",
+          collectionStats.nextTitle ? `Next issue: ${collectionStats.nextTitle}` : "",
+          st.note ? `Note: ${st.note}` : "",
+          st.done ? "Marked complete" : "In progress",
+          where ? `Position: ${where}` : "",
+          issueProgress ? `Collection: ${issueProgress}` : ""
+        ].filter(Boolean);
+        focusMeta.textContent = parts.join(" • ");
+      }
+      if (focusOpen) focusOpen.setAttribute("href", safeExternalUrl(cont.url));
+      if (focusResume) focusResume.disabled = false;
     }
 
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
@@ -969,10 +1072,12 @@
 
         const tags = document.createElement("div");
         tags.className = "tags";
+        const collectionStats = collectionIssueStats(entry, st);
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
           ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
+          ${collectionStats.total ? `<span class="tag">${collectionStats.done}/${collectionStats.total} issues</span>` : ""}
           ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
@@ -984,10 +1089,10 @@
         progress.innerHTML = `
           <div class="progress-pos-group">
             <div class="progress-pos-meta">
-              <span class="muted">Where you stopped</span>
+              <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
               <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
             </div>
-            <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+            <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
           </div>
           <label class="progress-note-group">
             <span class="muted progress-note-label">Note</span>
@@ -995,7 +1100,12 @@
           </label>
         `;
 
-        const collectionIssues = renderCollectionIssues(entry);
+        const collectionIssuesBlock = renderCollectionIssues(entry, st, () => {
+          st.touchedAt = nowISO();
+          state.lastTouchedId = entry.id;
+          saveState();
+          render();
+        });
 
         const shouldShowEditor = showCoverEditor;
         let manualCover = null;
@@ -1011,6 +1121,12 @@
 
         top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
           st.done = e.target.checked;
+          if (entry.type === "collection") {
+            const issues = collectionIssues(entry);
+            issues.forEach((issue) => {
+              st.issueStates[issue.title] = !!e.target.checked;
+            });
+          }
           st.touchedAt = nowISO();
           state.lastTouchedId = entry.id;
           saveState();
@@ -1066,7 +1182,7 @@
         }
 
         content.append(top, tags, progress);
-        if (collectionIssues) content.append(collectionIssues);
+        if (collectionIssuesBlock) content.append(collectionIssuesBlock);
         if (manualCover) content.append(manualCover);
 
         const layout = document.createElement("div");
@@ -1086,28 +1202,17 @@
     updateDebugHealth();
   }
 
-  function renderCollectionIssues(entry) {
-    if (entry?.type !== "collection" || !Array.isArray(entry.issues) || !entry.issues.length) {
+  function renderCollectionIssues(entry, st, onChange) {
+    const issues = collectionIssues(entry);
+    if (!issues.length) {
       return null;
     }
-
-    const issues = entry.issues
-      .filter((issue) => issue && typeof issue === "object")
-      .map((issue) => {
-        const title = String(issue.title || "").trim();
-        if (!title) return null;
-        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
-        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
-        return { title, url };
-      })
-      .filter(Boolean);
-
-    if (!issues.length) return null;
+    const progress = collectionIssueStats(entry, st);
 
     const wrap = document.createElement("details");
     wrap.className = "collection-issues";
     wrap.innerHTML = `
-      <summary>Show issues (${issues.length})</summary>
+      <summary>Issue checklist (${progress.done}/${issues.length})</summary>
       <ul class="collection-issues-list"></ul>
     `;
 
@@ -1116,7 +1221,26 @@
       const li = document.createElement("li");
       const isSearch = /\/search\?/i.test(issue.url);
       const label = isSearch ? `${issue.title} (search)` : issue.title;
-      li.innerHTML = `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+      const checked = st.issueStates?.[issue.title] === true;
+      li.innerHTML = `
+        <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
+          <span class="row" style="gap:10px; min-width:0;">
+            <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
+            <span>${escapeHtml(label)}</span>
+          </span>
+          <a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>
+        </label>
+      `;
+      li.querySelector('[data-action="issue-done"]').addEventListener("change", (e) => {
+        st.issueStates[issue.title] = !!e.target.checked;
+        const updated = collectionIssueStats(entry, st);
+        if (updated.total && updated.done === updated.total) {
+          st.done = true;
+        } else if (st.done && updated.done < updated.total) {
+          st.done = false;
+        }
+        if (typeof onChange === "function") onChange();
+      });
       list.appendChild(li);
     });
     return wrap;
@@ -1896,6 +2020,10 @@
         const c = continueEntry(getFiltered());
         if (c) scrollToEntry(c.id);
       });
+      $("btnResumeFocus")?.addEventListener("click", () => {
+        const c = continueEntry(getFiltered());
+        if (c) scrollToEntry(c.id);
+      });
 
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
@@ -1907,6 +2035,27 @@
       });
       window.addEventListener("scroll", syncScrollTopVisibility, { passive: true });
       syncScrollTopVisibility();
+    });
+
+    runUIStep("shareView", () => {
+      $("btnCopyView")?.addEventListener("click", async () => {
+        const url = window.location.href;
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const input = document.createElement("input");
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            input.remove();
+          }
+          setSyncStatus("Current view link copied.");
+        } catch {
+          setSyncStatus("Could not copy the current view link.");
+        }
+      });
     });
 
     runUIStep("syncConfig", () => {
