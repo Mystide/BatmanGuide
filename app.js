@@ -1730,15 +1730,13 @@
       if (opening) {
         forceHeaderVisibleUntil = Date.now() + 900;
         setHeaderHidden(false);
+        controls.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-      header.classList.toggle("header-expanded", opening);
     });
 
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
       setHeaderHidden(false);
-      header.classList.toggle("header-expanded", userWantsFiltersOpen);
-      setFiltersOpen(userWantsFiltersOpen, false);
     });
 
     const updateCompactMode = () => {
@@ -1748,12 +1746,10 @@
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
-      const filtersExpanded = header.classList.contains("header-expanded");
 
       if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden");
         headerHidden = false;
-        setFiltersOpen(userWantsFiltersOpen, false);
         syncRevealButton();
         return;
       }
@@ -1761,10 +1757,6 @@
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
       } else if (shouldCompact && scrollingDown && y > 180) {
-        if (filtersExpanded) {
-          header.classList.remove("header-expanded");
-          setFiltersOpen(false, false);
-        }
         releaseHeaderFocus();
         setHeaderHidden(true);
       } else if (delta < -4) {
@@ -1772,19 +1764,6 @@
       }
 
       header.classList.toggle("compact", shouldCompact);
-
-      if (shouldCompact && y > 24) {
-        const stillExpanded = header.classList.contains("header-expanded");
-        if (stillExpanded && !headerHidden) {
-          setFiltersOpen(userWantsFiltersOpen, false);
-        } else {
-          setFiltersOpen(false, false);
-        }
-      } else {
-        setHeaderHidden(false);
-        setFiltersOpen(userWantsFiltersOpen, false);
-        header.classList.remove("header-expanded");
-      }
     };
 
     let raf = 0;
@@ -1799,6 +1778,7 @@
 
     window.addEventListener("scroll", queueUpdate, { passive: true });
     window.addEventListener("resize", queueUpdate);
+    setFiltersOpen(userWantsFiltersOpen, false);
     updateCompactMode();
   }
 
