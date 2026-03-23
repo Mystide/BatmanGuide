@@ -1102,6 +1102,7 @@
 
         const tags = document.createElement("div");
         tags.className = "tags";
+        const collectionStats = collectionIssueStats(entry, st);
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
@@ -1731,6 +1732,7 @@
       if (opening) {
         forceHeaderVisibleUntil = Date.now() + 900;
         setHeaderHidden(false);
+        controls.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
