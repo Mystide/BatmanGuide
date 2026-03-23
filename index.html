@@ -375,30 +375,29 @@
     .reading-focus {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
-      border: 1px solid rgba(124, 100, 15, .45);
-      border-radius: 14px;
-      padding: 10px 12px;
-      background: linear-gradient(180deg, rgba(51, 43, 20, .78), rgba(26, 35, 53, .78));
-      box-shadow: inset 0 1px 0 rgba(250, 204, 21, .08);
+      border: 1px solid rgba(71, 85, 105, .34);
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, .32);
     }
-    .reading-focus-copy { min-width: 0; display:grid; gap:4px; }
+    .reading-focus-copy { min-width: 0; display:grid; gap:2px; }
     .reading-focus-label {
       font-size: 11px;
-      color: #fde68a;
+      color: var(--muted);
       text-transform: uppercase;
       letter-spacing: .45px;
     }
     .reading-focus-title {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 15px;
+      font-weight: 700;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .reading-focus-meta { font-size: 12px; color: #cbd5e1; }
+    .reading-focus-meta { font-size: 12px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .reading-focus-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .reading-focus-actions .btn { min-width: 0; }
     .section-panel {
@@ -503,6 +502,7 @@
       .reading-focus { grid-template-columns: 1fr; }
       .reading-focus-actions { justify-content: stretch; }
       .reading-focus-actions .btn { width: 100%; }
+      .reading-focus-meta { white-space: normal; }
       .sync-dock {
         right: 12px;
         bottom: 12px;
@@ -536,7 +536,6 @@
           <div class="top-actions">
           <button class="btn primary" id="btnContinue">Continue</button>
           <button class="btn" id="btnNext">Next unread</button>
-          <button class="btn" id="btnRandom">Random unread</button>
           <button class="btn" id="btnFilterMenu" aria-expanded="false">Filters</button>
           <button class="btn" id="btnCompact">Compact cards: off</button>
           </div>
@@ -561,15 +560,15 @@
           <label class="row muted"><input type="checkbox" id="onlyRemaining" /> Open only</label>
           <label class="row muted"><input type="checkbox" id="hideOptional" /> Required only</label>
         </div>
-        <div class="quick-filters" aria-label="Quick filters">
-          <button class="chip" type="button" id="chipOpen">Open only</button>
-          <button class="chip" type="button" id="chipRequired">Required only</button>
-          <button class="chip" type="button" id="chipBook">Books</button>
-          <button class="chip" type="button" id="chipFamily">Bat-family</button>
-        </div>
         <details class="section-panel" id="advancedFiltersPanel">
           <summary>Advanced filters & navigation</summary>
           <div class="section-panel-content">
+            <div class="quick-filters" aria-label="Quick filters">
+              <button class="chip" type="button" id="chipOpen">Open only</button>
+              <button class="chip" type="button" id="chipRequired">Required only</button>
+              <button class="chip" type="button" id="chipBook">Books</button>
+              <button class="chip" type="button" id="chipFamily">Bat-family</button>
+            </div>
             <div class="filters-advanced">
               <label class="field-label">
                 <strong>Track</strong>
@@ -618,6 +617,7 @@
               <button class="btn hidden" id="btnCollapseAll" type="button" tabindex="-1" aria-hidden="true">Collapse all</button>
             </div>
             <div class="filters-actions">
+              <button class="btn" id="btnRandom">Random unread</button>
               <button class="btn" id="btnCopyView">Copy current view link</button>
               <button class="btn" id="btnClearFilters">Clear filters</button>
             </div>
@@ -629,7 +629,7 @@
       <div class="status-strip">
         <div class="reading-focus">
           <div class="reading-focus-copy">
-            <div class="reading-focus-label">Pick up where you left off</div>
+            <div class="reading-focus-label">Continue from</div>
             <div id="focusTitle" class="reading-focus-title">Loading…</div>
             <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
           </div>
@@ -642,8 +642,6 @@
         <div class="row status-row">
           <div id="progressText" class="muted">Loading...</div>
           <div id="nextText" class="muted">Next: -</div>
-          <div id="continueText" class="muted">Continue: -</div>
-          <div id="randomText" class="muted">Random: -</div>
           <div class="status-pills">
             <span class="status-pill">Visible <strong id="statVisible">-</strong></span>
             <span class="status-pill">Done <strong id="statDone">-</strong></span>

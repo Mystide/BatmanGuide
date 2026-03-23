@@ -639,7 +639,7 @@
     $("progressText").textContent = `Progress: ${s.done}/${s.total} (${s.pct}%)`;
 
     const next = nextUnread(filtered);
-    $("nextText").textContent = `Next: ${next ? next.title : "All done"}`;
+    setText("nextText", `Next: ${next ? next.title : "All done"}`);
 
     const cont = continueEntry(filtered);
     const focusTitle = $("focusTitle");
@@ -647,7 +647,6 @@
     const focusOpen = $("btnOpenFocus");
     const focusResume = $("btnResumeFocus");
     if (!cont) {
-      $("continueText").textContent = "Continue: -";
       if (focusTitle) focusTitle.textContent = "Everything in this view is complete";
       if (focusMeta) focusMeta.textContent = "Try clearing filters or jump to a different era.";
       if (focusOpen) {
@@ -660,18 +659,15 @@
       const collectionStats = collectionIssueStats(cont, st);
       const where = st.pos ? `${st.pos} ${st.unit}` : "";
       const issueProgress = collectionStats.total ? `${collectionStats.done}/${collectionStats.total} issues` : "";
-      $("continueText").textContent = `Continue: ${cont.title}${where ? ` (${where})` : ""}`;
       if (focusTitle) focusTitle.textContent = cont.title;
       if (focusMeta) {
-        const parts = [
-          cont.era || "",
-          collectionStats.nextTitle ? `Next issue: ${collectionStats.nextTitle}` : "",
-          st.note ? `Note: ${st.note}` : "",
-          st.done ? "Marked complete" : "In progress",
-          where ? `Position: ${where}` : "",
-          issueProgress ? `Collection: ${issueProgress}` : ""
-        ].filter(Boolean);
-        focusMeta.textContent = parts.join(" • ");
+        const parts = [];
+        if (cont.era) parts.push(cont.era);
+        if (where) parts.push(where);
+        else if (collectionStats.nextTitle) parts.push(`Next issue: ${collectionStats.nextTitle}`);
+        else if (issueProgress) parts.push(issueProgress);
+        if (st.note) parts.push(`Note: ${st.note}`);
+        focusMeta.textContent = parts.length ? parts.join(" • ") : "Ready to resume.";
       }
       if (focusOpen) {
         focusOpen.setAttribute("href", safeExternalUrl(cont.url));
@@ -681,7 +677,7 @@
     }
 
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
-    $("randomText").textContent = `Random: ${randomEntry ? randomEntry.title : "-"}`;
+    setText("randomText", `Random: ${randomEntry ? randomEntry.title : "-"}`);
 
     const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
     setText("statVisible", String(s.total));
