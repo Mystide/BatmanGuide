@@ -90,6 +90,31 @@
     story: "story"
   };
 
+  const SEARCH_SYNONYMS = {
+    bruce: "batman",
+    wayne: "batman",
+    brucewayne: "batman",
+    damian: "robin",
+    alfred: "batman",
+    grayson: "nightwing",
+    damianwayne: "robin",
+    dick: "nightwing",
+    dickgrayson: "nightwing",
+    babs: "batgirl",
+    barbara: "batgirl",
+    gordon: "batgirl",
+    barbaragordon: "batgirl",
+    jason: "redhood",
+    todd: "redhood",
+    jasontodd: "redhood",
+    selina: "catwoman",
+    kyle: "catwoman",
+    selinakyle: "catwoman",
+    clark: "superman",
+    kent: "superman",
+    clarkkent: "superman"
+  };
+
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
   }
@@ -127,6 +152,7 @@
 
   const defaultUiPrefs = () => ({
     filtersOpen: false,
+    advancedFiltersOpen: false,
     showCoverEditor: false,
     compactCards: false
   });
@@ -331,12 +357,73 @@
         pos: "",
         note: "",
         unit: preferredProgressUnit(entry),
-        touchedAt: null
+        touchedAt: null,
+        issueStates: {}
       };
     } else {
       state.items[entry.id].unit = normalizeProgressUnit(state.items[entry.id].unit, entry);
+      if (!state.items[entry.id].issueStates || typeof state.items[entry.id].issueStates !== "object") {
+        state.items[entry.id].issueStates = {};
+      }
     }
     return state.items[entry.id];
+  }
+
+  function normalizeSearchToken(value) {
+    return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  }
+
+  function expandSearchTerms(rawQuery) {
+    const raw = String(rawQuery || "").trim().toLowerCase();
+    if (!raw) return [];
+    const parts = raw.split(/\s+/).filter(Boolean);
+    const out = new Set();
+    parts.forEach((part) => {
+      const normalized = normalizeSearchToken(part);
+      out.add(SEARCH_SYNONYMS[normalized] || part);
+    });
+    return [...out];
+  }
+
+  function entrySearchBlob(entry) {
+    const issueTitles = Array.isArray(entry.issues) ? entry.issues.map((issue) => issue?.title || "").join(" ") : "";
+    const chars = Array.isArray(entry.characters) ? entry.characters.join(" ") : "";
+    return [
+      entry.id,
+      entry.title,
+      entry.hint,
+      entry.era,
+      entry.type,
+      entry.track,
+      chars,
+      issueTitles
+    ].filter(Boolean).join(" ").toLowerCase();
+  }
+
+  function normalizeSearchBlob(text) {
+    return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  }
+
+  function collectionIssues(entry) {
+    if (entry?.type !== "collection" || !Array.isArray(entry.issues)) return [];
+    return entry.issues
+      .filter((issue) => issue && typeof issue === "object")
+      .map((issue) => {
+        const title = String(issue.title || "").trim();
+        if (!title) return null;
+        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
+        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
+        return { title, url };
+      })
+      .filter(Boolean);
+  }
+
+  function collectionIssueStats(entry, st = ensureItemState(entry)) {
+    const issues = collectionIssues(entry);
+    if (!issues.length) return { total: 0, done: 0, nextTitle: "" };
+    const done = issues.filter((issue) => st.issueStates?.[issue.title] === true).length;
+    const nextIssue = issues.find((issue) => st.issueStates?.[issue.title] !== true);
+    return { total: issues.length, done, nextTitle: nextIssue?.title || "" };
   }
 
   function saveState(markDirty = true) {
@@ -433,6 +520,7 @@
 
   function getFiltered() {
     const q = $("search").value.trim().toLowerCase();
+    const searchTerms = expandSearchTerms(q);
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
@@ -443,7 +531,11 @@
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
-      if (q && !entry.title.toLowerCase().includes(q)) return false;
+      if (searchTerms.length) {
+        const blob = entrySearchBlob(entry);
+        const normalizedBlob = normalizeSearchBlob(blob);
+        if (!searchTerms.every((term) => blob.includes(term) || normalizedBlob.includes(normalizeSearchBlob(term).trim()))) return false;
+      }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
       if (hideOptional && entry.optional) return false;
@@ -547,19 +639,45 @@
     $("progressText").textContent = `Progress: ${s.done}/${s.total} (${s.pct}%)`;
 
     const next = nextUnread(filtered);
-    $("nextText").textContent = `Next: ${next ? next.title : "All done"}`;
+    setText("nextText", `Next: ${next ? next.title : "All done"}`);
 
     const cont = continueEntry(filtered);
+    const focusTitle = $("focusTitle");
+    const focusMeta = $("focusMeta");
+    const focusOpen = $("btnOpenFocus");
+    const focusResume = $("btnResumeFocus");
     if (!cont) {
-      $("continueText").textContent = "Continue: -";
+      if (focusTitle) focusTitle.textContent = "Everything in this view is complete";
+      if (focusMeta) focusMeta.textContent = "Try clearing filters or jump to a different era.";
+      if (focusOpen) {
+        focusOpen.setAttribute("href", "about:blank");
+        focusOpen.setAttribute("aria-disabled", "true");
+      }
+      if (focusResume) focusResume.disabled = true;
     } else {
       const st = ensureItemState(cont);
-      const where = st.pos ? ` (${st.pos} ${st.unit})` : "";
-      $("continueText").textContent = `Continue: ${cont.title}${where}`;
+      const collectionStats = collectionIssueStats(cont, st);
+      const where = st.pos ? `${st.pos} ${st.unit}` : "";
+      const issueProgress = collectionStats.total ? `${collectionStats.done}/${collectionStats.total} issues` : "";
+      if (focusTitle) focusTitle.textContent = cont.title;
+      if (focusMeta) {
+        const parts = [];
+        if (cont.era) parts.push(cont.era);
+        if (where) parts.push(where);
+        else if (collectionStats.nextTitle) parts.push(`Next issue: ${collectionStats.nextTitle}`);
+        else if (issueProgress) parts.push(issueProgress);
+        if (st.note) parts.push(`Note: ${st.note}`);
+        focusMeta.textContent = parts.length ? parts.join(" • ") : "Ready to resume.";
+      }
+      if (focusOpen) {
+        focusOpen.setAttribute("href", safeExternalUrl(cont.url));
+        focusOpen.setAttribute("aria-disabled", "false");
+      }
+      if (focusResume) focusResume.disabled = false;
     }
 
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
-    $("randomText").textContent = `Random: ${randomEntry ? randomEntry.title : "-"}`;
+    setText("randomText", `Random: ${randomEntry ? randomEntry.title : "-"}`);
 
     const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
     setText("statVisible", String(s.total));
@@ -969,10 +1087,12 @@
 
         const tags = document.createElement("div");
         tags.className = "tags";
+        const collectionStats = collectionIssueStats(entry, st);
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
           ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
+          ${collectionStats.total ? `<span class="tag">${collectionStats.done}/${collectionStats.total} issues</span>` : ""}
           ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
@@ -984,10 +1104,10 @@
         progress.innerHTML = `
           <div class="progress-pos-group">
             <div class="progress-pos-meta">
-              <span class="muted">Where you stopped</span>
+              <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
               <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
             </div>
-            <input class="input" data-action="pos" placeholder="${escapeAttr(progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+            <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
           </div>
           <label class="progress-note-group">
             <span class="muted progress-note-label">Note</span>
@@ -995,7 +1115,12 @@
           </label>
         `;
 
-        const collectionIssues = renderCollectionIssues(entry);
+        const collectionIssuesBlock = renderCollectionIssues(entry, st, () => {
+          st.touchedAt = nowISO();
+          state.lastTouchedId = entry.id;
+          saveState();
+          render();
+        });
 
         const shouldShowEditor = showCoverEditor;
         let manualCover = null;
@@ -1011,6 +1136,12 @@
 
         top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
           st.done = e.target.checked;
+          if (entry.type === "collection") {
+            const issues = collectionIssues(entry);
+            issues.forEach((issue) => {
+              st.issueStates[issue.title] = !!e.target.checked;
+            });
+          }
           st.touchedAt = nowISO();
           state.lastTouchedId = entry.id;
           saveState();
@@ -1066,7 +1197,7 @@
         }
 
         content.append(top, tags, progress);
-        if (collectionIssues) content.append(collectionIssues);
+        if (collectionIssuesBlock) content.append(collectionIssuesBlock);
         if (manualCover) content.append(manualCover);
 
         const layout = document.createElement("div");
@@ -1086,37 +1217,69 @@
     updateDebugHealth();
   }
 
-  function renderCollectionIssues(entry) {
-    if (entry?.type !== "collection" || !Array.isArray(entry.issues) || !entry.issues.length) {
+  function renderCollectionIssues(entry, st, onChange) {
+    const issues = collectionIssues(entry);
+    if (!issues.length) {
       return null;
     }
-
-    const issues = entry.issues
-      .filter((issue) => issue && typeof issue === "object")
-      .map((issue) => {
-        const title = String(issue.title || "").trim();
-        if (!title) return null;
-        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
-        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
-        return { title, url };
-      })
-      .filter(Boolean);
-
-    if (!issues.length) return null;
+    const progress = collectionIssueStats(entry, st);
+    const nextLabel = progress.nextTitle ? `Next: ${progress.nextTitle}` : "Collection complete";
 
     const wrap = document.createElement("details");
     wrap.className = "collection-issues";
     wrap.innerHTML = `
-      <summary>Show issues (${issues.length})</summary>
+      <summary>Issue checklist (${progress.done}/${issues.length})</summary>
+      <div class="collection-issues-toolbar">
+        <span class="collection-issues-status">${escapeHtml(nextLabel)}</span>
+        <span class="row" style="gap:8px;">
+          <button class="btn" type="button" data-action="issues-complete">Mark all read</button>
+          <button class="btn" type="button" data-action="issues-reset">Clear</button>
+        </span>
+      </div>
       <ul class="collection-issues-list"></ul>
     `;
+
+    wrap.querySelector('[data-action="issues-complete"]').addEventListener("click", () => {
+      issues.forEach((issue) => {
+        st.issueStates[issue.title] = true;
+      });
+      st.done = true;
+      if (typeof onChange === "function") onChange();
+    });
+
+    wrap.querySelector('[data-action="issues-reset"]').addEventListener("click", () => {
+      issues.forEach((issue) => {
+        delete st.issueStates[issue.title];
+      });
+      st.done = false;
+      if (typeof onChange === "function") onChange();
+    });
 
     const list = wrap.querySelector(".collection-issues-list");
     issues.forEach((issue) => {
       const li = document.createElement("li");
       const isSearch = /\/search\?/i.test(issue.url);
       const label = isSearch ? `${issue.title} (search)` : issue.title;
-      li.innerHTML = `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+      const checked = st.issueStates?.[issue.title] === true;
+      li.innerHTML = `
+        <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
+          <span class="row" style="gap:10px; min-width:0;">
+            <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
+            <span>${escapeHtml(label)}</span>
+          </span>
+          <a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>
+        </label>
+      `;
+      li.querySelector('[data-action="issue-done"]').addEventListener("change", (e) => {
+        st.issueStates[issue.title] = !!e.target.checked;
+        const updated = collectionIssueStats(entry, st);
+        if (updated.total && updated.done === updated.total) {
+          st.done = true;
+        } else if (st.done && updated.done < updated.total) {
+          st.done = false;
+        }
+        if (typeof onChange === "function") onChange();
+      });
       list.appendChild(li);
     });
     return wrap;
@@ -1567,15 +1730,13 @@
       if (opening) {
         forceHeaderVisibleUntil = Date.now() + 900;
         setHeaderHidden(false);
+        controls.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-      header.classList.toggle("header-expanded", opening);
     });
 
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
       setHeaderHidden(false);
-      header.classList.toggle("header-expanded", userWantsFiltersOpen);
-      setFiltersOpen(userWantsFiltersOpen, false);
     });
 
     const updateCompactMode = () => {
@@ -1585,12 +1746,10 @@
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
-      const filtersExpanded = header.classList.contains("header-expanded");
 
       if (touchOptimizedHeader()) {
         header.classList.remove("compact", "header-hidden");
         headerHidden = false;
-        setFiltersOpen(userWantsFiltersOpen, false);
         syncRevealButton();
         return;
       }
@@ -1598,10 +1757,6 @@
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
       } else if (shouldCompact && scrollingDown && y > 180) {
-        if (filtersExpanded) {
-          header.classList.remove("header-expanded");
-          setFiltersOpen(false, false);
-        }
         releaseHeaderFocus();
         setHeaderHidden(true);
       } else if (delta < -4) {
@@ -1609,19 +1764,6 @@
       }
 
       header.classList.toggle("compact", shouldCompact);
-
-      if (shouldCompact && y > 24) {
-        const stillExpanded = header.classList.contains("header-expanded");
-        if (stillExpanded && !headerHidden) {
-          setFiltersOpen(userWantsFiltersOpen, false);
-        } else {
-          setFiltersOpen(false, false);
-        }
-      } else {
-        setHeaderHidden(false);
-        setFiltersOpen(userWantsFiltersOpen, false);
-        header.classList.remove("header-expanded");
-      }
     };
 
     let raf = 0;
@@ -1636,6 +1778,7 @@
 
     window.addEventListener("scroll", queueUpdate, { passive: true });
     window.addEventListener("resize", queueUpdate);
+    setFiltersOpen(userWantsFiltersOpen, false);
     updateCompactMode();
   }
 
@@ -1737,6 +1880,17 @@
         showToggle.addEventListener("change", onCoverToggle);
         showToggle.addEventListener("input", onCoverToggle);
       }
+    });
+
+    runUIStep("advancedFilterPrefs", () => {
+      const panel = $("advancedFiltersPanel");
+      if (!panel) return;
+      const prefs = readUiPrefs();
+      const hasAdvancedFilters = !!($("trackFilter").value || $("characterFilter").value || $("eraFilter").value || ($("sortBy").value || "order") !== "order");
+      panel.open = hasAdvancedFilters || !!prefs.advancedFiltersOpen;
+      panel.addEventListener("toggle", () => {
+        writeUiPrefs({ advancedFiltersOpen: panel.open });
+      });
     });
 
     runUIStep("filterInputs", () => {
@@ -1896,6 +2050,10 @@
         const c = continueEntry(getFiltered());
         if (c) scrollToEntry(c.id);
       });
+      $("btnResumeFocus")?.addEventListener("click", () => {
+        const c = continueEntry(getFiltered());
+        if (c) scrollToEntry(c.id);
+      });
 
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
@@ -1907,6 +2065,27 @@
       });
       window.addEventListener("scroll", syncScrollTopVisibility, { passive: true });
       syncScrollTopVisibility();
+    });
+
+    runUIStep("shareView", () => {
+      $("btnCopyView")?.addEventListener("click", async () => {
+        const url = window.location.href;
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+          } else {
+            const input = document.createElement("input");
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand("copy");
+            input.remove();
+          }
+          setSyncStatus("Current view link copied.");
+        } catch {
+          setSyncStatus("Could not copy the current view link.");
+        }
+      });
     });
 
     runUIStep("syncConfig", () => {
