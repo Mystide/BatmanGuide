@@ -598,11 +598,9 @@
           </div>
         </div>
         <div>
-          <p class="header-panel-label">Quick access</p>
+          <p class="header-panel-label">Control center</p>
           <div class="top-actions top-actions-minimal">
-          <button class="btn primary" id="btnContinue">Continue</button>
-          <button class="btn" id="btnNext">Next unread</button>
-          <button class="btn" id="btnFilterMenu" aria-expanded="false">Actions</button>
+          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
           </div>
         </div>
       </div>
@@ -653,21 +651,19 @@
       <div class="card modal-panel">
         <div class="modal-header">
           <div>
-            <h2 id="filterDialogTitle">Filters</h2>
-            <p class="modal-subtitle">Refine your reading list without cluttering the main page.</p>
+            <h2 id="filterDialogTitle">Actions & filters</h2>
+            <p class="modal-subtitle">Everything in one place: navigate, filter, and manage your view.</p>
           </div>
           <button class="btn" id="btnCloseFilters" type="button">Close</button>
         </div>
         <div class="modal-body">
-          <details class="section-panel" id="quickActionsPanel" open>
-            <summary>Quick actions</summary>
+          <details class="section-panel" id="quickNavPanel" open>
+            <summary>Reading navigation</summary>
             <div class="section-panel-content">
               <div class="filters-actions">
-                <button class="btn primary" id="btnContinueFromMenu" type="button">Continue</button>
+                <button class="btn primary" id="btnContinue" type="button">Continue</button>
                 <button class="btn" id="btnNext" type="button">Next unread</button>
                 <button class="btn" id="btnRandom" type="button">Random unread</button>
-                <button class="btn" id="btnCopyView" type="button">Copy current view link</button>
-                <button class="btn" id="btnClearFilters" type="button">Clear filters</button>
               </div>
             </div>
           </details>
@@ -750,7 +746,6 @@
             <summary>More actions</summary>
             <div class="section-panel-content">
               <div class="filters-actions">
-                <button class="btn" id="btnRandom" type="button">Random unread</button>
                 <button class="btn" id="btnCopyView" type="button">Copy current view link</button>
                 <button class="btn" id="btnClearFilters" type="button">Clear filters</button>
               </div>
