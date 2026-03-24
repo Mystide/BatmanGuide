@@ -266,6 +266,7 @@
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
+  let activeCollectionModalId = "";
   const coverCache = loadJSON(KEYS.coverCache, {});
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
@@ -424,6 +425,16 @@
     const done = issues.filter((issue) => st.issueStates?.[issue.title] === true).length;
     const nextIssue = issues.find((issue) => st.issueStates?.[issue.title] !== true);
     return { total: issues.length, done, nextTitle: nextIssue?.title || "" };
+  }
+
+  function setModalOpen(el, open) {
+    if (!el) return;
+    el.classList.toggle("hidden", !open);
+    document.body.classList.toggle("modal-open", !!open);
+  }
+
+  function activeCollectionEntry() {
+    return LIST.find((entry) => entry.id === activeCollectionModalId) || null;
   }
 
   function saveState(markDirty = true) {
@@ -656,15 +667,15 @@
       if (focusResume) focusResume.disabled = true;
     } else {
       const st = ensureItemState(cont);
-      const collectionStats = collectionIssueStats(cont, st);
+      const continueStats = collectionIssueStats(cont, st);
       const where = st.pos ? `${st.pos} ${st.unit}` : "";
-      const issueProgress = collectionStats.total ? `${collectionStats.done}/${collectionStats.total} issues` : "";
+      const issueProgress = continueStats.total ? `${continueStats.done}/${continueStats.total} issues` : "";
       if (focusTitle) focusTitle.textContent = cont.title;
       if (focusMeta) {
         const parts = [];
         if (cont.era) parts.push(cont.era);
         if (where) parts.push(where);
-        else if (collectionStats.nextTitle) parts.push(`Next issue: ${collectionStats.nextTitle}`);
+        else if (continueStats.nextTitle) parts.push(`Next issue: ${continueStats.nextTitle}`);
         else if (issueProgress) parts.push(issueProgress);
         if (st.note) parts.push(`Note: ${st.note}`);
         focusMeta.textContent = parts.length ? parts.join(" • ") : "Ready to resume.";
@@ -1074,6 +1085,7 @@
         const safeTitle = escapeHtml(entry.title);
         const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
         const safeUrl = escapeAttr(safeExternalUrl(entry.url));
+        const entryIssueStats = collectionIssueStats(entry, st);
         top.innerHTML = `
           <label class="item-title-row">
             <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
@@ -1082,7 +1094,10 @@
               ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
             </span>
           </label>
-          <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
+          <div class="item-actions">
+            ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
+            <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
+          </div>
         `;
 
         const tags = document.createElement("div");
@@ -1092,7 +1107,7 @@
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
           ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
-          ${collectionStats.total ? `<span class="tag">${collectionStats.done}/${collectionStats.total} issues</span>` : ""}
+          ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
           ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
           ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
           ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
@@ -1114,13 +1129,6 @@
             <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
           </label>
         `;
-
-        const collectionIssuesBlock = renderCollectionIssues(entry, st, () => {
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          saveState();
-          render();
-        });
 
         const shouldShowEditor = showCoverEditor;
         let manualCover = null;
@@ -1146,6 +1154,10 @@
           state.lastTouchedId = entry.id;
           saveState();
           render();
+        });
+
+        top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
+          openCollectionModal(entry.id);
         });
 
         progress.querySelector('[data-action="pos"]').addEventListener("change", (e) => {
@@ -1197,7 +1209,6 @@
         }
 
         content.append(top, tags, progress);
-        if (collectionIssuesBlock) content.append(collectionIssuesBlock);
         if (manualCover) content.append(manualCover);
 
         const layout = document.createElement("div");
@@ -1217,50 +1228,39 @@
     updateDebugHealth();
   }
 
-  function renderCollectionIssues(entry, st, onChange) {
-    const issues = collectionIssues(entry);
-    if (!issues.length) {
-      return null;
-    }
-    const progress = collectionIssueStats(entry, st);
-    const nextLabel = progress.nextTitle ? `Next: ${progress.nextTitle}` : "Collection complete";
-
-    const wrap = document.createElement("details");
-    wrap.className = "collection-issues";
-    wrap.innerHTML = `
-      <summary>Issue checklist (${progress.done}/${issues.length})</summary>
-      <div class="collection-issues-toolbar">
-        <span class="collection-issues-status">${escapeHtml(nextLabel)}</span>
-        <span class="row" style="gap:8px;">
-          <button class="btn" type="button" data-action="issues-complete">Mark all read</button>
-          <button class="btn" type="button" data-action="issues-reset">Clear</button>
-        </span>
-      </div>
-      <ul class="collection-issues-list"></ul>
-    `;
-
-    wrap.querySelector('[data-action="issues-complete"]').addEventListener("click", () => {
-      issues.forEach((issue) => {
-        st.issueStates[issue.title] = true;
-      });
+  function persistCollectionState(entry, st) {
+    const updated = collectionIssueStats(entry, st);
+    if (updated.total && updated.done === updated.total) {
       st.done = true;
-      if (typeof onChange === "function") onChange();
-    });
-
-    wrap.querySelector('[data-action="issues-reset"]').addEventListener("click", () => {
-      issues.forEach((issue) => {
-        delete st.issueStates[issue.title];
-      });
+    } else if (updated.done < updated.total) {
       st.done = false;
-      if (typeof onChange === "function") onChange();
-    });
+    }
+    st.touchedAt = nowISO();
+    state.lastTouchedId = entry.id;
+    saveState();
+    render();
+  }
 
-    const list = wrap.querySelector(".collection-issues-list");
+  function closeCollectionModal() {
+    activeCollectionModalId = "";
+    setModalOpen($("collectionModal"), false);
+  }
+
+  function renderCollectionModal(entry) {
+    const st = ensureItemState(entry);
+    const issues = collectionIssues(entry);
+    const progress = collectionIssueStats(entry, st);
+    setText("collectionModalTitle", entry.title);
+    setText("collectionModalStatus", progress.nextTitle ? `Next issue: ${progress.nextTitle} • ${progress.done}/${progress.total} read` : `${progress.done}/${progress.total} read`);
+
+    const list = $("collectionModalList");
+    if (!list) return;
+    list.innerHTML = "";
     issues.forEach((issue) => {
       const li = document.createElement("li");
+      const checked = st.issueStates?.[issue.title] === true;
       const isSearch = /\/search\?/i.test(issue.url);
       const label = isSearch ? `${issue.title} (search)` : issue.title;
-      const checked = st.issueStates?.[issue.title] === true;
       li.innerHTML = `
         <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
           <span class="row" style="gap:10px; min-width:0;">
@@ -1272,17 +1272,19 @@
       `;
       li.querySelector('[data-action="issue-done"]').addEventListener("change", (e) => {
         st.issueStates[issue.title] = !!e.target.checked;
-        const updated = collectionIssueStats(entry, st);
-        if (updated.total && updated.done === updated.total) {
-          st.done = true;
-        } else if (st.done && updated.done < updated.total) {
-          st.done = false;
-        }
-        if (typeof onChange === "function") onChange();
+        persistCollectionState(entry, st);
+        renderCollectionModal(entry);
       });
       list.appendChild(li);
     });
-    return wrap;
+  }
+
+  function openCollectionModal(entryId) {
+    const entry = LIST.find((item) => item.id === entryId);
+    if (!entry) return;
+    activeCollectionModalId = entryId;
+    renderCollectionModal(entry);
+    setModalOpen($("collectionModal"), true);
   }
 
   function escapeHtml(v) {
@@ -1699,7 +1701,7 @@
     };
 
     const setFiltersOpen = (open, persist = true) => {
-      controls.classList.toggle("hidden", !open);
+      setModalOpen(controls, open);
       syncFilterToggle();
       if (!persist) return;
       userWantsFiltersOpen = !!open;
@@ -2084,6 +2086,57 @@
           setSyncStatus("Current view link copied.");
         } catch {
           setSyncStatus("Could not copy the current view link.");
+        }
+      });
+    });
+
+    runUIStep("modalControls", () => {
+      $("btnCloseFilters")?.addEventListener("click", () => {
+        setModalOpen($("headerControls"), false);
+        writeUiPrefs({ filtersOpen: false });
+        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
+        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Filters";
+      });
+
+      $("headerControls")?.addEventListener("click", (e) => {
+        if (e.target === $("headerControls")) $("btnCloseFilters")?.click();
+      });
+
+      $("btnCloseCollectionModal")?.addEventListener("click", closeCollectionModal);
+      $("collectionModal")?.addEventListener("click", (e) => {
+        if (e.target === $("collectionModal")) closeCollectionModal();
+      });
+
+      $("btnCollectionMarkAll")?.addEventListener("click", () => {
+        const entry = activeCollectionEntry();
+        if (!entry) return;
+        const st = ensureItemState(entry);
+        collectionIssues(entry).forEach((issue) => {
+          st.issueStates[issue.title] = true;
+        });
+        persistCollectionState(entry, st);
+        renderCollectionModal(entry);
+      });
+
+      $("btnCollectionClear")?.addEventListener("click", () => {
+        const entry = activeCollectionEntry();
+        if (!entry) return;
+        const st = ensureItemState(entry);
+        collectionIssues(entry).forEach((issue) => {
+          delete st.issueStates[issue.title];
+        });
+        persistCollectionState(entry, st);
+        renderCollectionModal(entry);
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape") return;
+        if (!$("collectionModal")?.classList.contains("hidden")) {
+          closeCollectionModal();
+          return;
+        }
+        if (!$("headerControls")?.classList.contains("hidden")) {
+          $("btnCloseFilters")?.click();
         }
       });
     });
