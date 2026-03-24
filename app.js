@@ -1694,11 +1694,11 @@
     let headerHidden = false;
     let forceHeaderVisibleUntil = 0;
 
-    const syncFilterToggle = () => {
-      const open = !controls.classList.contains("hidden");
-      filterToggle.setAttribute("aria-expanded", String(open));
-      filterToggle.textContent = open ? "Hide filters" : "Filters";
-    };
+	    const syncFilterToggle = () => {
+	      const open = !controls.classList.contains("hidden");
+	      filterToggle.setAttribute("aria-expanded", String(open));
+	      filterToggle.textContent = open ? "Close actions" : "Actions";
+	    };
 
     const setFiltersOpen = (open, persist = true) => {
       setModalOpen(controls, open);
@@ -2036,7 +2036,7 @@
         syncEraToggleButton();
       });
     });
-    runUIStep("quickNav", () => {
+	    runUIStep("quickNav", () => {
       $("btnNext").addEventListener("click", () => {
         const next = nextUnread(getFiltered());
         if (next) scrollToEntry(next.id);
@@ -2048,14 +2048,14 @@
         render();
         scrollToEntry(random.id);
       });
-      $("btnContinue").addEventListener("click", () => {
-        const c = continueEntry(getFiltered());
-        if (c) scrollToEntry(c.id);
-      });
-      $("btnResumeFocus")?.addEventListener("click", () => {
-        const c = continueEntry(getFiltered());
-        if (c) scrollToEntry(c.id);
-      });
+	      $("btnContinue").addEventListener("click", () => {
+	        const c = continueEntry(getFiltered());
+	        if (c) scrollToEntry(c.id);
+	      });
+	      $("btnResumeFocus")?.addEventListener("click", () => {
+	        const c = continueEntry(getFiltered());
+	        if (c) scrollToEntry(c.id);
+	      });
 
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
@@ -2090,13 +2090,13 @@
       });
     });
 
-    runUIStep("modalControls", () => {
-      $("btnCloseFilters")?.addEventListener("click", () => {
-        setModalOpen($("headerControls"), false);
-        writeUiPrefs({ filtersOpen: false });
-        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
-        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Filters";
-      });
+	    runUIStep("modalControls", () => {
+	      $("btnCloseFilters")?.addEventListener("click", () => {
+	        setModalOpen($("headerControls"), false);
+	        writeUiPrefs({ filtersOpen: false });
+	        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
+	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Actions";
+	      });
 
       $("headerControls")?.addEventListener("click", (e) => {
         if (e.target === $("headerControls")) $("btnCloseFilters")?.click();
