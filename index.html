@@ -427,6 +427,15 @@
     }
     .field-label strong { font-size: 11px; letter-spacing: .35px; text-transform: uppercase; color: #cbd5e1; }
     .filters-basic { display:grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(150px, .8fr)); gap: 8px; align-items:end; }
+    .filters-primary { display:grid; grid-template-columns: minmax(220px, 1.8fr) minmax(170px, .9fr); gap: 8px; align-items:end; }
+    .filters-toggles { display:flex; gap:14px; flex-wrap: wrap; align-items:center; }
+    .btn.subtle {
+      background: rgba(30, 41, 59, .45);
+      border-color: rgba(100, 116, 139, .5);
+      color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.subtle:hover { border-color: rgba(148, 163, 184, .75); }
     .filters-advanced { display:grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 8px; align-items:end; }
     .filters-actions { display:flex; gap:8px; flex-wrap:wrap; }
     .debug-health { margin-top: 8px; border: 1px dashed rgba(148,163,184,.45); border-radius: 10px; padding: 6px 8px; font-size: 12px; color: #cbd5e1; background: rgba(15, 23, 42, .35); }
@@ -550,6 +559,7 @@
       .btn, .input, .select { width: 100%; }
       .filters,
       .filters-basic,
+      .filters-primary,
       .filters-advanced { grid-template-columns: 1fr; }
       .advanced-controls { grid-template-columns: 1fr; }
       .top-actions { justify-content: stretch; }
@@ -685,13 +695,15 @@
             <summary>Reading navigation</summary>
             <div class="section-panel-content">
               <div class="filters-actions">
-                <button class="btn primary" id="btnContinue" type="button">Continue</button>
-                <button class="btn" id="btnNext" type="button">Next unread</button>
-                <button class="btn" id="btnRandom" type="button">Random unread</button>
+                <button class="btn primary" id="btnContinue" type="button">Continue reading</button>
+              </div>
+              <div class="filters-actions">
+                <button class="btn subtle" id="btnNext" type="button">Next unread</button>
+                <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
               </div>
             </div>
           </details>
-          <div class="filters-basic">
+          <div class="filters-primary">
             <label class="field-label">
               <strong>Search</strong>
               <input id="search" class="input" placeholder="Search title, character, issue, era..." />
@@ -705,6 +717,8 @@
                 <option value="series">Series</option>
               </select>
             </label>
+          </div>
+          <div class="filters-toggles">
             <label class="row muted"><input type="checkbox" id="onlyRemaining" /> Open only</label>
             <label class="row muted"><input type="checkbox" id="hideOptional" /> Required only</label>
           </div>
