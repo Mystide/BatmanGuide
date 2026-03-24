@@ -53,9 +53,13 @@
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
     .top .container { padding-top: 10px; padding-bottom: 10px; }
-    .hero { display: grid; gap: 6px; min-width: 0; }
+    .hero { display: grid; gap: 4px; min-width: 0; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
     .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .hero-subtitle { margin: 0; color: #cbd5e1; font-size: 12px; }
+    .hero-meta { display:flex; gap:8px; flex-wrap:wrap; }
+    .hero-metric { font-size: 11px; border: 1px solid rgba(148,163,184,.35); border-radius: 999px; padding: 3px 8px; color: #cbd5e1; background: rgba(15,23,42,.4); }
+    .hero-metric strong { color: #fde68a; }
     .header-main { display:flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
     .header-panel {
       border: 1px solid rgba(71, 85, 105, .45);
@@ -470,6 +474,20 @@
     .modal-header h2 { margin: 0; font-size: 18px; line-height: 1.25; }
     .modal-subtitle { margin: 3px 0 0 0; font-size: 12px; color: var(--muted); }
     .modal-body { margin-top: 10px; display:grid; gap: 10px; }
+    .modal-footer {
+      margin-top: 10px;
+      border-top: 1px solid rgba(71,85,105,.45);
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .modal-footer-status {
+      font-size: 12px;
+      color: var(--muted);
+    }
     .floating-actions {
       position: fixed;
       right: 16px;
@@ -594,13 +612,19 @@
             <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
             <div>
               <h1>Batman Guide</h1>
+              <p class="hero-subtitle">Read smarter with one clear next step.</p>
             </div>
+          </div>
+          <div class="hero-meta" aria-live="polite">
+            <span class="hero-metric">Done <strong id="heroDone">-</strong></span>
+            <span class="hero-metric">Left <strong id="heroLeft">-</strong></span>
+            <span class="hero-metric">Visible <strong id="heroVisible">-</strong></span>
           </div>
         </div>
         <div>
           <p class="header-panel-label">Control center</p>
           <div class="top-actions top-actions-minimal">
-          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
+          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Open actions</button>
           </div>
         </div>
       </div>
@@ -752,6 +776,13 @@
             </div>
           </details>
           <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">N</span> for next unread, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> to continue.</div>
+          <div class="modal-footer">
+            <div id="modalFooterStatus" class="modal-footer-status">Visible: - • Left: - • Required left: -</div>
+            <div class="filters-actions">
+              <button class="btn" id="btnFooterClearFilters" type="button">Reset filters</button>
+              <button class="btn primary" id="btnDoneFilters" type="button">Done</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
