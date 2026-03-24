@@ -2147,7 +2147,8 @@
 	        setModalOpen($("headerControls"), false);
 	        writeUiPrefs({ filtersOpen: false });
 	        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
-	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Open actions";
+	        const activeCount = activeFilterCount();
+	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = activeCount > 0 ? `Actions (${activeCount})` : "Actions";
 	      });
       $("btnDoneFilters")?.addEventListener("click", () => {
         $("btnCloseFilters")?.click();
