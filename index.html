@@ -53,9 +53,13 @@
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
     .muted { color: var(--muted); font-size: 13px; }
     .top .container { padding-top: 10px; padding-bottom: 10px; }
-    .hero { display: grid; gap: 6px; min-width: 0; }
+    .hero { display: grid; gap: 4px; min-width: 0; }
     .hero-brand { display:flex; gap:12px; align-items:center; }
     .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .hero-subtitle { margin: 0; color: #cbd5e1; font-size: 12px; }
+    .hero-meta { display:flex; gap:8px; flex-wrap:wrap; }
+    .hero-metric { font-size: 11px; border: 1px solid rgba(148,163,184,.35); border-radius: 999px; padding: 3px 8px; color: #cbd5e1; background: rgba(15,23,42,.4); }
+    .hero-metric strong { color: #fde68a; }
     .header-main { display:flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
     .header-panel {
       border: 1px solid rgba(71, 85, 105, .45);
@@ -423,6 +427,15 @@
     }
     .field-label strong { font-size: 11px; letter-spacing: .35px; text-transform: uppercase; color: #cbd5e1; }
     .filters-basic { display:grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(150px, .8fr)); gap: 8px; align-items:end; }
+    .filters-primary { display:grid; grid-template-columns: minmax(170px, 1fr); gap: 8px; align-items:end; }
+    .filters-toggles { display:flex; gap:14px; flex-wrap: wrap; align-items:center; }
+    .btn.subtle {
+      background: rgba(30, 41, 59, .45);
+      border-color: rgba(100, 116, 139, .5);
+      color: #cbd5e1;
+      box-shadow: none;
+    }
+    .btn.subtle:hover { border-color: rgba(148, 163, 184, .75); }
     .filters-advanced { display:grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 8px; align-items:end; }
     .filters-actions { display:flex; gap:8px; flex-wrap:wrap; }
     .debug-health { margin-top: 8px; border: 1px dashed rgba(148,163,184,.45); border-radius: 10px; padding: 6px 8px; font-size: 12px; color: #cbd5e1; background: rgba(15, 23, 42, .35); }
@@ -433,6 +446,11 @@
       grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
       gap: 12px;
       margin-top: 14px;
+    }
+    .quick-search-bar {
+      margin-top: 12px;
+      display: grid;
+      gap: 6px;
     }
     .overview-card { min-width: 0; }
     .item-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto; }
@@ -470,6 +488,20 @@
     .modal-header h2 { margin: 0; font-size: 18px; line-height: 1.25; }
     .modal-subtitle { margin: 3px 0 0 0; font-size: 12px; color: var(--muted); }
     .modal-body { margin-top: 10px; display:grid; gap: 10px; }
+    .modal-footer {
+      margin-top: 10px;
+      border-top: 1px solid rgba(71,85,105,.45);
+      padding-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .modal-footer-status {
+      font-size: 12px;
+      color: var(--muted);
+    }
     .floating-actions {
       position: fixed;
       right: 16px;
@@ -532,6 +564,7 @@
       .btn, .input, .select { width: 100%; }
       .filters,
       .filters-basic,
+      .filters-primary,
       .filters-advanced { grid-template-columns: 1fr; }
       .advanced-controls { grid-template-columns: 1fr; }
       .top-actions { justify-content: stretch; }
@@ -594,13 +627,19 @@
             <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
             <div>
               <h1>Batman Guide</h1>
+              <p class="hero-subtitle">Read smarter with one clear next step.</p>
             </div>
+          </div>
+          <div class="hero-meta" aria-live="polite">
+            <span class="hero-metric">Done <strong id="heroDone">-</strong></span>
+            <span class="hero-metric">Left <strong id="heroLeft">-</strong></span>
+            <span class="hero-metric">Visible <strong id="heroVisible">-</strong></span>
           </div>
         </div>
         <div>
           <p class="header-panel-label">Control center</p>
           <div class="top-actions top-actions-minimal">
-          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
+          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Open actions</button>
           </div>
         </div>
       </div>
@@ -642,6 +681,12 @@
         <div id="filterSummary" class="filter-summary">No active filters.</div>
       </section>
     </div>
+    <section class="card quick-search-bar" aria-label="Quick search">
+      <label class="field-label">
+        <strong>Search</strong>
+        <input id="search" class="input full" placeholder="Search title, character, issue, era..." />
+      </label>
+    </section>
 
     <div id="debugHealth" class="debug-health hidden" role="status" aria-live="polite"></div>
     <div id="errorBox" class="error hidden"></div>
@@ -657,21 +702,7 @@
           <button class="btn" id="btnCloseFilters" type="button">Close</button>
         </div>
         <div class="modal-body">
-          <details class="section-panel" id="quickNavPanel" open>
-            <summary>Reading navigation</summary>
-            <div class="section-panel-content">
-              <div class="filters-actions">
-                <button class="btn primary" id="btnContinue" type="button">Continue</button>
-                <button class="btn" id="btnNext" type="button">Next unread</button>
-                <button class="btn" id="btnRandom" type="button">Random unread</button>
-              </div>
-            </div>
-          </details>
-          <div class="filters-basic">
-            <label class="field-label">
-              <strong>Search</strong>
-              <input id="search" class="input" placeholder="Search title, character, issue, era..." />
-            </label>
+          <div class="filters-primary">
             <label class="field-label">
               <strong>Type</strong>
               <select id="typeFilter" class="select">
@@ -681,18 +712,19 @@
                 <option value="series">Series</option>
               </select>
             </label>
+          </div>
+          <div class="filters-toggles">
             <label class="row muted"><input type="checkbox" id="onlyRemaining" /> Open only</label>
             <label class="row muted"><input type="checkbox" id="hideOptional" /> Required only</label>
           </div>
-          <div class="quick-filters" aria-label="Quick filters">
-            <button class="chip" type="button" id="chipOpen">Open only</button>
-            <button class="chip" type="button" id="chipRequired">Required only</button>
-            <button class="chip" type="button" id="chipBook">Books</button>
-            <button class="chip" type="button" id="chipFamily">Bat-family</button>
-          </div>
           <details class="section-panel" id="advancedFiltersPanel">
-            <summary>Advanced filters & navigation</summary>
+            <summary>More filters & tools</summary>
             <div class="section-panel-content">
+              <div class="filters-actions">
+                <button class="btn subtle" id="btnContinue" type="button">Continue reading</button>
+                <button class="btn subtle" id="btnNext" type="button">Next unread</button>
+                <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
+              </div>
               <div class="filters-advanced">
                 <label class="field-label">
                   <strong>Track</strong>
@@ -740,18 +772,19 @@
                 <button class="btn hidden" id="btnExpandAll" type="button" tabindex="-1" aria-hidden="true">Expand all</button>
                 <button class="btn hidden" id="btnCollapseAll" type="button" tabindex="-1" aria-hidden="true">Collapse all</button>
               </div>
-            </div>
-          </details>
-          <details class="section-panel" id="utilityActionsPanel">
-            <summary>More actions</summary>
-            <div class="section-panel-content">
               <div class="filters-actions">
                 <button class="btn" id="btnCopyView" type="button">Copy current view link</button>
                 <button class="btn" id="btnClearFilters" type="button">Clear filters</button>
               </div>
             </div>
           </details>
-          <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">N</span> for next unread, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> to continue.</div>
+          <div class="modal-footer">
+            <div id="modalFooterStatus" class="modal-footer-status">Visible: - • Left: - • Required left: -</div>
+            <div class="filters-actions">
+              <button class="btn" id="btnFooterClearFilters" type="button">Reset filters</button>
+              <button class="btn primary" id="btnDoneFilters" type="button">Done</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
