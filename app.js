@@ -605,6 +605,19 @@
     return `${labels.length} active filter${labels.length > 1 ? "s" : ""}: ${labels.join(" • ")}`;
   }
 
+  function activeFilterCount() {
+    let count = 0;
+    if ($("search")?.value.trim()) count++;
+    if ($("typeFilter")?.value) count++;
+    if ($("onlyRemaining")?.checked) count++;
+    if ($("hideOptional")?.checked) count++;
+    if ($("trackFilter")?.value) count++;
+    if ($("characterFilter")?.value) count++;
+    if ($("eraFilter")?.value) count++;
+    if (($("sortBy")?.value || "order") !== "order") count++;
+    return count;
+  }
+
   function groupedByEra(entries) {
     const out = new Map();
     for (const e of entries) {
@@ -711,6 +724,13 @@
     setText("heroLeft", String(Math.max(0, s.total - s.done)));
     setText("modalFooterStatus", `Visible: ${s.total} • Left: ${Math.max(0, s.total - s.done)} • Required left: ${requiredRemaining}`);
     setText("filterSummary", activeFilterSummary());
+    const activeCount = activeFilterCount();
+    setText("headerActionsHint", activeCount > 0 ? `${activeCount} filters active` : "No filters active");
+    const filterButton = $("btnFilterMenu");
+    const filtersDialogOpen = !$("headerControls")?.classList.contains("hidden");
+    if (filterButton) {
+      filterButton.textContent = filtersDialogOpen ? "Close actions" : (activeCount > 0 ? `Actions (${activeCount})` : "Actions");
+    }
   }
 
   function loadOpenState() {
@@ -1709,11 +1729,13 @@
     let headerHidden = false;
     let forceHeaderVisibleUntil = 0;
 
-	    const syncFilterToggle = () => {
-	      const open = !controls.classList.contains("hidden");
-	      filterToggle.setAttribute("aria-expanded", String(open));
-	      filterToggle.textContent = open ? "Close actions" : "Open actions";
-	    };
+    const syncFilterToggle = () => {
+      const open = !controls.classList.contains("hidden");
+      const count = activeFilterCount();
+      filterToggle.setAttribute("aria-expanded", String(open));
+      if (open) filterToggle.textContent = "Close actions";
+      else filterToggle.textContent = count > 0 ? `Actions (${count})` : "Actions";
+    };
 
     const setFiltersOpen = (open, persist = true) => {
       setModalOpen(controls, open);
