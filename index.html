@@ -72,6 +72,7 @@
     .top-actions .btn { min-width: 122px; }
     .top-actions.top-actions-minimal .btn { min-width: 0; }
     .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
+    .header-actions-hint { margin-top: 4px; font-size: 11px; color: var(--muted); text-align: right; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
@@ -342,6 +343,21 @@
       font-size: 13px;
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -44px;
+      z-index: 120;
+      background: #111827;
+      color: #f8fafc;
+      border: 1px solid #64748b;
+      border-radius: 10px;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-weight: 700;
+      box-shadow: var(--shadow-soft);
+    }
+    .skip-link:focus { top: 10px; }
 
     .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap:6px; margin-top: 6px; }
     .meta-card { border:1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: rgba(15, 23, 42, .55); }
@@ -388,6 +404,18 @@
       background: rgba(15, 23, 42, .32);
     }
     .reading-focus-copy { min-width: 0; display:grid; gap:2px; }
+    .reading-focus-main { display:grid; grid-template-columns: 54px minmax(0,1fr); gap:10px; align-items:start; }
+    .focus-cover {
+      width: 54px;
+      height: 78px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.2);
+      overflow: hidden;
+      box-shadow: 0 6px 14px rgba(0,0,0,.35);
+      background: rgba(15,23,42,.62);
+    }
+    .focus-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+    .focus-cover.fallback-logo img { object-fit: contain; padding: 5px; }
     .reading-focus-label {
       font-size: 11px;
       color: var(--muted);
@@ -398,13 +426,14 @@
       font-size: 15px;
       font-weight: 700;
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      white-space: normal;
+      line-height: 1.28;
     }
-    .reading-focus-meta { font-size: 12px; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .reading-focus-meta { font-size: 12px; color: #cbd5e1; white-space: normal; line-height: 1.3; }
     .reading-focus-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .reading-focus-actions .btn { min-width: 0; }
+    .reading-focus-actions .btn.primary { background: linear-gradient(180deg, rgba(39, 50, 75, .95), rgba(24, 34, 54, .95)); color: var(--text); border-color: var(--border); }
+    .reading-focus-actions .btn:not(.primary) { opacity: .88; }
     .section-panel {
       margin-top: 8px;
       border: 1px solid rgba(71, 85, 105, .38);
@@ -448,9 +477,31 @@
       margin-top: 14px;
     }
     .quick-search-bar {
-      margin-top: 12px;
+      margin-top: 10px;
       display: grid;
-      gap: 6px;
+      gap: 4px;
+      position: sticky;
+      top: var(--sticky-search-top, 0px);
+      z-index: 44;
+      padding: 8px 10px;
+      backdrop-filter: blur(8px);
+      background: rgba(11, 18, 36, .78);
+      border-radius: 0 0 12px 12px;
+      border-top: 1px solid rgba(71, 85, 105, .45);
+    }
+    .quick-search-bar .field-label {
+      gap: 2px;
+      font-size: 11px;
+    }
+    .quick-search-bar .field-label strong {
+      font-size: 10px;
+      letter-spacing: .3px;
+    }
+    .quick-search-bar .input {
+      min-height: 34px;
+      padding: 6px 9px;
+      font-size: 12px;
+      border-radius: 9px;
     }
     .overview-card { min-width: 0; }
     .item-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto; }
@@ -583,8 +634,16 @@
       .reading-focus { grid-template-columns: 1fr; }
       .reading-focus-actions { justify-content: stretch; }
       .reading-focus-actions .btn { width: 100%; }
-      .reading-focus-meta { white-space: normal; }
+      .reading-focus-main { grid-template-columns: 48px minmax(0,1fr); }
+      .focus-cover { width: 48px; height: 70px; }
       .overview-grid { grid-template-columns: 1fr; }
+      .quick-search-bar {
+        padding: 7px 8px;
+      }
+      .quick-search-bar .input {
+        min-height: 32px;
+        font-size: 12px;
+      }
       .modal-backdrop { padding: 8px; }
       .modal-panel {
         width: calc(100vw - 16px);
@@ -619,6 +678,7 @@
   </style>
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
   <header class="top">
     <div class="container">
       <div class="header-main header-panel">
@@ -639,8 +699,9 @@
         <div>
           <p class="header-panel-label">Control center</p>
           <div class="top-actions top-actions-minimal">
-          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Open actions</button>
+          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
           </div>
+          <div id="headerActionsHint" class="header-actions-hint">No filters active</div>
         </div>
       </div>
     </div>
@@ -651,20 +712,22 @@
     <button class="btn hidden scroll-top" id="btnScrollTop" type="button" aria-label="Scroll to top">↑ Top</button>
   </div>
 
-  <main class="container">
+  <main class="container" id="mainContent">
     <div class="overview-grid">
       <section class="card overview-card">
         <div class="reading-focus">
           <div class="reading-focus-copy">
             <div class="reading-focus-label">Continue from</div>
-            <div id="focusTitle" class="reading-focus-title">Loading…</div>
-            <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
+            <div class="reading-focus-main">
+              <div id="focusCover" class="focus-cover fallback-logo"></div>
+              <div>
+                <div id="focusTitle" class="reading-focus-title">Loading…</div>
+                <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
+              </div>
+            </div>
           </div>
           <div class="reading-focus-actions">
-            <button class="btn" id="btnContinue" type="button">Continue reading</button>
-            <button class="btn subtle" id="btnNext" type="button">Next unread</button>
-            <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
-            <button class="btn primary" id="btnResumeFocus">Resume reading</button>
+            <button class="btn primary" id="btnContinue" data-nav-action="continue" type="button">Continue reading</button>
             <a class="btn" id="btnOpenFocus" href="about:blank" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open in DCUI</a>
           </div>
         </div>
@@ -724,9 +787,9 @@
             <summary>More filters & tools</summary>
             <div class="section-panel-content">
               <div class="filters-actions">
-                <button class="btn subtle" id="btnContinue" type="button">Continue reading</button>
-                <button class="btn subtle" id="btnNext" type="button">Next unread</button>
-                <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
+                <button class="btn subtle" id="btnContinueModal" data-nav-action="continue" type="button">Continue reading</button>
+                <button class="btn subtle" id="btnNextModal" data-nav-action="next" type="button">Next unread</button>
+                <button class="btn subtle" id="btnRandomModal" data-nav-action="random" type="button">Random unread</button>
               </div>
               <div class="filters-advanced">
                 <label class="field-label">
