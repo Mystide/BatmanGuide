@@ -2052,13 +2052,10 @@
 	        const c = continueEntry(getFiltered());
 	        if (c) scrollToEntry(c.id);
 	      });
-	      $("btnContinueFromMenu")?.addEventListener("click", () => {
-	        $("btnContinue")?.click();
-	      });
 	      $("btnResumeFocus")?.addEventListener("click", () => {
 	        const c = continueEntry(getFiltered());
 	        if (c) scrollToEntry(c.id);
-      });
+	      });
 
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
