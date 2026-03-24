@@ -9,13 +9,24 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 'lts/*'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      - name: Show checked commit
+        run: |
+          echo "GITHUB_SHA=${GITHUB_SHA}"
+          git rev-parse HEAD
+          git log --oneline -1
+      - name: Show tool versions
+        run: |
+          node --version
+          python3 --version
       - name: Run smoke checks
         run: bash ./scripts/smoke-check.sh
