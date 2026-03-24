@@ -1729,6 +1729,12 @@
       syncRevealButton();
     };
 
+    const syncStickySearchOffset = () => {
+      const rect = header.getBoundingClientRect();
+      const visible = Math.max(0, Math.min(rect.bottom, header.offsetHeight || 0));
+      document.documentElement.style.setProperty("--sticky-search-top", `${Math.round(visible)}px`);
+    };
+
     const syncRevealButton = () => {
       const shouldShow = headerHidden;
       revealHeader.classList.toggle("hidden", !shouldShow);
@@ -1768,6 +1774,7 @@
         header.classList.remove("compact", "header-hidden");
         headerHidden = false;
         syncRevealButton();
+        syncStickySearchOffset();
         return;
       }
 
@@ -1781,6 +1788,7 @@
       }
 
       header.classList.toggle("compact", shouldCompact);
+      syncStickySearchOffset();
     };
 
     let raf = 0;
@@ -1797,6 +1805,7 @@
     window.addEventListener("resize", queueUpdate);
     setFiltersOpen(userWantsFiltersOpen, false);
     updateCompactMode();
+    syncStickySearchOffset();
   }
 
 

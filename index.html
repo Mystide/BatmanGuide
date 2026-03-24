@@ -480,12 +480,13 @@
       display: grid;
       gap: 4px;
       position: sticky;
-      top: 0;
-      z-index: 45;
+      top: var(--sticky-search-top, 0px);
+      z-index: 44;
       padding: 8px 10px;
       backdrop-filter: blur(8px);
       background: rgba(11, 18, 36, .78);
       border-radius: 0 0 12px 12px;
+      border-top: 1px solid rgba(71, 85, 105, .45);
     }
     .quick-search-bar .field-label {
       gap: 2px;
@@ -636,7 +637,6 @@
       .focus-cover { width: 48px; height: 70px; }
       .overview-grid { grid-template-columns: 1fr; }
       .quick-search-bar {
-        top: 0;
         padding: 7px 8px;
       }
       .quick-search-bar .input {
