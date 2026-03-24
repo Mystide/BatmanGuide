@@ -66,6 +66,7 @@
     }
     .top-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
     .top-actions .btn { min-width: 122px; }
+    .top-actions.top-actions-minimal .btn { min-width: 0; }
     .header-panel-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 6px 0; }
     .badge { display:inline-flex; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
@@ -597,12 +598,10 @@
           </div>
         </div>
         <div>
-          <p class="header-panel-label">Reading actions</p>
-          <div class="top-actions">
+          <p class="header-panel-label">Quick access</p>
+          <div class="top-actions top-actions-minimal">
           <button class="btn primary" id="btnContinue">Continue</button>
-          <button class="btn" id="btnNext">Next unread</button>
-          <button class="btn" id="btnFilterMenu" aria-expanded="false">Filters</button>
-          <button class="btn" id="btnCompact">Compact cards: off</button>
+          <button class="btn" id="btnFilterMenu" aria-expanded="false">Actions</button>
           </div>
         </div>
       </div>
@@ -659,6 +658,18 @@
           <button class="btn" id="btnCloseFilters" type="button">Close</button>
         </div>
         <div class="modal-body">
+          <details class="section-panel" id="quickActionsPanel" open>
+            <summary>Quick actions</summary>
+            <div class="section-panel-content">
+              <div class="filters-actions">
+                <button class="btn primary" id="btnContinueFromMenu" type="button">Continue</button>
+                <button class="btn" id="btnNext" type="button">Next unread</button>
+                <button class="btn" id="btnRandom" type="button">Random unread</button>
+                <button class="btn" id="btnCopyView" type="button">Copy current view link</button>
+                <button class="btn" id="btnClearFilters" type="button">Clear filters</button>
+              </div>
+            </div>
+          </details>
           <div class="filters-basic">
             <label class="field-label">
               <strong>Search</strong>
@@ -734,11 +745,6 @@
               </div>
             </div>
           </details>
-          <div class="filters-actions">
-            <button class="btn" id="btnRandom">Random unread</button>
-            <button class="btn" id="btnCopyView">Copy current view link</button>
-            <button class="btn" id="btnClearFilters">Clear filters</button>
-          </div>
           <div class="muted controls-hint">Tip: press <span class="kbd">/</span> for search, <span class="kbd">N</span> for next unread, <span class="kbd">R</span> for random unread, and <span class="kbd">C</span> to continue.</div>
         </div>
       </div>
