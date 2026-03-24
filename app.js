@@ -695,6 +695,10 @@
     setText("statDone", String(s.done));
     setText("statRemaining", String(Math.max(0, s.total - s.done)));
     setText("statRequired", String(requiredRemaining));
+    setText("heroVisible", String(s.total));
+    setText("heroDone", String(s.done));
+    setText("heroLeft", String(Math.max(0, s.total - s.done)));
+    setText("modalFooterStatus", `Visible: ${s.total} • Left: ${Math.max(0, s.total - s.done)} • Required left: ${requiredRemaining}`);
     setText("filterSummary", activeFilterSummary());
   }
 
@@ -1697,7 +1701,7 @@
 	    const syncFilterToggle = () => {
 	      const open = !controls.classList.contains("hidden");
 	      filterToggle.setAttribute("aria-expanded", String(open));
-	      filterToggle.textContent = open ? "Close actions" : "Actions";
+	      filterToggle.textContent = open ? "Close actions" : "Open actions";
 	    };
 
     const setFiltersOpen = (open, persist = true) => {
@@ -2020,7 +2024,7 @@
     });
 
     runUIStep("clearFilters", () => {
-      $("btnClearFilters").addEventListener("click", () => {
+      const clearFilters = () => {
         $("search").value = "";
         $("typeFilter").value = "";
         $("onlyRemaining").checked = false;
@@ -2034,7 +2038,9 @@
         syncQuickFilterChips();
         render();
         syncEraToggleButton();
-      });
+      };
+      $("btnClearFilters").addEventListener("click", clearFilters);
+      $("btnFooterClearFilters")?.addEventListener("click", clearFilters);
     });
 	    runUIStep("quickNav", () => {
       $("btnNext").addEventListener("click", () => {
@@ -2095,8 +2101,11 @@
 	        setModalOpen($("headerControls"), false);
 	        writeUiPrefs({ filtersOpen: false });
 	        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
-	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Actions";
+	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = "Open actions";
 	      });
+      $("btnDoneFilters")?.addEventListener("click", () => {
+        $("btnCloseFilters")?.click();
+      });
 
       $("headerControls")?.addEventListener("click", (e) => {
         if (e.target === $("headerControls")) $("btnCloseFilters")?.click();
