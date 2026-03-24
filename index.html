@@ -476,9 +476,30 @@
       margin-top: 14px;
     }
     .quick-search-bar {
-      margin-top: 12px;
+      margin-top: 10px;
       display: grid;
-      gap: 6px;
+      gap: 4px;
+      position: sticky;
+      top: 76px;
+      z-index: 45;
+      padding: 8px 10px;
+      backdrop-filter: blur(8px);
+      background: rgba(11, 18, 36, .78);
+      border-radius: 12px;
+    }
+    .quick-search-bar .field-label {
+      gap: 2px;
+      font-size: 11px;
+    }
+    .quick-search-bar .field-label strong {
+      font-size: 10px;
+      letter-spacing: .3px;
+    }
+    .quick-search-bar .input {
+      min-height: 34px;
+      padding: 6px 9px;
+      font-size: 12px;
+      border-radius: 9px;
     }
     .overview-card { min-width: 0; }
     .item-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto; }
@@ -614,6 +635,14 @@
       .reading-focus-main { grid-template-columns: 48px minmax(0,1fr); }
       .focus-cover { width: 48px; height: 70px; }
       .overview-grid { grid-template-columns: 1fr; }
+      .quick-search-bar {
+        top: 70px;
+        padding: 7px 8px;
+      }
+      .quick-search-bar .input {
+        min-height: 32px;
+        font-size: 12px;
+      }
       .modal-backdrop { padding: 8px; }
       .modal-panel {
         width: calc(100vw - 16px);
