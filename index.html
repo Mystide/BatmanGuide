@@ -427,7 +427,7 @@
     }
     .field-label strong { font-size: 11px; letter-spacing: .35px; text-transform: uppercase; color: #cbd5e1; }
     .filters-basic { display:grid; grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(150px, .8fr)); gap: 8px; align-items:end; }
-    .filters-primary { display:grid; grid-template-columns: minmax(220px, 1.8fr) minmax(170px, .9fr); gap: 8px; align-items:end; }
+    .filters-primary { display:grid; grid-template-columns: minmax(170px, 1fr); gap: 8px; align-items:end; }
     .filters-toggles { display:flex; gap:14px; flex-wrap: wrap; align-items:center; }
     .btn.subtle {
       background: rgba(30, 41, 59, .45);
@@ -446,6 +446,11 @@
       grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
       gap: 12px;
       margin-top: 14px;
+    }
+    .quick-search-bar {
+      margin-top: 12px;
+      display: grid;
+      gap: 6px;
     }
     .overview-card { min-width: 0; }
     .item-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto; }
@@ -656,6 +661,9 @@
             <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
           </div>
           <div class="reading-focus-actions">
+            <button class="btn" id="btnContinue" type="button">Continue reading</button>
+            <button class="btn subtle" id="btnNext" type="button">Next unread</button>
+            <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
             <button class="btn primary" id="btnResumeFocus">Resume reading</button>
             <a class="btn" id="btnOpenFocus" href="about:blank" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open in DCUI</a>
           </div>
@@ -676,6 +684,12 @@
         <div id="filterSummary" class="filter-summary">No active filters.</div>
       </section>
     </div>
+    <section class="card quick-search-bar" aria-label="Quick search">
+      <label class="field-label">
+        <strong>Search</strong>
+        <input id="search" class="input full" placeholder="Search title, character, issue, era..." />
+      </label>
+    </section>
 
     <div id="debugHealth" class="debug-health hidden" role="status" aria-live="polite"></div>
     <div id="errorBox" class="error hidden"></div>
@@ -691,23 +705,7 @@
           <button class="btn" id="btnCloseFilters" type="button">Close</button>
         </div>
         <div class="modal-body">
-          <details class="section-panel" id="quickNavPanel" open>
-            <summary>Reading navigation</summary>
-            <div class="section-panel-content">
-              <div class="filters-actions">
-                <button class="btn primary" id="btnContinue" type="button">Continue reading</button>
-              </div>
-              <div class="filters-actions">
-                <button class="btn subtle" id="btnNext" type="button">Next unread</button>
-                <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
-              </div>
-            </div>
-          </details>
           <div class="filters-primary">
-            <label class="field-label">
-              <strong>Search</strong>
-              <input id="search" class="input" placeholder="Search title, character, issue, era..." />
-            </label>
             <label class="field-label">
               <strong>Type</strong>
               <select id="typeFilter" class="select">
