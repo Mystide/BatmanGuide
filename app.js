@@ -267,6 +267,7 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
   let activeCollectionModalId = "";
+  let focusCoverRenderToken = 0;
   const coverCache = loadJSON(KEYS.coverCache, {});
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
@@ -656,15 +657,18 @@
     const focusTitle = $("focusTitle");
     const focusMeta = $("focusMeta");
     const focusOpen = $("btnOpenFocus");
-    const focusResume = $("btnResumeFocus");
+    const focusCover = $("focusCover");
     if (!cont) {
       if (focusTitle) focusTitle.textContent = "Everything in this view is complete";
       if (focusMeta) focusMeta.textContent = "Try clearing filters or jump to a different era.";
+      if (focusCover) {
+        focusCover.className = "focus-cover fallback-logo";
+        focusCover.innerHTML = entryLogoFallback({ title: "Batman Guide", type: "book" });
+      }
       if (focusOpen) {
         focusOpen.setAttribute("href", "about:blank");
         focusOpen.setAttribute("aria-disabled", "true");
       }
-      if (focusResume) focusResume.disabled = true;
     } else {
       const st = ensureItemState(cont);
       const continueStats = collectionIssueStats(cont, st);
@@ -684,7 +688,14 @@
         focusOpen.setAttribute("href", safeExternalUrl(cont.url));
         focusOpen.setAttribute("aria-disabled", "false");
       }
-      if (focusResume) focusResume.disabled = false;
+      if (focusCover) {
+        focusCover.className = "focus-cover";
+        const token = ++focusCoverRenderToken;
+        void applyBestCover(focusCover, cont).then(() => {
+          if (token !== focusCoverRenderToken) return;
+          focusCover.setAttribute("data-entry-id", cont.id);
+        });
+      }
     }
 
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
@@ -2065,10 +2076,6 @@
 
       document.querySelectorAll("[data-nav-action]").forEach((button) => {
         button.addEventListener("click", () => performNavAction(button.dataset.navAction || ""));
-      });
-
-      $("btnResumeFocus")?.addEventListener("click", () => {
-        performNavAction("continue");
       });
 
       const scrollTopBtn = $("btnScrollTop");
