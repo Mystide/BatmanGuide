@@ -2042,26 +2042,34 @@
       $("btnClearFilters").addEventListener("click", clearFilters);
       $("btnFooterClearFilters")?.addEventListener("click", clearFilters);
     });
-	    runUIStep("quickNav", () => {
-      $("btnNext").addEventListener("click", () => {
-        const next = nextUnread(getFiltered());
-        if (next) scrollToEntry(next.id);
+    runUIStep("quickNav", () => {
+      const performNavAction = (action) => {
+        if (action === "next") {
+          const next = nextUnread(getFiltered());
+          if (next) scrollToEntry(next.id);
+          return;
+        }
+        if (action === "random") {
+          const random = randomUnread(getFiltered());
+          if (!random) return;
+          randomTargetId = random.id;
+          render();
+          scrollToEntry(random.id);
+          return;
+        }
+        if (action === "continue") {
+          const c = continueEntry(getFiltered());
+          if (c) scrollToEntry(c.id);
+        }
+      };
+
+      document.querySelectorAll("[data-nav-action]").forEach((button) => {
+        button.addEventListener("click", () => performNavAction(button.dataset.navAction || ""));
       });
-      $("btnRandom").addEventListener("click", () => {
-        const random = randomUnread(getFiltered());
-        if (!random) return;
-        randomTargetId = random.id;
-        render();
-        scrollToEntry(random.id);
+
+      $("btnResumeFocus")?.addEventListener("click", () => {
+        performNavAction("continue");
       });
-	      $("btnContinue").addEventListener("click", () => {
-	        const c = continueEntry(getFiltered());
-	        if (c) scrollToEntry(c.id);
-	      });
-	      $("btnResumeFocus")?.addEventListener("click", () => {
-	        const c = continueEntry(getFiltered());
-	        if (c) scrollToEntry(c.id);
-	      });
 
       const scrollTopBtn = $("btnScrollTop");
       const syncScrollTopVisibility = () => {
@@ -2300,6 +2308,11 @@
     });
 
     runUIStep("globalActions", () => {
+      const dispatchNavAction = (action) => {
+        const button = document.querySelector(`[data-nav-action="${action}"]`);
+        if (button) button.click();
+      };
+
       $("resetState").addEventListener("click", () => {
         if (!confirm("Reset local progress? This cannot be undone.")) return;
         state = defaultState();
@@ -2322,21 +2335,21 @@
         if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
           if (isTyping) return;
           e.preventDefault();
-          $("btnRandom")?.click();
+          dispatchNavAction("random");
           return;
         }
 
         if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey) {
           if (isTyping) return;
           e.preventDefault();
-          $("btnContinue")?.click();
+          dispatchNavAction("continue");
           return;
         }
 
         if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey && !e.altKey) {
           if (isTyping) return;
           e.preventDefault();
-          $("btnNext")?.click();
+          dispatchNavAction("next");
         }
       });
 

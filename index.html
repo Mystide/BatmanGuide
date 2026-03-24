@@ -342,6 +342,21 @@
       font-size: 13px;
     }
     a { color: #93c5fd; text-underline-offset: 2px; }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: -44px;
+      z-index: 120;
+      background: #111827;
+      color: #f8fafc;
+      border: 1px solid #64748b;
+      border-radius: 10px;
+      padding: 8px 12px;
+      text-decoration: none;
+      font-weight: 700;
+      box-shadow: var(--shadow-soft);
+    }
+    .skip-link:focus { top: 10px; }
 
     .meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap:6px; margin-top: 6px; }
     .meta-card { border:1px solid var(--border); border-radius: 10px; padding: 6px 8px; background: rgba(15, 23, 42, .55); }
@@ -619,6 +634,7 @@
   </style>
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
   <header class="top">
     <div class="container">
       <div class="header-main header-panel">
@@ -651,7 +667,7 @@
     <button class="btn hidden scroll-top" id="btnScrollTop" type="button" aria-label="Scroll to top">↑ Top</button>
   </div>
 
-  <main class="container">
+  <main class="container" id="mainContent">
     <div class="overview-grid">
       <section class="card overview-card">
         <div class="reading-focus">
@@ -661,9 +677,9 @@
             <div id="focusMeta" class="reading-focus-meta">Your latest active entry will appear here.</div>
           </div>
           <div class="reading-focus-actions">
-            <button class="btn" id="btnContinue" type="button">Continue reading</button>
-            <button class="btn subtle" id="btnNext" type="button">Next unread</button>
-            <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
+            <button class="btn" id="btnContinue" data-nav-action="continue" type="button">Continue reading</button>
+            <button class="btn subtle" id="btnNext" data-nav-action="next" type="button">Next unread</button>
+            <button class="btn subtle" id="btnRandom" data-nav-action="random" type="button">Random unread</button>
             <button class="btn primary" id="btnResumeFocus">Resume reading</button>
             <a class="btn" id="btnOpenFocus" href="about:blank" target="_blank" rel="noopener noreferrer" aria-disabled="true">Open in DCUI</a>
           </div>
@@ -724,9 +740,9 @@
             <summary>More filters & tools</summary>
             <div class="section-panel-content">
               <div class="filters-actions">
-                <button class="btn subtle" id="btnContinue" type="button">Continue reading</button>
-                <button class="btn subtle" id="btnNext" type="button">Next unread</button>
-                <button class="btn subtle" id="btnRandom" type="button">Random unread</button>
+                <button class="btn subtle" id="btnContinueModal" data-nav-action="continue" type="button">Continue reading</button>
+                <button class="btn subtle" id="btnNextModal" data-nav-action="next" type="button">Next unread</button>
+                <button class="btn subtle" id="btnRandomModal" data-nav-action="random" type="button">Random unread</button>
               </div>
               <div class="filters-advanced">
                 <label class="field-label">
