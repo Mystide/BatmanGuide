@@ -1181,6 +1181,9 @@
         const current = loadOpenState();
         current[key] = details.open;
         saveOpenState(current);
+        if (details.open && list.dataset.deferred === "1") {
+          render();
+        }
       });
 
       let done = 0;
@@ -1201,6 +1204,14 @@
 
       const list = document.createElement("div");
       list.className = "items";
+
+      if (!details.open) {
+        list.dataset.deferred = "1";
+        list.innerHTML = '<div class="muted">Expand to load entries.</div>';
+        details.appendChild(list);
+        rootFrag.appendChild(details);
+        continue;
+      }
 
       for (const entry of items) {
         const st = ensureItemState(entry);
