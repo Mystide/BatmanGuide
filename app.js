@@ -150,6 +150,14 @@
   });
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
+  const SEARCH_BLOB_CACHE = new Map();
+  const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
+
+  for (const entry of LIST) {
+    const blob = entrySearchBlob(entry);
+    SEARCH_BLOB_CACHE.set(entry.id, blob);
+    NORMALIZED_SEARCH_BLOB_CACHE.set(entry.id, normalizeSearchBlob(blob));
+  }
 
 
   const defaultUiPrefs = () => ({
@@ -588,6 +596,7 @@
   function getFiltered() {
     const q = $("search").value.trim().toLowerCase();
     const searchTerms = expandSearchTerms(q);
+    const normalizedSearchTerms = searchTerms.map((term) => normalizeSearchBlob(term).trim());
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
@@ -599,9 +608,12 @@
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
       if (searchTerms.length) {
-        const blob = entrySearchBlob(entry);
-        const normalizedBlob = normalizeSearchBlob(blob);
-        if (!searchTerms.every((term) => blob.includes(term) || normalizedBlob.includes(normalizeSearchBlob(term).trim()))) return false;
+        const blob = SEARCH_BLOB_CACHE.get(entry.id) || entrySearchBlob(entry);
+        const normalizedBlob = NORMALIZED_SEARCH_BLOB_CACHE.get(entry.id) || normalizeSearchBlob(blob);
+        if (!searchTerms.every((term, index) => {
+          const normalizedTerm = normalizedSearchTerms[index] || "";
+          return blob.includes(term) || (!!normalizedTerm && normalizedBlob.includes(normalizedTerm));
+        })) return false;
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
