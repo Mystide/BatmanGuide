@@ -66,6 +66,7 @@
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
   const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
+  const FILTER_INPUT_DEBOUNCE_MS = 120;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
 
@@ -267,6 +268,7 @@
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
+  let filterInputTimer = null;
   let activeCollectionModalId = "";
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
@@ -614,11 +616,6 @@
       return true;
     });
 
-    const baseOrder = new Map();
-    for (let i = 0; i < LIST.length; i += 1) {
-      baseOrder.set(LIST[i].id, i);
-    }
-
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -631,6 +628,10 @@
         return ta - tb;
       });
     } else if (sortBy === "recent") {
+      const baseOrder = new Map();
+      for (let i = 0; i < LIST.length; i += 1) {
+        baseOrder.set(LIST[i].id, i);
+      }
       filtered.sort((a, b) => {
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
@@ -1121,6 +1122,7 @@
     const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
+    const rootFrag = document.createDocumentFragment();
     for (const [era, items] of byEra.entries()) {
       const details = document.createElement("details");
       details.className = "era";
@@ -1320,8 +1322,9 @@
       }
 
       details.appendChild(list);
-      root.appendChild(details);
+      rootFrag.appendChild(details);
     }
+    root.appendChild(rootFrag);
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
@@ -2009,20 +2012,35 @@
     });
 
     runUIStep("filterInputs", () => {
+      const applyFilterInput = ({ debounce = false } = {}) => {
+        writeFilters();
+        writeFiltersToURL();
+        syncQuickFilterChips();
+        if (debounce) {
+          if (filterInputTimer) clearTimeout(filterInputTimer);
+          filterInputTimer = setTimeout(() => {
+            filterInputTimer = null;
+            render();
+            syncEraToggleButton();
+          }, FILTER_INPUT_DEBOUNCE_MS);
+          return;
+        }
+        if (filterInputTimer) {
+          clearTimeout(filterInputTimer);
+          filterInputTimer = null;
+        }
+        render();
+        syncEraToggleButton();
+      };
+
       for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter", "eraFilter"]) {
-        $(id).addEventListener("input", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        const el = $(id);
+        const shouldDebounce = id === "search";
+        el.addEventListener("input", () => {
+          applyFilterInput({ debounce: shouldDebounce });
         });
-        $(id).addEventListener("change", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        el.addEventListener("change", () => {
+          applyFilterInput({ debounce: false });
         });
       }
     });
