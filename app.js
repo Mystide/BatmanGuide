@@ -637,10 +637,16 @@
       if (searchTerms.length) {
         const blob = SEARCH_BLOB_CACHE.get(entry.id) || entrySearchBlob(entry);
         const normalizedBlob = NORMALIZED_SEARCH_BLOB_CACHE.get(entry.id) || normalizeSearchBlob(blob);
-        if (!searchTerms.every((term, index) => {
-          const normalizedTerm = normalizedSearchTerms[index] || "";
-          return blob.includes(term) || (!!normalizedTerm && normalizedBlob.includes(normalizedTerm));
-        })) return false;
+        let matches = true;
+        for (let i = 0; i < searchTerms.length; i += 1) {
+          const term = searchTerms[i];
+          const normalizedTerm = normalizedSearchTerms[i] || "";
+          if (!blob.includes(term) && !(normalizedTerm && normalizedBlob.includes(normalizedTerm))) {
+            matches = false;
+            break;
+          }
+        }
+        if (!matches) return false;
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
@@ -1177,7 +1183,10 @@
         saveOpenState(current);
       });
 
-      const done = items.filter((it) => ensureItemState(it).done).length;
+      let done = 0;
+      for (const it of items) {
+        if (ensureItemState(it).done) done += 1;
+      }
       const pct = Math.round((done / items.length) * 100);
 
       const summary = document.createElement("summary");
@@ -1233,7 +1242,6 @@
 
         const tags = document.createElement("div");
         tags.className = "tags";
-        const collectionStats = collectionIssueStats(entry, st);
         tags.innerHTML = `
           <span class="tag">${escapeHtml(entry.type)}</span>
           <span class="tag">${entry.optional ? "optional" : "required"}</span>
