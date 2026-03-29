@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.29-1";
+  const APP_VERSION = "2026.03.29-3";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -363,6 +363,10 @@
   function progressUnitLabel(unit) {
     const clean = String(unit || "").trim().toLowerCase();
     return PROGRESS_LABEL_BY_UNIT[clean] || clean || "entry";
+  }
+
+  function progressUnit(st) {
+    return normalizeProgressUnit(st?.unit || "", null);
   }
 
   function ensureItemState(entry) {
@@ -1245,7 +1249,6 @@
         });
 
         const posInput = progress.querySelector('[data-action="pos"]');
-        let posInputDebounce = null;
         const persistPos = (value, { immediate = false } = {}) => {
           const nextPos = String(value || "").trim();
           if (st.pos === nextPos && !immediate) return;
@@ -1258,18 +1261,10 @@
         };
 
         posInput.addEventListener("input", (e) => {
-          if (posInputDebounce) clearTimeout(posInputDebounce);
-          posInputDebounce = setTimeout(() => {
-            persistPos(e.target.value);
-            posInputDebounce = null;
-          }, 450);
+          persistPos(e.target.value);
         });
 
         posInput.addEventListener("change", (e) => {
-          if (posInputDebounce) {
-            clearTimeout(posInputDebounce);
-            posInputDebounce = null;
-          }
           persistPos(e.target.value, { immediate: true });
         });
 
