@@ -381,6 +381,7 @@
       overflow: auto;
     }
     .sync-dock-note { font-size: 11px; }
+    .build-info { margin-top: 12px; text-align: right; font-size: 11px; color: var(--muted); }
     .error {
       margin-top: 10px;
       border: 1px solid #7f1d1d;
@@ -945,9 +946,11 @@
           </div>
           <div id="syncStatus" class="status">Covers load automatically from GitHub source. Gist ID + token are only needed to save updates.</div>
           <div class="muted sync-dock-note">Tip: first load already pulls cover links from the GitHub source file; use Gist ID + token only if you want to write your own cover changes back to GitHub.</div>
+          <div id="buildVersionSync" class="muted">Build -</div>
         </div>
       </div>
     </details>
+    <div class="build-info" id="buildVersion">Build -</div>
   </main>
   <div id="syncToast" class="sync-toast" role="status" aria-live="polite"></div>
 

@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-05.09-network-first-shell";
+const CACHE = "batman-guide-cache-2026-03-29.01-sync-version";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -9,6 +9,13 @@ const APP_SHELL = [
 ];
 
 const NETWORK_FIRST_PATHS = new Set(["/", "/index.html", "/app.js", "/list.js", "/manifest.webmanifest", "/sw.js"]);
+
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

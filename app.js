@@ -1,7 +1,8 @@
 (() => {
   "use strict";
 
-  const BUILD_ID = "batman-guide-auto-sync";
+  const APP_VERSION = "2026.03.29-1";
+  const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
 
@@ -2495,9 +2496,50 @@
     });
   }
 
+
+
+  function applyBuildVersion() {
+    const text = `Build ${APP_VERSION}`;
+    const statusText = `Build ${APP_VERSION} • ready`;
+    const inline = $("buildVersion");
+    if (inline) inline.textContent = text;
+    const sync = $("buildVersionSync");
+    if (sync) sync.textContent = statusText;
+  }
+
   function initPWA() {
     if (!("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+      .then((registration) => {
+        const promoteUpdate = () => {
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          }
+        };
+
+        if (registration.waiting) promoteUpdate();
+
+        registration.addEventListener("updatefound", () => {
+          const worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener("statechange", () => {
+            if (worker.state === "installed") promoteUpdate();
+          });
+        });
+
+        setInterval(() => {
+          registration.update().catch(() => {});
+        }, 60_000);
+      })
+      .catch(() => {});
   }
 
 
@@ -2557,6 +2599,7 @@
     updateDebugHealth();
     runStartupStep("normalizeDomConflicts", normalizeDomConflicts, false);
     runStartupStep("applyBrand", applyBrand, false);
+    runStartupStep("applyBuildVersion", applyBuildVersion, false);
 
     if (!runStartupStep("render", render, true)) return;
 
