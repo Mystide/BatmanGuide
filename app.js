@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.29-2";
+  const APP_VERSION = "2026.03.29-3";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -363,6 +363,10 @@
   function progressUnitLabel(unit) {
     const clean = String(unit || "").trim().toLowerCase();
     return PROGRESS_LABEL_BY_UNIT[clean] || clean || "entry";
+  }
+
+  function progressUnit(st) {
+    return normalizeProgressUnit(st?.unit || "", null);
   }
 
   function ensureItemState(entry) {
