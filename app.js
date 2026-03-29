@@ -66,6 +66,7 @@
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
   const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
+  const FILTER_INPUT_DEBOUNCE_MS = 120;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
 
@@ -149,6 +150,14 @@
   });
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
+  const SEARCH_BLOB_CACHE = new Map();
+  const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
+
+  for (const entry of LIST) {
+    const blob = entrySearchBlob(entry);
+    SEARCH_BLOB_CACHE.set(entry.id, blob);
+    NORMALIZED_SEARCH_BLOB_CACHE.set(entry.id, normalizeSearchBlob(blob));
+  }
 
 
   const defaultUiPrefs = () => ({
@@ -267,6 +276,7 @@
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
+  let filterInputTimer = null;
   let activeCollectionModalId = "";
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
@@ -275,6 +285,32 @@
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
+  const perfStats = {
+    filterAvgMs: 0,
+    renderAvgMs: 0,
+    filterSamples: 0,
+    renderSamples: 0
+  };
+
+  function perfNow() {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") return performance.now();
+    return Date.now();
+  }
+
+  function recordPerf(metric, value) {
+    if (!Number.isFinite(value) || value < 0) return;
+    if (metric === "filter") {
+      perfStats.filterSamples += 1;
+      const n = perfStats.filterSamples;
+      perfStats.filterAvgMs += (value - perfStats.filterAvgMs) / n;
+      return;
+    }
+    if (metric === "render") {
+      perfStats.renderSamples += 1;
+      const n = perfStats.renderSamples;
+      perfStats.renderAvgMs += (value - perfStats.renderAvgMs) / n;
+    }
+  }
 
   // Migration: older builds stored custom covers inside the sync state payload.
   if (state.customCovers && typeof state.customCovers === "object") {
@@ -584,8 +620,10 @@
   }
 
   function getFiltered() {
+    const t0 = perfNow();
     const q = $("search").value.trim().toLowerCase();
     const searchTerms = expandSearchTerms(q);
+    const normalizedSearchTerms = searchTerms.map((term) => normalizeSearchBlob(term).trim());
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
@@ -597,9 +635,12 @@
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
       if (searchTerms.length) {
-        const blob = entrySearchBlob(entry);
-        const normalizedBlob = normalizeSearchBlob(blob);
-        if (!searchTerms.every((term) => blob.includes(term) || normalizedBlob.includes(normalizeSearchBlob(term).trim()))) return false;
+        const blob = SEARCH_BLOB_CACHE.get(entry.id) || entrySearchBlob(entry);
+        const normalizedBlob = NORMALIZED_SEARCH_BLOB_CACHE.get(entry.id) || normalizeSearchBlob(blob);
+        if (!searchTerms.every((term, index) => {
+          const normalizedTerm = normalizedSearchTerms[index] || "";
+          return blob.includes(term) || (!!normalizedTerm && normalizedBlob.includes(normalizedTerm));
+        })) return false;
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
@@ -614,11 +655,6 @@
       return true;
     });
 
-    const baseOrder = new Map();
-    for (let i = 0; i < LIST.length; i += 1) {
-      baseOrder.set(LIST[i].id, i);
-    }
-
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -631,6 +667,10 @@
         return ta - tb;
       });
     } else if (sortBy === "recent") {
+      const baseOrder = new Map();
+      for (let i = 0; i < LIST.length; i += 1) {
+        baseOrder.set(LIST[i].id, i);
+      }
       filtered.sort((a, b) => {
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
@@ -639,6 +679,7 @@
       });
     }
 
+    recordPerf("filter", perfNow() - t0);
     return filtered;
   }
 
@@ -1094,6 +1135,7 @@
   }
 
   function render() {
+    const t0 = perfNow();
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
@@ -1121,6 +1163,7 @@
     const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
+    const rootFrag = document.createDocumentFragment();
     for (const [era, items] of byEra.entries()) {
       const details = document.createElement("details");
       details.className = "era";
@@ -1320,11 +1363,13 @@
       }
 
       details.appendChild(list);
-      root.appendChild(details);
+      rootFrag.appendChild(details);
     }
+    root.appendChild(rootFrag);
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
+    recordPerf("render", perfNow() - t0);
     updateDebugHealth();
   }
 
@@ -1918,7 +1963,9 @@
     const lastStep = window.__BATMAN_LAST_STARTUP_STEP || "-";
     const lastUiStep = window.__BATMAN_LAST_UI_STEP || "-";
     const err = window.__BATMAN_APP_ERROR || "-";
-    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)}`;
+    const filterAvg = perfStats.filterSamples ? `${perfStats.filterAvgMs.toFixed(1)}ms` : "-";
+    const renderAvg = perfStats.renderSamples ? `${perfStats.renderAvgMs.toFixed(1)}ms` : "-";
+    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)} · avg(filter): ${filterAvg} · avg(render): ${renderAvg}`;
   }
 
   function populateEraFilter() {
@@ -2009,20 +2056,35 @@
     });
 
     runUIStep("filterInputs", () => {
+      const applyFilterInput = ({ debounce = false } = {}) => {
+        writeFilters();
+        writeFiltersToURL();
+        syncQuickFilterChips();
+        if (debounce) {
+          if (filterInputTimer) clearTimeout(filterInputTimer);
+          filterInputTimer = setTimeout(() => {
+            filterInputTimer = null;
+            render();
+            syncEraToggleButton();
+          }, FILTER_INPUT_DEBOUNCE_MS);
+          return;
+        }
+        if (filterInputTimer) {
+          clearTimeout(filterInputTimer);
+          filterInputTimer = null;
+        }
+        render();
+        syncEraToggleButton();
+      };
+
       for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter", "eraFilter"]) {
-        $(id).addEventListener("input", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        const el = $(id);
+        const shouldDebounce = id === "search";
+        el.addEventListener("input", () => {
+          applyFilterInput({ debounce: shouldDebounce });
         });
-        $(id).addEventListener("change", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        el.addEventListener("change", () => {
+          applyFilterInput({ debounce: false });
         });
       }
     });
