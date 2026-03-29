@@ -1179,15 +1179,6 @@
       details.dataset.eraKey = key;
       details.open = openMap[key] !== false;
 
-      details.addEventListener("toggle", () => {
-        const current = loadOpenState();
-        current[key] = details.open;
-        saveOpenState(current);
-        if (details.open && list.dataset.deferred === "1") {
-          render();
-        }
-      });
-
       let done = 0;
       for (const it of items) {
         if (ensureItemState(it).done) done += 1;
@@ -1207,180 +1198,193 @@
       const list = document.createElement("div");
       list.className = "items";
 
+      const populateEraList = () => {
+        if (list.dataset.populated === "1") return;
+        list.dataset.populated = "1";
+        list.dataset.deferred = "0";
+        list.innerHTML = "";
+
+        for (const entry of items) {
+          const st = ensureItemState(entry);
+
+          const item = document.createElement("div");
+          const isContinueTarget = continueId && entry.id === continueId;
+          const isRandomTarget = randomTargetId && entry.id === randomTargetId;
+          const hasSavedCover = hasSavedManualCover(entry.id);
+          item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
+          item.dataset.id = entry.id;
+
+          const cover = document.createElement("div");
+          cover.className = "cover";
+          cover.style.background = coverGradient(entry);
+          cover.innerHTML = entryCoverFallback(entry);
+          void applyBestCover(cover, entry);
+
+          const content = document.createElement("div");
+
+          const top = document.createElement("div");
+          top.className = "item-head";
+          const safeTitle = escapeHtml(entry.title);
+          const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
+          const safeUrl = escapeAttr(safeExternalUrl(entry.url));
+          const entryIssueStats = collectionIssueStats(entry, st);
+          top.innerHTML = `
+            <label class="item-title-row">
+              <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
+              <span class="title-wrap">
+                <span class="title">${safeTitle}</span>
+                ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
+              </span>
+            </label>
+            <div class="item-actions">
+              ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
+              <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
+            </div>
+          `;
+
+          const tags = document.createElement("div");
+          tags.className = "tags";
+          tags.innerHTML = `
+            <span class="tag">${escapeHtml(entry.type)}</span>
+            <span class="tag">${entry.optional ? "optional" : "required"}</span>
+            ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
+            ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
+            ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
+            ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
+            ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
+            <span class="muted">${escapeHtml(entry.id)}</span>
+          `;
+
+          const progress = document.createElement("div");
+          progress.className = "progress-fields";
+          progress.innerHTML = `
+            <div class="progress-pos-group">
+              <div class="progress-pos-meta">
+                <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
+                <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+              </div>
+              <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+            </div>
+            <label class="progress-note-group">
+              <span class="muted progress-note-label">Note</span>
+              <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
+            </label>
+          `;
+
+          const shouldShowEditor = showCoverEditor;
+          let manualCover = null;
+          if (shouldShowEditor) {
+            manualCover = document.createElement("div");
+            manualCover.className = "manual-cover-fields";
+            manualCover.innerHTML = `
+              <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
+              <button class="btn" type="button" data-action="save-cover">Save cover</button>
+              <button class="btn" type="button" data-action="clear-cover">Clear</button>
+            `;
+          }
+
+          top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
+            st.done = e.target.checked;
+            if (entry.type === "collection") {
+              const issues = collectionIssues(entry);
+              issues.forEach((issue) => {
+                st.issueStates[issue.title] = !!e.target.checked;
+              });
+            }
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+            render();
+          });
+
+          top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
+            openCollectionModal(entry.id);
+          });
+
+          const posInput = progress.querySelector('[data-action="pos"]');
+          const persistPos = (value, { immediate = false } = {}) => {
+            const nextPos = String(value || "").trim();
+            if (st.pos === nextPos && !immediate) return;
+            st.pos = nextPos;
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            rememberPageSyncToast(entry, st);
+            saveState();
+            refreshHeader(filtered);
+          };
+
+          posInput.addEventListener("input", (e) => {
+            persistPos(e.target.value);
+          });
+
+          posInput.addEventListener("change", (e) => {
+            persistPos(e.target.value, { immediate: true });
+          });
+
+          progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
+            st.note = e.target.value.trim();
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+          });
+
+          if (manualCover) {
+            const coverInput = manualCover.querySelector('[data-action="cover-url"]');
+            const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
+            const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
+
+            saveCoverBtn.addEventListener("click", async () => {
+              const next = sanitizeManualCoverUrl(coverInput.value);
+              if (!next) {
+                setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
+                return;
+              }
+              setManualCoverUrl(entry.id, next);
+              failedCoverCandidates.delete(entry.id);
+              st.touchedAt = nowISO();
+              state.lastTouchedId = entry.id;
+              saveState();
+              render();
+              const pushed = await pushCoversToGitHub();
+              if (!pushed) setSyncStatus(`Saved manual cover locally for ${entry.id}.`);
+            });
+
+            clearCoverBtn.addEventListener("click", async () => {
+              setManualCoverUrl(entry.id, "");
+              failedCoverCandidates.delete(entry.id);
+              st.touchedAt = nowISO();
+              state.lastTouchedId = entry.id;
+              saveState();
+              render();
+              const pushed = await pushCoversToGitHub();
+              if (!pushed) setSyncStatus(`Cleared manual cover locally for ${entry.id}.`);
+            });
+          }
+
+          content.append(top, tags, progress);
+          if (manualCover) content.append(manualCover);
+
+          const layout = document.createElement("div");
+          layout.className = "item-grid";
+          layout.append(cover, content);
+
+          item.appendChild(layout);
+          list.appendChild(item);
+        }
+      };
+
+      details.addEventListener("toggle", () => {
+        const current = loadOpenState();
+        current[key] = details.open;
+        saveOpenState(current);
+        if (details.open) populateEraList();
+      });
+
       if (!details.open) {
         list.dataset.deferred = "1";
         list.innerHTML = '<div class="muted">Expand to load entries.</div>';
-        details.appendChild(list);
-        rootFrag.appendChild(details);
-        continue;
-      }
-
-      for (const entry of items) {
-        const st = ensureItemState(entry);
-
-        const item = document.createElement("div");
-        const isContinueTarget = continueId && entry.id === continueId;
-        const isRandomTarget = randomTargetId && entry.id === randomTargetId;
-        const hasSavedCover = hasSavedManualCover(entry.id);
-        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
-        item.dataset.id = entry.id;
-
-        const cover = document.createElement("div");
-        cover.className = "cover";
-        cover.style.background = coverGradient(entry);
-        cover.innerHTML = entryCoverFallback(entry);
-        void applyBestCover(cover, entry);
-
-        const content = document.createElement("div");
-
-        const top = document.createElement("div");
-        top.className = "item-head";
-        const safeTitle = escapeHtml(entry.title);
-        const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
-        const safeUrl = escapeAttr(safeExternalUrl(entry.url));
-        const entryIssueStats = collectionIssueStats(entry, st);
-        top.innerHTML = `
-          <label class="item-title-row">
-            <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-            <span class="title-wrap">
-              <span class="title">${safeTitle}</span>
-              ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
-            </span>
-          </label>
-          <div class="item-actions">
-            ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-            <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
-          </div>
-        `;
-
-        const tags = document.createElement("div");
-        tags.className = "tags";
-        tags.innerHTML = `
-          <span class="tag">${escapeHtml(entry.type)}</span>
-          <span class="tag">${entry.optional ? "optional" : "required"}</span>
-          ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
-          ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-          ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
-          ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
-          ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
-          <span class="muted">${escapeHtml(entry.id)}</span>
-        `;
-
-        const progress = document.createElement("div");
-        progress.className = "progress-fields";
-        progress.innerHTML = `
-          <div class="progress-pos-group">
-            <div class="progress-pos-meta">
-              <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
-              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
-            </div>
-            <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-          </div>
-          <label class="progress-note-group">
-            <span class="muted progress-note-label">Note</span>
-            <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
-          </label>
-        `;
-
-        const shouldShowEditor = showCoverEditor;
-        let manualCover = null;
-        if (shouldShowEditor) {
-          manualCover = document.createElement("div");
-          manualCover.className = "manual-cover-fields";
-          manualCover.innerHTML = `
-            <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
-            <button class="btn" type="button" data-action="save-cover">Save cover</button>
-            <button class="btn" type="button" data-action="clear-cover">Clear</button>
-          `;
-        }
-
-        top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
-          st.done = e.target.checked;
-          if (entry.type === "collection") {
-            const issues = collectionIssues(entry);
-            issues.forEach((issue) => {
-              st.issueStates[issue.title] = !!e.target.checked;
-            });
-          }
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          saveState();
-          render();
-        });
-
-        top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
-          openCollectionModal(entry.id);
-        });
-
-        const posInput = progress.querySelector('[data-action="pos"]');
-        const persistPos = (value, { immediate = false } = {}) => {
-          const nextPos = String(value || "").trim();
-          if (st.pos === nextPos && !immediate) return;
-          st.pos = nextPos;
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          rememberPageSyncToast(entry, st);
-          saveState();
-          refreshHeader(filtered);
-        };
-
-        posInput.addEventListener("input", (e) => {
-          persistPos(e.target.value);
-        });
-
-        posInput.addEventListener("change", (e) => {
-          persistPos(e.target.value, { immediate: true });
-        });
-
-        progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
-          st.note = e.target.value.trim();
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          saveState();
-        });
-
-        if (manualCover) {
-          const coverInput = manualCover.querySelector('[data-action="cover-url"]');
-          const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
-          const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
-
-          saveCoverBtn.addEventListener("click", async () => {
-            const next = sanitizeManualCoverUrl(coverInput.value);
-            if (!next) {
-              setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
-              return;
-            }
-            setManualCoverUrl(entry.id, next);
-            failedCoverCandidates.delete(entry.id);
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-            const pushed = await pushCoversToGitHub();
-            if (!pushed) setSyncStatus(`Saved manual cover locally for ${entry.id}.`);
-          });
-
-          clearCoverBtn.addEventListener("click", async () => {
-            setManualCoverUrl(entry.id, "");
-            failedCoverCandidates.delete(entry.id);
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-            const pushed = await pushCoversToGitHub();
-            if (!pushed) setSyncStatus(`Cleared manual cover locally for ${entry.id}.`);
-          });
-        }
-
-        content.append(top, tags, progress);
-        if (manualCover) content.append(manualCover);
-
-        const layout = document.createElement("div");
-        layout.className = "item-grid";
-        layout.append(cover, content);
-
-        item.appendChild(layout);
-        list.appendChild(item);
+      } else {
+        populateEraList();
       }
 
       details.appendChild(list);
