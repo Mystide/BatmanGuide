@@ -341,7 +341,17 @@
     const clean = String(unit || "").trim().toLowerCase();
     if (!clean) return preferredProgressUnit(entry);
     if (clean === "item") return preferredProgressUnit(entry);
-    return clean;
+
+    const aliases = {
+      pages: "page",
+      seite: "page",
+      seiten: "page",
+      issues: "issue",
+      heft: "issue",
+      hefte: "issue"
+    };
+
+    return aliases[clean] || clean;
   }
 
   function progressPlaceholder(unit) {
@@ -1233,13 +1243,33 @@
           openCollectionModal(entry.id);
         });
 
-        progress.querySelector('[data-action="pos"]').addEventListener("change", (e) => {
-          st.pos = e.target.value.trim();
+        const posInput = progress.querySelector('[data-action="pos"]');
+        let posInputDebounce = null;
+        const persistPos = (value, { immediate = false } = {}) => {
+          const nextPos = String(value || "").trim();
+          if (st.pos === nextPos && !immediate) return;
+          st.pos = nextPos;
           st.touchedAt = nowISO();
           state.lastTouchedId = entry.id;
           rememberPageSyncToast(entry, st);
           saveState();
           refreshHeader(filtered);
+        };
+
+        posInput.addEventListener("input", (e) => {
+          if (posInputDebounce) clearTimeout(posInputDebounce);
+          posInputDebounce = setTimeout(() => {
+            persistPos(e.target.value);
+            posInputDebounce = null;
+          }, 450);
+        });
+
+        posInput.addEventListener("change", (e) => {
+          if (posInputDebounce) {
+            clearTimeout(posInputDebounce);
+            posInputDebounce = null;
+          }
+          persistPos(e.target.value, { immediate: true });
         });
 
         progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
