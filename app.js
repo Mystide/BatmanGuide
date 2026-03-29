@@ -285,6 +285,7 @@
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
+  let debugModeCache = null;
   const perfStats = {
     filterAvgMs: 0,
     renderAvgMs: 0,
@@ -298,6 +299,7 @@
   }
 
   function recordPerf(metric, value) {
+    if (!isDebugMode()) return;
     if (!Number.isFinite(value) || value < 0) return;
     if (metric === "filter") {
       perfStats.filterSamples += 1;
@@ -620,7 +622,7 @@
   }
 
   function getFiltered() {
-    const t0 = perfNow();
+    const t0 = isDebugMode() ? perfNow() : 0;
     const q = $("search").value.trim().toLowerCase();
     const searchTerms = expandSearchTerms(q);
     const normalizedSearchTerms = searchTerms.map((term) => normalizeSearchBlob(term).trim());
@@ -685,7 +687,7 @@
       });
     }
 
-    recordPerf("filter", perfNow() - t0);
+    if (t0) recordPerf("filter", perfNow() - t0);
     return filtered;
   }
 
@@ -1141,7 +1143,7 @@
   }
 
   function render() {
-    const t0 = perfNow();
+    const t0 = isDebugMode() ? perfNow() : 0;
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
@@ -1388,7 +1390,7 @@
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
-    recordPerf("render", perfNow() - t0);
+    if (t0) recordPerf("render", perfNow() - t0);
     updateDebugHealth();
   }
 
@@ -1963,11 +1965,14 @@
 
 
   function isDebugMode() {
+    if (debugModeCache !== null) return debugModeCache;
     try {
       const q = new URLSearchParams(window.location.search || "");
-      return q.get("debug") === "1" || localStorage.getItem("batman-guide:debug") === "1";
+      debugModeCache = q.get("debug") === "1" || localStorage.getItem("batman-guide:debug") === "1";
+      return debugModeCache;
     } catch {
-      return false;
+      debugModeCache = false;
+      return debugModeCache;
     }
   }
 
