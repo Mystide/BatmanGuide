@@ -285,6 +285,32 @@
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
+  const perfStats = {
+    filterAvgMs: 0,
+    renderAvgMs: 0,
+    filterSamples: 0,
+    renderSamples: 0
+  };
+
+  function perfNow() {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") return performance.now();
+    return Date.now();
+  }
+
+  function recordPerf(metric, value) {
+    if (!Number.isFinite(value) || value < 0) return;
+    if (metric === "filter") {
+      perfStats.filterSamples += 1;
+      const n = perfStats.filterSamples;
+      perfStats.filterAvgMs += (value - perfStats.filterAvgMs) / n;
+      return;
+    }
+    if (metric === "render") {
+      perfStats.renderSamples += 1;
+      const n = perfStats.renderSamples;
+      perfStats.renderAvgMs += (value - perfStats.renderAvgMs) / n;
+    }
+  }
 
   // Migration: older builds stored custom covers inside the sync state payload.
   if (state.customCovers && typeof state.customCovers === "object") {
@@ -594,6 +620,7 @@
   }
 
   function getFiltered() {
+    const t0 = perfNow();
     const q = $("search").value.trim().toLowerCase();
     const searchTerms = expandSearchTerms(q);
     const normalizedSearchTerms = searchTerms.map((term) => normalizeSearchBlob(term).trim());
@@ -652,6 +679,7 @@
       });
     }
 
+    recordPerf("filter", perfNow() - t0);
     return filtered;
   }
 
@@ -1107,6 +1135,7 @@
   }
 
   function render() {
+    const t0 = perfNow();
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
@@ -1340,6 +1369,7 @@
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
+    recordPerf("render", perfNow() - t0);
     updateDebugHealth();
   }
 
@@ -1933,7 +1963,9 @@
     const lastStep = window.__BATMAN_LAST_STARTUP_STEP || "-";
     const lastUiStep = window.__BATMAN_LAST_UI_STEP || "-";
     const err = window.__BATMAN_APP_ERROR || "-";
-    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)}`;
+    const filterAvg = perfStats.filterSamples ? `${perfStats.filterAvgMs.toFixed(1)}ms` : "-";
+    const renderAvg = perfStats.renderSamples ? `${perfStats.renderAvgMs.toFixed(1)}ms` : "-";
+    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)} · avg(filter): ${filterAvg} · avg(render): ${renderAvg}`;
   }
 
   function populateEraFilter() {
