@@ -139,6 +139,28 @@
     .status-pills { display:flex; gap:6px; flex-wrap:wrap; }
     .status-pill { font-size: 11px; border:1px solid var(--border); border-radius:999px; padding: 1px 7px; color: var(--muted); }
     .status-pill strong { color: var(--text); font-size: 12px; }
+    .sync-toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 120;
+      max-width: min(92vw, 340px);
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(250, 204, 21, .4);
+      background: rgba(15, 23, 42, .94);
+      color: #fde68a;
+      font-size: 12px;
+      box-shadow: 0 10px 24px rgba(2, 6, 23, .5);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+    }
+    .sync-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
     .era { margin-top: 14px; }
     details {
       border: 1px solid var(--border);
@@ -927,6 +949,7 @@
       </div>
     </details>
   </main>
+  <div id="syncToast" class="sync-toast" role="status" aria-live="polite"></div>
 
   <script src="list.js"></script>
   <script src="app.js"></script>

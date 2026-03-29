@@ -267,6 +267,8 @@
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
   let activeCollectionModalId = "";
+  let pendingPageSyncToast = null;
+  let syncToastTimer = null;
   let focusCoverRenderToken = 0;
   const coverCache = loadJSON(KEYS.coverCache, {});
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
@@ -517,6 +519,42 @@
   function setSyncStatus(text) {
     const el = $("syncStatus");
     if (el) el.textContent = text;
+  }
+
+  function showSyncToast(text, ms = 2200) {
+    const el = $("syncToast");
+    if (!el) return;
+    if (syncToastTimer) {
+      clearTimeout(syncToastTimer);
+      syncToastTimer = null;
+    }
+    el.textContent = text;
+    el.classList.add("show");
+    syncToastTimer = setTimeout(() => {
+      el.classList.remove("show");
+    }, Math.max(700, ms));
+  }
+
+  function rememberPageSyncToast(entry, st) {
+    if (progressUnit(st) !== "page") return;
+    const pos = String(st?.pos || "").trim();
+    if (!pos) return;
+    pendingPageSyncToast = {
+      entryId: entry.id,
+      pos,
+      createdAt: Date.now()
+    };
+    showSyncToast(`Seite ${pos} gespeichert – wird synchronisiert …`, 1800);
+  }
+
+  function maybeShowPageSyncDone(result) {
+    if (result !== "pushed" || !pendingPageSyncToast) return;
+    if (Date.now() - pendingPageSyncToast.createdAt > 120000) {
+      pendingPageSyncToast = null;
+      return;
+    }
+    showSyncToast(`✓ Seite ${pendingPageSyncToast.pos} ist synchronisiert.`);
+    pendingPageSyncToast = null;
   }
 
   function setText(id, value) {
@@ -1199,6 +1237,7 @@
           st.pos = e.target.value.trim();
           st.touchedAt = nowISO();
           state.lastTouchedId = entry.id;
+          rememberPageSyncToast(entry, st);
           saveState();
           refreshHeader(filtered);
         });
@@ -1682,8 +1721,10 @@
         await gistPush(cfg);
         pullDelayMs = clampPullInterval(cfg.pullMs);
         setSyncStatus("Sync complete (pushed local change).");
+        maybeShowPageSyncDone("pushed");
       } else {
         const result = await gistSync(cfg);
+        maybeShowPageSyncDone(result);
         if (result === "unchanged") {
           pullDelayMs = Math.min(AUTO_PULL_MAX_INTERVAL_MS, Math.round(pullDelayMs * 1.35));
         } else {
