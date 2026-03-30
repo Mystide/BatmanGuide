@@ -254,7 +254,10 @@
       border-radius: var(--radius-md);
       padding: calc(var(--space-2) + var(--space-1));
       margin-bottom: calc(var(--space-2) + var(--space-1));
-      background: linear-gradient(180deg, rgba(15, 23, 42, .88), rgba(10, 17, 34, .88));
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,0) 24%),
+        linear-gradient(180deg, rgba(17, 26, 47, .94), rgba(10, 17, 34, .9));
+      box-shadow: 0 2px 0 rgba(255,255,255,.03) inset, 0 8px 18px rgba(2, 6, 23, .2);
       transition: border-color var(--motion-fast) var(--ease-std), transform var(--motion-fast) var(--ease-std), background var(--motion-med) var(--ease-std), box-shadow var(--motion-med) var(--ease-std);
     }
     .item-grid { display:grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; }
@@ -272,10 +275,10 @@
       font-weight: var(--weight-semibold);
       color: #dbeafe;
       text-decoration: none;
-      border: 1px solid rgba(147, 197, 253, .38);
+      border: 1px solid rgba(147, 197, 253, .45);
       border-radius: 999px;
       padding: var(--space-1) calc(var(--space-2) + var(--space-1));
-      background: rgba(30, 64, 175, .16);
+      background: linear-gradient(180deg, rgba(35, 72, 184, .24), rgba(30, 64, 175, .12));
       transition: border-color var(--motion-fast) var(--ease-std), background var(--motion-fast) var(--ease-std), color var(--motion-fast) var(--ease-std);
     }
     .item-link:hover,
@@ -293,12 +296,14 @@
     .cover.fallback-logo img { object-fit: contain; padding: 6px; opacity: .95; }
     .cover-fallback-label { position: absolute; left: 4px; right: 4px; bottom: 4px; border-radius: 999px; font-size: 9px; text-align:center; color: #f8fafc; background: rgba(2,6,23,.7); border: 1px solid rgba(148,163,184,.35); padding: 1px 4px; text-transform: uppercase; letter-spacing: .35px; }
     .item:hover {
-      border-color: #7f97c6;
+      border-color: #8ea7db;
       transform: translateY(-1px);
-      background: rgba(19, 31, 57, .9);
-      box-shadow: 0 8px 16px rgba(2, 6, 23, .28);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 26%),
+        linear-gradient(180deg, rgba(20, 33, 61, .94), rgba(12, 20, 38, .9));
+      box-shadow: 0 12px 24px rgba(2, 6, 23, .34);
     }
-    .item.done { opacity: .72; border-style: dashed; }
+    .item.done { opacity: .72; border-style: dashed; filter: saturate(.84); }
     body.compact-cards .item-grid { grid-template-columns: 54px 1fr; gap: 10px; }
     body.compact-cards .cover { width: 54px; height: 78px; }
     body.compact-cards .item-hint,
