@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.29-3";
+  const APP_VERSION = "2026.03.30-6";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -66,6 +66,7 @@
   const AUTO_PULL_BASE_INTERVAL_MS = 15000;
   const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
+  const FILTER_INPUT_DEBOUNCE_MS = 120;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
 
@@ -149,6 +150,14 @@
   });
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
+  const SEARCH_BLOB_CACHE = new Map();
+  const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
+
+  for (const entry of LIST) {
+    const blob = entrySearchBlob(entry);
+    SEARCH_BLOB_CACHE.set(entry.id, blob);
+    NORMALIZED_SEARCH_BLOB_CACHE.set(entry.id, normalizeSearchBlob(blob));
+  }
 
 
   const defaultUiPrefs = () => ({
@@ -267,6 +276,7 @@
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
+  let filterInputTimer = null;
   let activeCollectionModalId = "";
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
@@ -275,6 +285,34 @@
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
   const failedCoverCandidates = new Map();
+  let debugModeCache = null;
+  const perfStats = {
+    filterAvgMs: 0,
+    renderAvgMs: 0,
+    filterSamples: 0,
+    renderSamples: 0
+  };
+
+  function perfNow() {
+    if (typeof performance !== "undefined" && typeof performance.now === "function") return performance.now();
+    return Date.now();
+  }
+
+  function recordPerf(metric, value) {
+    if (!isDebugMode()) return;
+    if (!Number.isFinite(value) || value < 0) return;
+    if (metric === "filter") {
+      perfStats.filterSamples += 1;
+      const n = perfStats.filterSamples;
+      perfStats.filterAvgMs += (value - perfStats.filterAvgMs) / n;
+      return;
+    }
+    if (metric === "render") {
+      perfStats.renderSamples += 1;
+      const n = perfStats.renderSamples;
+      perfStats.renderAvgMs += (value - perfStats.renderAvgMs) / n;
+    }
+  }
 
   // Migration: older builds stored custom covers inside the sync state payload.
   if (state.customCovers && typeof state.customCovers === "object") {
@@ -584,8 +622,10 @@
   }
 
   function getFiltered() {
+    const t0 = isDebugMode() ? perfNow() : 0;
     const q = $("search").value.trim().toLowerCase();
     const searchTerms = expandSearchTerms(q);
+    const normalizedSearchTerms = searchTerms.map((term) => normalizeSearchBlob(term).trim());
     const type = $("typeFilter").value;
     const onlyRemaining = $("onlyRemaining").checked;
     const hideOptional = $("hideOptional").checked;
@@ -597,9 +637,18 @@
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
       if (searchTerms.length) {
-        const blob = entrySearchBlob(entry);
-        const normalizedBlob = normalizeSearchBlob(blob);
-        if (!searchTerms.every((term) => blob.includes(term) || normalizedBlob.includes(normalizeSearchBlob(term).trim()))) return false;
+        const blob = SEARCH_BLOB_CACHE.get(entry.id) || entrySearchBlob(entry);
+        const normalizedBlob = NORMALIZED_SEARCH_BLOB_CACHE.get(entry.id) || normalizeSearchBlob(blob);
+        let matches = true;
+        for (let i = 0; i < searchTerms.length; i += 1) {
+          const term = searchTerms[i];
+          const normalizedTerm = normalizedSearchTerms[i] || "";
+          if (!blob.includes(term) && !(normalizedTerm && normalizedBlob.includes(normalizedTerm))) {
+            matches = false;
+            break;
+          }
+        }
+        if (!matches) return false;
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
@@ -614,11 +663,6 @@
       return true;
     });
 
-    const baseOrder = new Map();
-    for (let i = 0; i < LIST.length; i += 1) {
-      baseOrder.set(LIST[i].id, i);
-    }
-
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -631,6 +675,10 @@
         return ta - tb;
       });
     } else if (sortBy === "recent") {
+      const baseOrder = new Map();
+      for (let i = 0; i < LIST.length; i += 1) {
+        baseOrder.set(LIST[i].id, i);
+      }
       filtered.sort((a, b) => {
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
@@ -639,6 +687,7 @@
       });
     }
 
+    if (t0) recordPerf("filter", perfNow() - t0);
     return filtered;
   }
 
@@ -1094,6 +1143,7 @@
   }
 
   function render() {
+    const t0 = isDebugMode() ? perfNow() : 0;
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
@@ -1121,6 +1171,7 @@
     const continueId = continueEntry(filtered)?.id || "";
     populateEraJump(filtered);
 
+    const rootFrag = document.createDocumentFragment();
     for (const [era, items] of byEra.entries()) {
       const details = document.createElement("details");
       details.className = "era";
@@ -1128,13 +1179,10 @@
       details.dataset.eraKey = key;
       details.open = openMap[key] !== false;
 
-      details.addEventListener("toggle", () => {
-        const current = loadOpenState();
-        current[key] = details.open;
-        saveOpenState(current);
-      });
-
-      const done = items.filter((it) => ensureItemState(it).done).length;
+      let done = 0;
+      for (const it of items) {
+        if (ensureItemState(it).done) done += 1;
+      }
       const pct = Math.round((done / items.length) * 100);
 
       const summary = document.createElement("summary");
@@ -1150,181 +1198,203 @@
       const list = document.createElement("div");
       list.className = "items";
 
-      for (const entry of items) {
-        const st = ensureItemState(entry);
+      const populateEraList = () => {
+        if (list.dataset.populated === "1") return;
+        list.dataset.populated = "1";
+        list.dataset.deferred = "0";
+        list.innerHTML = "";
 
-        const item = document.createElement("div");
-        const isContinueTarget = continueId && entry.id === continueId;
-        const isRandomTarget = randomTargetId && entry.id === randomTargetId;
-        const hasSavedCover = hasSavedManualCover(entry.id);
-        item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
-        item.dataset.id = entry.id;
+        for (const entry of items) {
+          const st = ensureItemState(entry);
 
-        const cover = document.createElement("div");
-        cover.className = "cover";
-        cover.style.background = coverGradient(entry);
-        cover.innerHTML = entryCoverFallback(entry);
-        void applyBestCover(cover, entry);
+          const item = document.createElement("div");
+          const isContinueTarget = continueId && entry.id === continueId;
+          const isRandomTarget = randomTargetId && entry.id === randomTargetId;
+          const hasSavedCover = hasSavedManualCover(entry.id);
+          item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
+          item.dataset.id = entry.id;
 
-        const content = document.createElement("div");
+          const cover = document.createElement("div");
+          cover.className = "cover";
+          cover.style.background = coverGradient(entry);
+          cover.innerHTML = entryCoverFallback(entry);
+          void applyBestCover(cover, entry);
 
-        const top = document.createElement("div");
-        top.className = "item-head";
-        const safeTitle = escapeHtml(entry.title);
-        const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
-        const safeUrl = escapeAttr(safeExternalUrl(entry.url));
-        const entryIssueStats = collectionIssueStats(entry, st);
-        top.innerHTML = `
-          <label class="item-title-row">
-            <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-            <span class="title-wrap">
-              <span class="title">${safeTitle}</span>
-              ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
-            </span>
-          </label>
-          <div class="item-actions">
-            ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-            <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
-          </div>
-        `;
+          const content = document.createElement("div");
 
-        const tags = document.createElement("div");
-        tags.className = "tags";
-        const collectionStats = collectionIssueStats(entry, st);
-        tags.innerHTML = `
-          <span class="tag">${escapeHtml(entry.type)}</span>
-          <span class="tag">${entry.optional ? "optional" : "required"}</span>
-          ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
-          ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-          ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
-          ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
-          ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
-          <span class="muted">${escapeHtml(entry.id)}</span>
-        `;
-
-        const progress = document.createElement("div");
-        progress.className = "progress-fields";
-        progress.innerHTML = `
-          <div class="progress-pos-group">
-            <div class="progress-pos-meta">
-              <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
-              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+          const top = document.createElement("div");
+          top.className = "item-head";
+          const safeTitle = escapeHtml(entry.title);
+          const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
+          const safeUrl = escapeAttr(safeExternalUrl(entry.url));
+          const entryIssueStats = collectionIssueStats(entry, st);
+          top.innerHTML = `
+            <label class="item-title-row">
+              <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
+              <span class="title-wrap">
+                <span class="title">${safeTitle}</span>
+                ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
+              </span>
+            </label>
+            <div class="item-actions">
+              ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
+              <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
             </div>
-            <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-          </div>
-          <label class="progress-note-group">
-            <span class="muted progress-note-label">Note</span>
-            <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
-          </label>
-        `;
-
-        const shouldShowEditor = showCoverEditor;
-        let manualCover = null;
-        if (shouldShowEditor) {
-          manualCover = document.createElement("div");
-          manualCover.className = "manual-cover-fields";
-          manualCover.innerHTML = `
-            <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
-            <button class="btn" type="button" data-action="save-cover">Save cover</button>
-            <button class="btn" type="button" data-action="clear-cover">Clear</button>
           `;
-        }
 
-        top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
-          st.done = e.target.checked;
-          if (entry.type === "collection") {
-            const issues = collectionIssues(entry);
-            issues.forEach((issue) => {
-              st.issueStates[issue.title] = !!e.target.checked;
+          const tags = document.createElement("div");
+          tags.className = "tags";
+          tags.innerHTML = `
+            <span class="tag">${escapeHtml(entry.type)}</span>
+            <span class="tag">${entry.optional ? "optional" : "required"}</span>
+            ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
+            ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
+            ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
+            ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
+            ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
+            <span class="muted">${escapeHtml(entry.id)}</span>
+          `;
+
+          const progress = document.createElement("div");
+          progress.className = "progress-fields";
+          progress.innerHTML = `
+            <div class="progress-pos-group">
+              <div class="progress-pos-meta">
+                <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
+                <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+              </div>
+              <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
+            </div>
+            <label class="progress-note-group">
+              <span class="muted progress-note-label">Note</span>
+              <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
+            </label>
+          `;
+
+          const shouldShowEditor = showCoverEditor;
+          let manualCover = null;
+          if (shouldShowEditor) {
+            manualCover = document.createElement("div");
+            manualCover.className = "manual-cover-fields";
+            manualCover.innerHTML = `
+              <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
+              <button class="btn" type="button" data-action="save-cover">Save cover</button>
+              <button class="btn" type="button" data-action="clear-cover">Clear</button>
+            `;
+          }
+
+          top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
+            st.done = e.target.checked;
+            if (entry.type === "collection") {
+              const issues = collectionIssues(entry);
+              issues.forEach((issue) => {
+                st.issueStates[issue.title] = !!e.target.checked;
+              });
+            }
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+            render();
+          });
+
+          top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
+            openCollectionModal(entry.id);
+          });
+
+          const posInput = progress.querySelector('[data-action="pos"]');
+          const persistPos = (value, { immediate = false } = {}) => {
+            const nextPos = String(value || "").trim();
+            if (st.pos === nextPos && !immediate) return;
+            st.pos = nextPos;
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            rememberPageSyncToast(entry, st);
+            saveState();
+            refreshHeader(filtered);
+          };
+
+          posInput.addEventListener("input", (e) => {
+            persistPos(e.target.value);
+          });
+
+          posInput.addEventListener("change", (e) => {
+            persistPos(e.target.value, { immediate: true });
+          });
+
+          progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
+            st.note = e.target.value.trim();
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+          });
+
+          if (manualCover) {
+            const coverInput = manualCover.querySelector('[data-action="cover-url"]');
+            const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
+            const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
+
+            saveCoverBtn.addEventListener("click", async () => {
+              const next = sanitizeManualCoverUrl(coverInput.value);
+              if (!next) {
+                setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
+                return;
+              }
+              setManualCoverUrl(entry.id, next);
+              failedCoverCandidates.delete(entry.id);
+              st.touchedAt = nowISO();
+              state.lastTouchedId = entry.id;
+              saveState();
+              render();
+              const pushed = await pushCoversToGitHub();
+              if (!pushed) setSyncStatus(`Saved manual cover locally for ${entry.id}.`);
+            });
+
+            clearCoverBtn.addEventListener("click", async () => {
+              setManualCoverUrl(entry.id, "");
+              failedCoverCandidates.delete(entry.id);
+              st.touchedAt = nowISO();
+              state.lastTouchedId = entry.id;
+              saveState();
+              render();
+              const pushed = await pushCoversToGitHub();
+              if (!pushed) setSyncStatus(`Cleared manual cover locally for ${entry.id}.`);
             });
           }
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          saveState();
-          render();
-        });
 
-        top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
-          openCollectionModal(entry.id);
-        });
+          content.append(top, tags, progress);
+          if (manualCover) content.append(manualCover);
 
-        const posInput = progress.querySelector('[data-action="pos"]');
-        const persistPos = (value, { immediate = false } = {}) => {
-          const nextPos = String(value || "").trim();
-          if (st.pos === nextPos && !immediate) return;
-          st.pos = nextPos;
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          rememberPageSyncToast(entry, st);
-          saveState();
-          refreshHeader(filtered);
-        };
+          const layout = document.createElement("div");
+          layout.className = "item-grid";
+          layout.append(cover, content);
 
-        posInput.addEventListener("input", (e) => {
-          persistPos(e.target.value);
-        });
-
-        posInput.addEventListener("change", (e) => {
-          persistPos(e.target.value, { immediate: true });
-        });
-
-        progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
-          st.note = e.target.value.trim();
-          st.touchedAt = nowISO();
-          state.lastTouchedId = entry.id;
-          saveState();
-        });
-
-        if (manualCover) {
-          const coverInput = manualCover.querySelector('[data-action="cover-url"]');
-          const saveCoverBtn = manualCover.querySelector('[data-action="save-cover"]');
-          const clearCoverBtn = manualCover.querySelector('[data-action="clear-cover"]');
-
-          saveCoverBtn.addEventListener("click", async () => {
-            const next = sanitizeManualCoverUrl(coverInput.value);
-            if (!next) {
-              setSyncStatus(`Invalid cover URL for ${entry.id}. Use http(s).`);
-              return;
-            }
-            setManualCoverUrl(entry.id, next);
-            failedCoverCandidates.delete(entry.id);
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-            const pushed = await pushCoversToGitHub();
-            if (!pushed) setSyncStatus(`Saved manual cover locally for ${entry.id}.`);
-          });
-
-          clearCoverBtn.addEventListener("click", async () => {
-            setManualCoverUrl(entry.id, "");
-            failedCoverCandidates.delete(entry.id);
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-            const pushed = await pushCoversToGitHub();
-            if (!pushed) setSyncStatus(`Cleared manual cover locally for ${entry.id}.`);
-          });
+          item.appendChild(layout);
+          list.appendChild(item);
         }
+      };
 
-        content.append(top, tags, progress);
-        if (manualCover) content.append(manualCover);
+      details.addEventListener("toggle", () => {
+        const current = loadOpenState();
+        current[key] = details.open;
+        saveOpenState(current);
+        if (details.open) populateEraList();
+      });
 
-        const layout = document.createElement("div");
-        layout.className = "item-grid";
-        layout.append(cover, content);
-
-        item.appendChild(layout);
-        list.appendChild(item);
+      if (!details.open) {
+        list.dataset.deferred = "1";
+        list.innerHTML = '<div class="muted">Expand to load entries.</div>';
+      } else {
+        populateEraList();
       }
 
       details.appendChild(list);
-      root.appendChild(details);
+      rootFrag.appendChild(details);
     }
+    root.appendChild(rootFrag);
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
+    if (t0) recordPerf("render", perfNow() - t0);
     updateDebugHealth();
   }
 
@@ -1899,11 +1969,14 @@
 
 
   function isDebugMode() {
+    if (debugModeCache !== null) return debugModeCache;
     try {
       const q = new URLSearchParams(window.location.search || "");
-      return q.get("debug") === "1" || localStorage.getItem("batman-guide:debug") === "1";
+      debugModeCache = q.get("debug") === "1" || localStorage.getItem("batman-guide:debug") === "1";
+      return debugModeCache;
     } catch {
-      return false;
+      debugModeCache = false;
+      return debugModeCache;
     }
   }
 
@@ -1918,7 +1991,9 @@
     const lastStep = window.__BATMAN_LAST_STARTUP_STEP || "-";
     const lastUiStep = window.__BATMAN_LAST_UI_STEP || "-";
     const err = window.__BATMAN_APP_ERROR || "-";
-    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)}`;
+    const filterAvg = perfStats.filterSamples ? `${perfStats.filterAvgMs.toFixed(1)}ms` : "-";
+    const renderAvg = perfStats.renderSamples ? `${perfStats.renderAvgMs.toFixed(1)}ms` : "-";
+    box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)} · avg(filter): ${filterAvg} · avg(render): ${renderAvg}`;
   }
 
   function populateEraFilter() {
@@ -2009,20 +2084,35 @@
     });
 
     runUIStep("filterInputs", () => {
+      const applyFilterInput = ({ debounce = false } = {}) => {
+        writeFilters();
+        writeFiltersToURL();
+        syncQuickFilterChips();
+        if (debounce) {
+          if (filterInputTimer) clearTimeout(filterInputTimer);
+          filterInputTimer = setTimeout(() => {
+            filterInputTimer = null;
+            render();
+            syncEraToggleButton();
+          }, FILTER_INPUT_DEBOUNCE_MS);
+          return;
+        }
+        if (filterInputTimer) {
+          clearTimeout(filterInputTimer);
+          filterInputTimer = null;
+        }
+        render();
+        syncEraToggleButton();
+      };
+
       for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter", "eraFilter"]) {
-        $(id).addEventListener("input", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        const el = $(id);
+        const shouldDebounce = id === "search";
+        el.addEventListener("input", () => {
+          applyFilterInput({ debounce: shouldDebounce });
         });
-        $(id).addEventListener("change", () => {
-          writeFilters();
-          writeFiltersToURL();
-          syncQuickFilterChips();
-          render();
-          syncEraToggleButton();
+        el.addEventListener("change", () => {
+          applyFilterInput({ debounce: false });
         });
       }
     });
