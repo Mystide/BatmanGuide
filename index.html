@@ -91,8 +91,9 @@
     .hero-wordmark {
       display: block;
       width: auto;
-      max-width: min(100%, 380px);
-      height: 100%;
+      max-width: min(100%, 280px);
+      height: auto;
+      max-height: clamp(48px, 7vw, 72px);
       object-fit: contain;
       object-position: left center;
     }
@@ -106,22 +107,22 @@
     }
     .hero-wordmark-fallback.hidden { display: none; }
     .muted { color: var(--muted); font-size: var(--font-md); }
-    .top .container { padding-top: 10px; padding-bottom: 10px; }
+    .top .container { padding-top: 8px; padding-bottom: 8px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
     .hero h1 { margin: 0; line-height: 1; }
     .hero-brand {
       display: flex;
       gap: 8px;
       align-items: center;
-      min-height: clamp(78px, 10vw, 128px);
+      min-height: 0;
     }
     .hero-brand > div {
-      height: 100%;
+      height: auto;
       display: flex;
       align-items: center;
     }
     .hero-brand h1 {
-      height: 100%;
+      height: auto;
       display: flex;
       align-items: center;
     }
