@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.31-1";
+  const APP_VERSION = "2026.03.31-2";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -1325,6 +1325,7 @@
             st.note = e.target.value.trim();
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
+            rememberPageSyncToast(entry, st);
             saveState();
           });
 
@@ -1860,7 +1861,7 @@
     const controls = $("headerControls");
     const filterToggle = $("btnFilterMenu");
     const revealHeader = $("btnRevealHeader");
-    if (!header || !controls || !filterToggle || !revealHeader) return;
+    if (!header || !controls || !filterToggle) return;
     let lastScrollY = window.scrollY;
     let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
     let headerHidden = false;
@@ -1900,6 +1901,7 @@
     };
 
     const syncRevealButton = () => {
+      if (!revealHeader) return;
       const shouldShow = headerHidden;
       revealHeader.classList.toggle("hidden", !shouldShow);
     };
@@ -1921,11 +1923,13 @@
       }
     });
 
-    revealHeader.addEventListener("click", () => {
-      forceHeaderVisibleUntil = Date.now() + 900;
-      setHeaderHidden(false);
-      queueUpdate();
-    });
+    if (revealHeader) {
+      revealHeader.addEventListener("click", () => {
+        forceHeaderVisibleUntil = Date.now() + 900;
+        setHeaderHidden(false);
+        queueUpdate();
+      });
+    }
 
     const updateCompactMode = () => {
       const y = window.scrollY;

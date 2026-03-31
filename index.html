@@ -357,15 +357,13 @@
     .hidden { display: none !important; }
     .tools { margin-top: 10px; }
     .sync-dock {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      width: min(420px, calc(100vw - 24px));
-      margin: 0;
-      z-index: 65;
-      box-shadow: var(--shadow);
+      position: static;
+      width: 100%;
+      margin: 12px auto 0 auto;
+      z-index: auto;
+      box-shadow: var(--shadow-soft);
       backdrop-filter: blur(10px);
-      transition: opacity .2s ease, transform .2s ease;
+      transition: none;
     }
     .sync-dock > summary {
       border-bottom: none;
@@ -374,33 +372,33 @@
       padding: 10px 12px;
     }
     .sync-dock.is-ready:not([open]) {
-      width: auto;
-      max-width: calc(100vw - 24px);
-      opacity: .35;
-      transform: translateY(8px) scale(.92);
+      width: 100%;
+      max-width: 100%;
+      opacity: 1;
+      transform: none;
     }
     .sync-dock.is-ready:not([open]):hover,
     .sync-dock.is-ready:not([open]):focus-within {
-      opacity: .48;
-      transform: translateY(0) scale(1);
+      opacity: 1;
+      transform: none;
     }
     .sync-dock.is-ready:not([open]) > summary {
-      border-radius: 999px;
-      padding: 6px;
-      gap: 0;
-      min-width: 36px;
-      min-height: 36px;
-      justify-content: center;
+      border-radius: 14px;
+      padding: 10px 12px;
+      gap: 6px;
+      min-width: 0;
+      min-height: 0;
+      justify-content: space-between;
     }
     .sync-dock.is-ready:not([open]) #syncMenuTitle {
-      font-size: 16px;
-      line-height: 1;
+      font-size: 13px;
+      line-height: 1.1;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
     }
     .sync-dock.is-ready:not([open]) #syncMenuHint {
-      display: none;
+      display: inline;
     }
     .sync-dock[open] > summary {
       border-bottom: 1px solid var(--border);
@@ -811,11 +809,6 @@
       </div>
     </div>
   </header>
-
-  <div class="floating-actions" aria-label="Page actions">
-    <button class="btn header-reveal hidden" id="btnRevealHeader" type="button" aria-label="Show header controls">Show header</button>
-    <button class="btn hidden scroll-top" id="btnScrollTop" type="button" aria-label="Scroll to top">↑ Top</button>
-  </div>
 
   <main class="container" id="mainContent">
     <div class="overview-grid">
