@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-31.06-remove-binary-wordmark";
+const CACHE = "batman-guide-cache-2026-03-31.07-restore-binary-wordmark";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -6,6 +6,7 @@ const APP_SHELL = [
   "./list.js",
   "./manifest.webmanifest",
   "./batman-logo.png",
+  "./assets/lettering/batmanletters1.png",
 ];
 
 const NETWORK_FIRST_PATHS = new Set(["/", "/index.html", "/app.js", "/list.js", "/manifest.webmanifest", "/sw.js"]);
