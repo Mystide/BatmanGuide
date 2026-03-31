@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.31-2";
+  const APP_VERSION = "2026.03.31-3";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -1325,7 +1325,6 @@
             st.note = e.target.value.trim();
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
-            rememberPageSyncToast(entry, st);
             saveState();
           });
 
@@ -2125,6 +2124,47 @@
           applyFilterInput({ debounce: false });
         });
       }
+    });
+
+    runUIStep("filterPresets", () => {
+      const wrap = $("filterPresets");
+      if (!wrap) return;
+      wrap.querySelectorAll("[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const preset = btn.getAttribute("data-preset");
+          if (preset === "resume") {
+            $("onlyRemaining").checked = true;
+            $("hideOptional").checked = false;
+            $("typeFilter").value = "";
+            $("trackFilter").value = "";
+            $("characterFilter").value = "";
+            $("eraFilter").value = "";
+            $("sortBy").value = "recent";
+          } else if (preset === "mainline") {
+            $("onlyRemaining").checked = true;
+            $("hideOptional").checked = true;
+            $("typeFilter").value = "";
+            $("trackFilter").value = "main";
+            $("characterFilter").value = "";
+            $("eraFilter").value = "";
+            $("sortBy").value = "order";
+          } else {
+            $("search").value = "";
+            $("onlyRemaining").checked = false;
+            $("hideOptional").checked = false;
+            $("typeFilter").value = "";
+            $("trackFilter").value = "";
+            $("characterFilter").value = "";
+            $("eraFilter").value = "";
+            $("sortBy").value = "order";
+          }
+          writeFilters();
+          writeFiltersToURL();
+          syncQuickFilterChips();
+          render();
+          syncEraToggleButton();
+        });
+      });
     });
 
     runUIStep("quickFilterChips", () => {
