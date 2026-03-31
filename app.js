@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.30-6";
+  const APP_VERSION = "2026.03.31-1";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -1886,9 +1886,14 @@
       headerHidden = !!hidden;
       header.classList.toggle("header-hidden", headerHidden);
       syncRevealButton();
+      syncStickySearchOffset();
     };
 
     const syncStickySearchOffset = () => {
+      if (headerHidden) {
+        document.documentElement.style.setProperty("--sticky-search-top", "0px");
+        return;
+      }
       const rect = header.getBoundingClientRect();
       const visible = Math.max(0, Math.min(rect.bottom, header.offsetHeight || 0));
       document.documentElement.style.setProperty("--sticky-search-top", `${Math.round(visible)}px`);
@@ -1919,6 +1924,7 @@
     revealHeader.addEventListener("click", () => {
       forceHeaderVisibleUntil = Date.now() + 900;
       setHeaderHidden(false);
+      queueUpdate();
     });
 
     const updateCompactMode = () => {
