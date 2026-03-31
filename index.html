@@ -81,6 +81,14 @@
     .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
+    .hero-wordmark { display: block; width: clamp(180px, 24vw, 320px); height: auto; }
+    .hero-wordmark-fallback {
+      display: inline-block;
+      font-size: clamp(22px, 3.3vw, 30px);
+      font-weight: 700;
+      letter-spacing: .2px;
+      color: #f8fafc;
+    }
     .muted { color: var(--muted); font-size: var(--font-md); }
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
@@ -797,7 +805,7 @@
               <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
             </div>
             <div>
-              <h1>Batman Guide</h1>
+              <h1><span class="hero-wordmark-fallback" id="heroWordmarkFallback">Batman Guide</span><img src="./assets/lettering/batmanletters.png" alt="Batman Guide" class="hero-wordmark" onload="document.getElementById('heroWordmarkFallback').style.display='none'" onerror="document.getElementById('heroWordmarkFallback').style.display='inline-block'; this.style.display='none'" /></h1>
               <div class="hero-partners" aria-label="Brand logos">
                 <span>Batman</span>
                 <span class="dot" aria-hidden="true"></span>
