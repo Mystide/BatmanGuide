@@ -42,13 +42,6 @@
       --motion-med: .2s;
       --ease-std: cubic-bezier(.2, .7, .2, 1);
     }
-    @font-face {
-      font-family: "BatmanFont";
-      src: url("./assets/fonts/batmanfont1.ttf") format("truetype");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -98,14 +91,6 @@
       object-position: left center;
     }
     .hero-wordmark.hidden { display: none; }
-    .hero-wordmark-fallback {
-      display: inline-block;
-      font-size: clamp(26px, 3.9vw, 36px);
-      font-weight: 700;
-      letter-spacing: .3px;
-      color: #f8fafc;
-    }
-    .hero-wordmark-fallback.hidden { display: none; }
     .muted { color: var(--muted); font-size: var(--font-md); }
     .top .container { padding-top: 4px; padding-bottom: 4px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
@@ -858,8 +843,7 @@
           <div class="hero-brand">
             <div>
               <h1>
-                <img id="heroWordmark" class="hero-wordmark hidden" alt="Batman Guide" />
-                <span class="hero-wordmark-fallback" id="heroWordmarkFallback" style="font-family: BatmanFont, Inter, system-ui, sans-serif;">Batman Guide</span>
+                <img id="heroWordmark" class="hero-wordmark" src="./assets/lettering/batmanletters1.png" alt="Batman" loading="eager" fetchpriority="high" decoding="async" />
               </h1>
               <div class="hero-partners" aria-label="Brand logos">
                 <span>Batman</span>
