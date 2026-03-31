@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.31-4";
+  const APP_VERSION = "2026.03.31-5";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -2629,6 +2629,9 @@
     quickFilterRows.forEach((row, idx) => {
       if (idx > 0) row.remove();
     });
+
+    const legacyHeaderBadges = document.querySelectorAll(".hero-partners, .hero-logos, .logo-chip, .dcui-mark");
+    legacyHeaderBadges.forEach((node) => node.remove());
   }
 
 
