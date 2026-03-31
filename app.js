@@ -621,18 +621,9 @@
     if (heroLogo) heroLogo.src = FIXED_LOGO_URL;
 
     const heroWordmark = $("heroWordmark");
-    const heroWordmarkFallback = $("heroWordmarkFallback");
-    if (!heroWordmark || !heroWordmarkFallback) return;
-
-    heroWordmark.onload = () => {
-      heroWordmark.classList.remove("hidden");
-      heroWordmarkFallback.classList.add("hidden");
-    };
-    heroWordmark.onerror = () => {
-      heroWordmark.classList.add("hidden");
-      heroWordmarkFallback.classList.remove("hidden");
-    };
-    heroWordmark.src = FIXED_WORDMARK_URL;
+    if (heroWordmark && heroWordmark.getAttribute("src") !== FIXED_WORDMARK_URL) {
+      heroWordmark.src = FIXED_WORDMARK_URL;
+    }
   }
 
   function getFiltered() {
