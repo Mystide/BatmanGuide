@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-29.01-sync-version";
+const CACHE = "batman-guide-cache-2026-03-31.03-strip-legacy-header";
 const APP_SHELL = [
   "./",
   "./index.html",
