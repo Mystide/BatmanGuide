@@ -85,8 +85,54 @@
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
     .hero-brand { display:flex; gap:var(--space-3); align-items:center; }
-    .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .hero-logo-wrap {
+      width: 124px;
+      height: 44px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(148, 163, 184, .26);
+      background: linear-gradient(180deg, rgba(10, 15, 27, .96), rgba(7, 11, 20, .9));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 10px 22px rgba(2, 6, 23, .34);
+    }
+    .hero-logo { width:108px; height:34px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
     .hero-subtitle { margin: 0; color: #dbe3f1; font-size: var(--font-sm); line-height: var(--lh-body); }
+    .hero-logos {
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .logo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(100, 116, 139, .52);
+      background: linear-gradient(180deg, rgba(15, 23, 42, .82), rgba(10, 16, 30, .86));
+      padding: 3px 10px;
+      font-size: 11px;
+      letter-spacing: .22px;
+      color: #d9e2f2;
+    }
+    .logo-chip strong { color: #fde68a; }
+    .logo-chip.dcui::before {
+      content: "D";
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(250, 204, 21, .58);
+      color: #fef08a;
+      font-size: 10px;
+      font-weight: 700;
+      background: radial-gradient(circle at 30% 30%, rgba(250,204,21,.34), rgba(15,23,42,.95));
+      box-shadow: inset 0 0 0 1px rgba(250, 204, 21, .15);
+    }
     .hero-meta { display:flex; gap:var(--space-2); flex-wrap:wrap; }
     .hero-metric { font-size: var(--font-xs); border: 1px solid rgba(148,163,184,.35); border-radius: 999px; padding: 3px var(--space-2); color: #cbd5e1; background: rgba(15,23,42,.4); }
     .hero-metric strong { color: #fde68a; }
@@ -758,10 +804,16 @@
       <div class="header-main header-panel">
         <div class="hero">
           <div class="hero-brand">
-            <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
+            <div class="hero-logo-wrap">
+              <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
+            </div>
             <div>
               <h1>Batman Guide</h1>
               <p class="hero-subtitle">Read smarter with one clear next step.</p>
+              <div class="hero-logos" aria-label="Brand logos">
+                <span class="logo-chip"><strong>Batman</strong> Main logo</span>
+                <span class="logo-chip dcui">DCUI connected</span>
+              </div>
             </div>
           </div>
           <div class="hero-meta" aria-live="polite">
