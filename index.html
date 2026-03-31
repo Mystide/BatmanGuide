@@ -90,10 +90,11 @@
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
     .hero-wordmark {
       display: block;
-      width: clamp(150px, 20vw, 250px);
-      max-height: 44px;
-      height: auto;
+      width: auto;
+      max-width: min(100%, 540px);
+      height: 100%;
       object-fit: contain;
+      object-position: left center;
     }
     .hero-wordmark.hidden { display: none; }
     .hero-wordmark-fallback {
@@ -108,7 +109,22 @@
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
     .hero h1 { margin: 0; line-height: 1; }
-    .hero-brand { display:flex; gap:8px; align-items:center; }
+    .hero-brand {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      min-height: clamp(120px, 16vw, 220px);
+    }
+    .hero-brand > div {
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .hero-brand h1 {
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
     .hero-subtitle { margin: 0; color: #dbe3f1; font-size: var(--font-sm); line-height: var(--lh-body); }
     .hero-partners {
       margin-top: 2px;
