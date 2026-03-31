@@ -85,8 +85,43 @@
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
     .hero-brand { display:flex; gap:var(--space-3); align-items:center; }
-    .hero-logo { width:116px; height:40px; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,.35)); }
+    .hero-logo { width:110px; height:34px; object-fit: contain; opacity: .92; }
     .hero-subtitle { margin: 0; color: #dbe3f1; font-size: var(--font-sm); line-height: var(--lh-body); }
+    .hero-partners {
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #9aa8bf;
+      font-size: 11px;
+      letter-spacing: .2px;
+    }
+    .hero-partners .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(148, 163, 184, .55);
+    }
+    .dcui-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #c4cfdf;
+    }
+    .dcui-mark::before {
+      content: "D";
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(250, 204, 21, .5);
+      color: #fde68a;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(250, 204, 21, .08);
+    }
     .hero-meta { display:flex; gap:var(--space-2); flex-wrap:wrap; }
     .hero-metric { font-size: var(--font-xs); border: 1px solid rgba(148,163,184,.35); border-radius: 999px; padding: 3px var(--space-2); color: #cbd5e1; background: rgba(15,23,42,.4); }
     .hero-metric strong { color: #fde68a; }
@@ -762,6 +797,11 @@
             <div>
               <h1>Batman Guide</h1>
               <p class="hero-subtitle">Read smarter with one clear next step.</p>
+              <div class="hero-partners" aria-label="Brand logos">
+                <span>Batman</span>
+                <span class="dot" aria-hidden="true"></span>
+                <span class="dcui-mark">DCUI</span>
+              </div>
             </div>
           </div>
           <div class="hero-meta" aria-live="polite">
