@@ -42,6 +42,13 @@
       --motion-med: .2s;
       --ease-std: cubic-bezier(.2, .7, .2, 1);
     }
+    @font-face {
+      font-family: "BatmanFont";
+      src: url("./assets/fonts/batmanfont1.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -80,7 +87,7 @@
     .top:focus-within { transform: translateY(0); opacity: 1; }
     .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
-    h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
+    h1 { margin: 0; font-size: 24px; letter-spacing: .2px; font-family: "BatmanFont", Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
     .muted { color: var(--muted); font-size: var(--font-md); }
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
