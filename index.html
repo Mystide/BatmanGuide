@@ -108,8 +108,7 @@
     .top .container { padding-top: 10px; padding-bottom: 10px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
     .hero h1 { margin: 0; line-height: 1; }
-    .hero-brand { display:flex; gap:14px; align-items:center; }
-    .hero-logo { width:92px; height:28px; object-fit: contain; opacity: .92; }
+    .hero-brand { display:flex; gap:8px; align-items:center; }
     .hero-subtitle { margin: 0; color: #dbe3f1; font-size: var(--font-sm); line-height: var(--lh-body); }
     .hero-partners {
       margin-top: 2px;
@@ -146,10 +145,23 @@
       font-weight: 700;
       background: rgba(250, 204, 21, .08);
     }
-    .hero-meta { display:flex; gap:10px; flex-wrap:wrap; }
-    .hero-metric { font-size: 14px; border: 1px solid rgba(148,163,184,.35); border-radius: 999px; padding: 5px 14px; color: #cbd5e1; background: rgba(15,23,42,.4); }
-    .hero-metric strong { color: #fde68a; }
-    .header-main { display:flex; justify-content: space-between; align-items: center; gap: calc(var(--space-2) + var(--space-1)); flex-wrap: wrap; }
+    .hero-meta {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: var(--space-1);
+    }
+    .hero-metric {
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,.22);
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: #9fb0c8;
+      background: rgba(15,23,42,.22);
+    }
+    .hero-metric strong { color: #f9e79a; font-size: 12px; }
+    .header-main { display:flex; justify-content: space-between; align-items: flex-start; gap: calc(var(--space-2) + var(--space-1)); flex-wrap: wrap; }
     .header-panel {
       border: 1px solid rgba(71, 85, 105, .45);
       border-radius: var(--radius-md);
@@ -162,6 +174,13 @@
     .top-actions.top-actions-minimal .btn { min-width: 0; }
     .header-panel-label { font-size: var(--font-xs); color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 0 0 calc(var(--space-2) - 2px) 0; }
     .header-actions-hint { margin-top: var(--space-1); font-size: var(--font-xs); color: var(--muted); text-align: right; }
+    .header-controls {
+      display: grid;
+      justify-items: end;
+      gap: var(--space-1);
+      min-width: 230px;
+      margin-left: auto;
+    }
     .badge { display:inline-flex; width: fit-content; font-size: var(--font-xs); font-weight: var(--weight-bold); letter-spacing: .2px; text-transform: uppercase; color: #fde68a; border: 1px solid #6b5716; border-radius: 999px; padding: 3px 9px; background: rgba(250, 204, 21, .08); }
     .btn, .input, .select {
       border: 1px solid var(--border);
@@ -817,9 +836,6 @@
       <div class="header-main header-panel">
         <div class="hero">
           <div class="hero-brand">
-            <div class="hero-logo-wrap">
-              <img id="heroLogo" src="./batman-logo.png" alt="Batman logo" class="hero-logo" />
-            </div>
             <div>
               <h1>
                 <img id="heroWordmark" class="hero-wordmark hidden" alt="Batman Guide" />
@@ -832,16 +848,16 @@
               </div>
             </div>
           </div>
+        </div>
+        <div class="header-controls">
+          <p class="header-panel-label">Control center</p>
+          <div class="top-actions top-actions-minimal">
+            <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
+          </div>
           <div class="hero-meta" aria-live="polite">
             <span class="hero-metric">Done <strong id="heroDone">-</strong></span>
             <span class="hero-metric">Left <strong id="heroLeft">-</strong></span>
             <span class="hero-metric">Visible <strong id="heroVisible">-</strong></span>
-          </div>
-        </div>
-        <div>
-          <p class="header-panel-label">Control center</p>
-          <div class="top-actions top-actions-minimal">
-          <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
           </div>
           <div id="headerActionsHint" class="header-actions-hint"></div>
         </div>
