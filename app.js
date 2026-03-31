@@ -69,6 +69,7 @@
   const FILTER_INPUT_DEBOUNCE_MS = 120;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
+  const FIXED_WORDMARK_URL = "./assets/lettering/batmanletters1.png";
 
   const $ = (id) => document.getElementById(id);
 
@@ -617,8 +618,21 @@
 
   function applyBrand() {
     const heroLogo = $("heroLogo");
-    if (!heroLogo) return;
-    heroLogo.src = FIXED_LOGO_URL;
+    if (heroLogo) heroLogo.src = FIXED_LOGO_URL;
+
+    const heroWordmark = $("heroWordmark");
+    const heroWordmarkFallback = $("heroWordmarkFallback");
+    if (!heroWordmark || !heroWordmarkFallback) return;
+
+    heroWordmark.onload = () => {
+      heroWordmark.classList.remove("hidden");
+      heroWordmarkFallback.classList.add("hidden");
+    };
+    heroWordmark.onerror = () => {
+      heroWordmark.classList.add("hidden");
+      heroWordmarkFallback.classList.remove("hidden");
+    };
+    heroWordmark.src = FIXED_WORDMARK_URL;
   }
 
   function getFiltered() {
