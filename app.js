@@ -703,7 +703,7 @@
     if ($("eraFilter")?.value) labels.push(`Era: ${$("eraFilter").value}`);
     if (($("sortBy")?.value || "order") !== "order") labels.push(`Sort: ${$("sortBy").value}`);
 
-    if (!labels.length) return "No active filters.";
+    if (!labels.length) return "";
     return `${labels.length} active filter${labels.length > 1 ? "s" : ""}: ${labels.join(" • ")}`;
   }
 
@@ -827,7 +827,7 @@
     setText("modalFooterStatus", `Visible: ${s.total} • Left: ${Math.max(0, s.total - s.done)} • Required left: ${requiredRemaining}`);
     setText("filterSummary", activeFilterSummary());
     const activeCount = activeFilterCount();
-    setText("headerActionsHint", activeCount > 0 ? `${activeCount} filters active` : "No filters active");
+    setText("headerActionsHint", activeCount > 0 ? `${activeCount} filters active` : "");
     const filterButton = $("btnFilterMenu");
     const filtersDialogOpen = !$("headerControls")?.classList.contains("hidden");
     if (filterButton) {
