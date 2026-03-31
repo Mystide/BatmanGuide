@@ -88,7 +88,13 @@
     .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .space { justify-content: space-between; }
     h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
-    .hero-wordmark { display: block; width: clamp(180px, 24vw, 320px); height: auto; }
+    .hero-wordmark {
+      display: block;
+      width: clamp(120px, 16vw, 210px);
+      max-height: 30px;
+      height: auto;
+      object-fit: contain;
+    }
     .hero-wordmark.hidden { display: none; }
     .hero-wordmark-fallback {
       display: inline-block;
