@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-31.03-strip-legacy-header";
+const CACHE = "batman-guide-cache-2026-03-31.06-remove-binary-wordmark";
 const APP_SHELL = [
   "./",
   "./index.html",
