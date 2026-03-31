@@ -1325,6 +1325,7 @@
             st.note = e.target.value.trim();
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
+            rememberPageSyncToast(entry, st);
             saveState();
           });
 
