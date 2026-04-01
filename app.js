@@ -621,18 +621,9 @@
     if (heroLogo) heroLogo.src = FIXED_LOGO_URL;
 
     const heroWordmark = $("heroWordmark");
-    const heroWordmarkFallback = $("heroWordmarkFallback");
-    if (!heroWordmark || !heroWordmarkFallback) return;
-
-    heroWordmark.onload = () => {
-      heroWordmark.classList.remove("hidden");
-      heroWordmarkFallback.classList.add("hidden");
-    };
-    heroWordmark.onerror = () => {
-      heroWordmark.classList.add("hidden");
-      heroWordmarkFallback.classList.remove("hidden");
-    };
-    heroWordmark.src = FIXED_WORDMARK_URL;
+    if (heroWordmark && heroWordmark.getAttribute("src") !== FIXED_WORDMARK_URL) {
+      heroWordmark.src = FIXED_WORDMARK_URL;
+    }
   }
 
   function getFiltered() {
@@ -1951,14 +1942,6 @@
       const scrollingDown = delta > 4;
       const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
-
-      if (touchOptimizedHeader()) {
-        header.classList.remove("compact", "header-hidden");
-        headerHidden = false;
-        syncRevealButton();
-        syncStickySearchOffset();
-        return;
-      }
 
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
