@@ -1937,20 +1937,13 @@
 
     const updateCompactMode = () => {
       const y = window.scrollY;
-      const delta = y - lastScrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
-      const scrollingDown = delta > 4;
-      const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
 
-      if (forceVisible || !shouldCompact || y < 48 || nearTop) {
-        setHeaderHidden(false);
-      } else if (shouldCompact && scrollingDown && y > 180) {
-        releaseHeaderFocus();
-        setHeaderHidden(true);
-      } else if (delta < -4) {
-        setHeaderHidden(false);
-      }
+      // Keep header behavior stable and identical across devices.
+      // Only compact styling changes on scroll; header never auto-hides.
+      if (forceVisible) setHeaderHidden(false);
+      setHeaderHidden(false);
 
       header.classList.toggle("compact", shouldCompact);
       syncStickySearchOffset();
