@@ -1943,14 +1943,6 @@
       const nearTop = y < 72;
       const forceVisible = Date.now() < forceHeaderVisibleUntil;
 
-      if (touchOptimizedHeader()) {
-        header.classList.remove("compact", "header-hidden");
-        headerHidden = false;
-        syncRevealButton();
-        syncStickySearchOffset();
-        return;
-      }
-
       if (forceVisible || !shouldCompact || y < 48 || nearTop) {
         setHeaderHidden(false);
       } else if (shouldCompact && scrollingDown && y > 180) {
