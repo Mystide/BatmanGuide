@@ -353,6 +353,7 @@
       flex-direction: column;
       cursor: pointer;
       position: relative;
+      -webkit-tap-highlight-color: transparent;
     }
     .item-grid {
       display: grid;
@@ -964,7 +965,14 @@
     }
 
     @media (min-width: 761px) and (max-width: 1180px) {
-      .items { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+      .items {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+        justify-content: flex-start;
+      }
+      .era-bat-icon {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
+        -webkit-filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
+      }
       .filters { grid-template-columns: repeat(3, minmax(170px, 1fr)); }
       .filters-basic { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
       .filters-advanced { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
