@@ -621,18 +621,9 @@
     if (heroLogo) heroLogo.src = FIXED_LOGO_URL;
 
     const heroWordmark = $("heroWordmark");
-    const heroWordmarkFallback = $("heroWordmarkFallback");
-    if (!heroWordmark || !heroWordmarkFallback) return;
-
-    heroWordmark.onload = () => {
-      heroWordmark.classList.remove("hidden");
-      heroWordmarkFallback.classList.add("hidden");
-    };
-    heroWordmark.onerror = () => {
-      heroWordmark.classList.add("hidden");
-      heroWordmarkFallback.classList.remove("hidden");
-    };
-    heroWordmark.src = FIXED_WORDMARK_URL;
+    if (heroWordmark && heroWordmark.getAttribute("src") !== FIXED_WORDMARK_URL) {
+      heroWordmark.src = FIXED_WORDMARK_URL;
+    }
   }
 
   function getFiltered() {
@@ -1864,21 +1855,12 @@
     if (missing.length) render();
   }
 
-  function touchOptimizedHeader() {
-    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    return coarsePointer && window.innerWidth <= 1366;
-  }
-
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
     const controls = $("headerControls");
     const filterToggle = $("btnFilterMenu");
-    const revealHeader = $("btnRevealHeader");
     if (!header || !controls || !filterToggle) return;
-    let lastScrollY = window.scrollY;
     let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
-    let headerHidden = false;
-    let forceHeaderVisibleUntil = 0;
 
     const syncFilterToggle = () => {
       const open = !controls.classList.contains("hidden");
@@ -1896,78 +1878,23 @@
       writeUiPrefs({ filtersOpen: userWantsFiltersOpen });
     };
 
-    const setHeaderHidden = (hidden) => {
-      headerHidden = !!hidden;
-      header.classList.toggle("header-hidden", headerHidden);
-      syncRevealButton();
-      syncStickySearchOffset();
-    };
-
     const syncStickySearchOffset = () => {
-      if (headerHidden) {
-        document.documentElement.style.setProperty("--sticky-search-top", "0px");
-        return;
-      }
       const rect = header.getBoundingClientRect();
       const visible = Math.max(0, Math.min(rect.bottom, header.offsetHeight || 0));
       document.documentElement.style.setProperty("--sticky-search-top", `${Math.round(visible)}px`);
-    };
-
-    const syncRevealButton = () => {
-      if (!revealHeader) return;
-      const shouldShow = headerHidden;
-      revealHeader.classList.toggle("hidden", !shouldShow);
-    };
-
-    const releaseHeaderFocus = () => {
-      const active = document.activeElement;
-      if (!active || active === document.body) return;
-      if (!header.contains(active)) return;
-      if (typeof active.blur === "function") active.blur();
     };
 
     filterToggle.addEventListener("click", () => {
       const opening = controls.classList.contains("hidden");
       setFiltersOpen(opening);
       if (opening) {
-        forceHeaderVisibleUntil = Date.now() + 900;
-        setHeaderHidden(false);
         controls.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
-    if (revealHeader) {
-      revealHeader.addEventListener("click", () => {
-        forceHeaderVisibleUntil = Date.now() + 900;
-        setHeaderHidden(false);
-        queueUpdate();
-      });
-    }
-
     const updateCompactMode = () => {
       const y = window.scrollY;
-      const delta = y - lastScrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
-      const scrollingDown = delta > 4;
-      const nearTop = y < 72;
-      const forceVisible = Date.now() < forceHeaderVisibleUntil;
-
-      if (touchOptimizedHeader()) {
-        header.classList.remove("compact", "header-hidden");
-        headerHidden = false;
-        syncRevealButton();
-        syncStickySearchOffset();
-        return;
-      }
-
-      if (forceVisible || !shouldCompact || y < 48 || nearTop) {
-        setHeaderHidden(false);
-      } else if (shouldCompact && scrollingDown && y > 180) {
-        releaseHeaderFocus();
-        setHeaderHidden(true);
-      } else if (delta < -4) {
-        setHeaderHidden(false);
-      }
 
       header.classList.toggle("compact", shouldCompact);
       syncStickySearchOffset();
@@ -1979,7 +1906,6 @@
       raf = requestAnimationFrame(() => {
         raf = 0;
         updateCompactMode();
-        lastScrollY = window.scrollY;
       });
     };
 
