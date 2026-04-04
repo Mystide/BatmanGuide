@@ -94,6 +94,7 @@
   };
 
   const ITEM_STATUSES = ["unread", "in_progress", "read", "paused", "dropped"];
+  const ITEM_STATUS_CLASS_PREFIX = "item-status-";
   const READ_STATUS = "read";
   const STATUS_META = {
     unread: { label: "Unread", short: "U" },
@@ -130,6 +131,15 @@
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function applyItemStatusClass(item, status) {
+    if (!item) return;
+    for (const candidate of ITEM_STATUSES) {
+      item.classList.remove(`${ITEM_STATUS_CLASS_PREFIX}${candidate}`);
+    }
+    const resolved = ITEM_STATUSES.includes(status) ? status : "unread";
+    item.classList.add(`${ITEM_STATUS_CLASS_PREFIX}${resolved}`);
   }
 
   const defaultState = () => ({
@@ -1259,6 +1269,7 @@
           const hasSavedCover = hasSavedManualCover(entry.id);
           item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
           item.dataset.id = entry.id;
+          applyItemStatusClass(item, ensureStatus(st));
 
           const cover = document.createElement("div");
           cover.className = "cover";
@@ -1381,6 +1392,7 @@
             if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             if (headingNode) headingNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             if (coverStatusBadge) coverStatusBadge.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
+            applyItemStatusClass(item, resolvedNextStatus);
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();
