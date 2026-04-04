@@ -1302,13 +1302,13 @@
             </label>
             <label class="progress-note-group">
               <span class="muted progress-note-label">Status</span>
-              <select class="select" data-action="status">
-                <option value="unread" ${ensureStatus(st) === "unread" ? "selected" : ""}>Unread</option>
-                <option value="in_progress" ${ensureStatus(st) === "in_progress" ? "selected" : ""}>In progress</option>
-                <option value="read" ${ensureStatus(st) === "read" ? "selected" : ""}>Read</option>
-                <option value="paused" ${ensureStatus(st) === "paused" ? "selected" : ""}>Paused</option>
-                <option value="dropped" ${ensureStatus(st) === "dropped" ? "selected" : ""}>Dropped</option>
-              </select>
+              <div class="status-toggle" data-action="status-toggle" role="group" aria-label="Reading status">
+                <button class="status-chip${ensureStatus(st) === "unread" ? " active" : ""}" type="button" data-status="unread" title="Unread">U</button>
+                <button class="status-chip${ensureStatus(st) === "in_progress" ? " active" : ""}" type="button" data-status="in_progress" title="In progress">IP</button>
+                <button class="status-chip${ensureStatus(st) === "read" ? " active" : ""}" type="button" data-status="read" title="Read">R</button>
+                <button class="status-chip${ensureStatus(st) === "paused" ? " active" : ""}" type="button" data-status="paused" title="Paused">P</button>
+                <button class="status-chip${ensureStatus(st) === "dropped" ? " active" : ""}" type="button" data-status="dropped" title="Dropped">D</button>
+              </div>
             </label>
           `;
 
@@ -1370,12 +1370,16 @@
             saveState();
           });
 
-          progress.querySelector('[data-action="status"]').addEventListener("change", (e) => {
-            const nextStatus = ITEM_STATUSES.includes(e.target.value) ? e.target.value : "unread";
+          progress.querySelector('[data-action="status-toggle"]').addEventListener("click", (e) => {
+            const statusButton = e.target.closest("[data-status]");
+            if (!statusButton) return;
+            const nextStatus = ITEM_STATUSES.includes(statusButton.dataset.status) ? statusButton.dataset.status : "unread";
             st.status = nextStatus;
             st.done = nextStatus === READ_STATUS;
             const doneCheckbox = top.querySelector('[data-action="done"]');
             if (doneCheckbox) doneCheckbox.checked = st.done;
+            const chips = progress.querySelectorAll(".status-chip");
+            chips.forEach((chip) => chip.classList.toggle("active", chip.dataset.status === nextStatus));
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();

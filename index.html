@@ -409,6 +409,25 @@
     .progress-pos-meta,
     .progress-note-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; font-size: 12px; letter-spacing: .15px; }
     .progress-note-label { font-size: var(--font-sm); }
+    .status-toggle { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+    .status-chip {
+      min-width: 28px;
+      min-height: 26px;
+      padding: 0 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(100, 116, 139, .65);
+      background: rgba(15, 23, 42, .7);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .25px;
+      cursor: pointer;
+    }
+    .status-chip.active {
+      border-color: #7c640f;
+      background: rgba(250, 204, 21, .14);
+      color: #fde68a;
+    }
     .progress-unit-pill {
       display: inline-flex;
       align-items: center;
