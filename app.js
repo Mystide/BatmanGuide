@@ -1284,7 +1284,6 @@
           const entryIssueStats = collectionIssueStats(entry, st);
           const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
           if (hasProgress) item.classList.add("expanded");
-          const safeStatusLabel = escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread");
           const coverLink = document.createElement("a");
           coverLink.className = "cover-link";
           coverLink.href = safeUrl;
@@ -1299,7 +1298,7 @@
             <label class="item-title-row">
               <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
               <span class="title-wrap">
-                <span class="title">${safeStatusLabel}</span>
+                <span class="title">Reading progress</span>
                 <span class="item-hint">${safeHint || "Reading progress"}</span>
               </span>
             </label>
