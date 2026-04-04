@@ -1274,6 +1274,7 @@
           });
 
           const content = document.createElement("div");
+          content.className = "item-content";
 
           const top = document.createElement("div");
           top.className = "item-head";
@@ -1281,17 +1282,25 @@
           const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
           const safeUrl = escapeAttr(safeExternalUrl(entry.url));
           const entryIssueStats = collectionIssueStats(entry, st);
+          const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
+          if (hasProgress) item.classList.add("expanded");
+          const coverLink = document.createElement("a");
+          coverLink.className = "cover-link";
+          coverLink.href = safeUrl;
+          coverLink.target = "_blank";
+          coverLink.rel = "noopener noreferrer";
+          coverLink.textContent = "DCUI";
+          const coverTitle = document.createElement("span");
+          coverTitle.className = "cover-title";
+          coverTitle.innerHTML = safeTitle;
+          cover.append(coverLink, coverTitle);
           top.innerHTML = `
-            <label class="item-title-row">
-              <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-              <span class="title-wrap">
-                <span class="title">${safeTitle}</span>
-                ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
-              </span>
-            </label>
+            <div class="item-title-row panel-heading">
+              <span class="title">Reading progress</span>
+            </div>
             <div class="item-actions">
               ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-              <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
+              <button class="btn subtle item-close" type="button" data-action="collapse">Close</button>
             </div>
           `;
 
@@ -1300,9 +1309,7 @@
           tags.innerHTML = `
             <span class="tag">${escapeHtml(entry.type)}</span>
             <span class="tag">${entry.optional ? "optional" : "required"}</span>
-            ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
             ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-            ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
             ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
             ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
             <span class="muted">${escapeHtml(entry.id)}</span>
@@ -1350,23 +1357,13 @@
             `;
           }
 
-          top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
-            st.done = e.target.checked;
-            st.status = st.done ? READ_STATUS : "unread";
-            if (entry.type === "collection") {
-              const issues = collectionIssues(entry);
-              issues.forEach((issue) => {
-                st.issueStates[issue.title] = !!e.target.checked;
-              });
-            }
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-          });
-
           top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
             openCollectionModal(entry.id);
+          });
+
+          top.querySelector('[data-action="collapse"]')?.addEventListener("click", () => {
+            item.classList.remove("expanded");
+            item.setAttribute("aria-expanded", "false");
           });
 
           const posInput = progress.querySelector('[data-action="pos"]');
@@ -1403,8 +1400,6 @@
             const resolvedNextStatus = nextStatus(currentStatus, direction);
             st.status = resolvedNextStatus;
             st.done = resolvedNextStatus === READ_STATUS;
-            const doneCheckbox = top.querySelector('[data-action="done"]');
-            if (doneCheckbox) doneCheckbox.checked = st.done;
             cycleButton.dataset.status = resolvedNextStatus;
             cycleButton.className = `status-cycle status-${resolvedNextStatus}`;
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
@@ -1458,6 +1453,12 @@
           const layout = document.createElement("div");
           layout.className = "item-grid";
           layout.append(cover, content);
+          item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          item.addEventListener("click", (e) => {
+            if (e.target.closest("a, button, input, textarea, select, label")) return;
+            item.classList.toggle("expanded");
+            item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          });
 
           item.appendChild(layout);
           list.appendChild(item);
