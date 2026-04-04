@@ -409,25 +409,40 @@
     .progress-pos-meta,
     .progress-note-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 22px; font-size: 12px; letter-spacing: .15px; }
     .progress-note-label { font-size: var(--font-sm); }
-    .status-toggle { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-    .status-chip {
-      min-width: 28px;
-      min-height: 26px;
-      padding: 0 6px;
+    .status-cycle {
+      min-height: 30px;
+      padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid rgba(100, 116, 139, .65);
       background: rgba(15, 23, 42, .7);
-      color: #cbd5e1;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .25px;
+      color: #dbeafe;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
       cursor: pointer;
+      width: fit-content;
     }
-    .status-chip.active {
-      border-color: #7c640f;
-      background: rgba(250, 204, 21, .14);
-      color: #fde68a;
+    .status-cycle-short {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      border: 1px solid rgba(148, 163, 184, .45);
+      background: rgba(15, 23, 42, .75);
+      color: #cbd5e1;
     }
+    .status-cycle-label { font-size: 12px; }
+    .status-cycle.status-unread { border-color: rgba(100, 116, 139, .65); }
+    .status-cycle.status-in_progress { border-color: #2563eb; background: rgba(37, 99, 235, .14); }
+    .status-cycle.status-read { border-color: #15803d; background: rgba(22, 163, 74, .14); }
+    .status-cycle.status-paused { border-color: #b45309; background: rgba(245, 158, 11, .16); }
+    .status-cycle.status-dropped { border-color: #991b1b; background: rgba(239, 68, 68, .14); }
     .progress-unit-pill {
       display: inline-flex;
       align-items: center;

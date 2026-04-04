@@ -95,6 +95,13 @@
 
   const ITEM_STATUSES = ["unread", "in_progress", "read", "paused", "dropped"];
   const READ_STATUS = "read";
+  const STATUS_META = {
+    unread: { label: "Unread", short: "U" },
+    in_progress: { label: "In progress", short: "IP" },
+    read: { label: "Read", short: "R" },
+    paused: { label: "Paused", short: "P" },
+    dropped: { label: "Dropped", short: "D" }
+  };
 
   const SEARCH_SYNONYMS = {
     bruce: "batman",
@@ -447,6 +454,14 @@
     const status = String(st?.status || "").trim().toLowerCase();
     if (ITEM_STATUSES.includes(status)) return status;
     return st?.done ? READ_STATUS : "unread";
+  }
+
+  function nextStatus(currentStatus, step = 1) {
+    const current = ensureStatus({ status: currentStatus });
+    const index = Math.max(0, ITEM_STATUSES.indexOf(current));
+    const normalizedStep = step < 0 ? -1 : 1;
+    const nextIndex = (index + normalizedStep + ITEM_STATUSES.length) % ITEM_STATUSES.length;
+    return ITEM_STATUSES[nextIndex];
   }
 
   function normalizeSearchToken(value) {
@@ -1302,13 +1317,17 @@
             </label>
             <label class="progress-note-group">
               <span class="muted progress-note-label">Status</span>
-              <div class="status-toggle" data-action="status-toggle" role="group" aria-label="Reading status">
-                <button class="status-chip${ensureStatus(st) === "unread" ? " active" : ""}" type="button" data-status="unread" title="Unread">U</button>
-                <button class="status-chip${ensureStatus(st) === "in_progress" ? " active" : ""}" type="button" data-status="in_progress" title="In progress">IP</button>
-                <button class="status-chip${ensureStatus(st) === "read" ? " active" : ""}" type="button" data-status="read" title="Read">R</button>
-                <button class="status-chip${ensureStatus(st) === "paused" ? " active" : ""}" type="button" data-status="paused" title="Paused">P</button>
-                <button class="status-chip${ensureStatus(st) === "dropped" ? " active" : ""}" type="button" data-status="dropped" title="Dropped">D</button>
-              </div>
+              <button
+                class="status-cycle status-${ensureStatus(st)}"
+                data-action="status-cycle"
+                data-status="${ensureStatus(st)}"
+                type="button"
+                title="Click to cycle status • Shift+Click for previous"
+                aria-label="Reading status: ${escapeAttr(STATUS_META[ensureStatus(st)]?.label || "Unread")}"
+              >
+                <span class="status-cycle-short">${escapeHtml(STATUS_META[ensureStatus(st)]?.short || "U")}</span>
+                <span class="status-cycle-label">${escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread")}</span>
+              </button>
             </label>
           `;
 
@@ -1370,16 +1389,22 @@
             saveState();
           });
 
-          progress.querySelector('[data-action="status-toggle"]').addEventListener("click", (e) => {
-            const statusButton = e.target.closest("[data-status]");
-            if (!statusButton) return;
-            const nextStatus = ITEM_STATUSES.includes(statusButton.dataset.status) ? statusButton.dataset.status : "unread";
-            st.status = nextStatus;
-            st.done = nextStatus === READ_STATUS;
+          progress.querySelector('[data-action="status-cycle"]').addEventListener("click", (e) => {
+            const cycleButton = e.currentTarget;
+            const direction = e.shiftKey ? -1 : 1;
+            const currentStatus = ensureStatus(st);
+            const resolvedNextStatus = nextStatus(currentStatus, direction);
+            st.status = resolvedNextStatus;
+            st.done = resolvedNextStatus === READ_STATUS;
             const doneCheckbox = top.querySelector('[data-action="done"]');
             if (doneCheckbox) doneCheckbox.checked = st.done;
-            const chips = progress.querySelectorAll(".status-chip");
-            chips.forEach((chip) => chip.classList.toggle("active", chip.dataset.status === nextStatus));
+            cycleButton.dataset.status = resolvedNextStatus;
+            cycleButton.className = `status-cycle status-${resolvedNextStatus}`;
+            cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
+            const shortNode = cycleButton.querySelector(".status-cycle-short");
+            const labelNode = cycleButton.querySelector(".status-cycle-label");
+            if (shortNode) shortNode.textContent = STATUS_META[resolvedNextStatus]?.short || "U";
+            if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();
