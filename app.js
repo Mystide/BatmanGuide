@@ -93,6 +93,9 @@
     story: "story"
   };
 
+  const ITEM_STATUSES = ["unread", "in_progress", "read", "paused", "dropped"];
+  const READ_STATUS = "read";
+
   const SEARCH_SYNONYMS = {
     bruce: "batman",
     wayne: "batman",
@@ -146,6 +149,7 @@
     hideOptional: false,
     sortBy: "order",
     track: "",
+    status: "",
     character: "",
     era: ""
   });
@@ -191,6 +195,7 @@
       hideOptional: !!$("hideOptional").checked,
       sortBy: $("sortBy").value || "order",
       track: $("trackFilter").value || "",
+      status: $("statusFilter").value || "",
       character: $("characterFilter").value || "",
       era: $("eraFilter").value || ""
     });
@@ -202,6 +207,7 @@
       const type = params.get("type") || "";
       const sortBy = params.get("sort") || "order";
       const track = params.get("track") || "";
+      const status = params.get("status") || "";
       const character = params.get("character") || "";
       const era = params.get("era") || "";
       return {
@@ -211,6 +217,7 @@
         hideOptional: params.get("required") === "1",
         sortBy: ["order", "title", "progress", "recent"].includes(sortBy) ? sortBy : "order",
         track: ["", "main", "batfamily"].includes(track) ? track : "",
+        status: ITEM_STATUSES.includes(status) ? status : "",
         character: character,
         era: ERA_OPTIONS.includes(era) ? era : ""
       };
@@ -228,6 +235,7 @@
         hideOptional: !!$("hideOptional").checked,
         sortBy: $("sortBy").value || "order",
         track: $("trackFilter").value || "",
+        status: $("statusFilter").value || "",
         character: $("characterFilter").value || "",
         era: $("eraFilter").value || ""
       };
@@ -251,6 +259,9 @@
 
       if (filters.track && filters.track !== defaults.track) next.set("track", filters.track);
       else next.delete("track");
+
+      if (filters.status && filters.status !== defaults.status) next.set("status", filters.status);
+      else next.delete("status");
 
       if (filters.character && filters.character !== defaults.character) next.set("character", filters.character);
       else next.delete("character");
@@ -424,7 +435,18 @@
         state.items[entry.id].issueStates = {};
       }
     }
+    const st = state.items[entry.id];
+    const fallbackStatus = st.done ? READ_STATUS : "unread";
+    st.status = ITEM_STATUSES.includes(st.status) ? st.status : fallbackStatus;
+    st.done = st.status === READ_STATUS;
+    state.items[entry.id] = st;
     return state.items[entry.id];
+  }
+
+  function ensureStatus(st) {
+    const status = String(st?.status || "").trim().toLowerCase();
+    if (ITEM_STATUSES.includes(status)) return status;
+    return st?.done ? READ_STATUS : "unread";
   }
 
   function normalizeSearchToken(value) {
@@ -636,6 +658,7 @@
     const hideOptional = $("hideOptional").checked;
     const sortBy = $("sortBy").value;
     const track = $("trackFilter").value;
+    const status = $("statusFilter").value;
     const character = $("characterFilter").value;
     const era = $("eraFilter").value;
 
@@ -660,6 +683,7 @@
       if (hideOptional && entry.optional) return false;
       if (track === "main" && entry.track === "batfamily") return false;
       if (track === "batfamily" && entry.track !== "batfamily") return false;
+      if (status && ensureStatus(st) !== status) return false;
       if (era && entry.era !== era) return false;
       if (character) {
         const chars = Array.isArray(entry.characters) ? entry.characters : [];
@@ -704,6 +728,7 @@
     if ($("onlyRemaining")?.checked) labels.push("Open only");
     if ($("hideOptional")?.checked) labels.push("Required only");
     if ($("trackFilter")?.value) labels.push(`Track: ${$("trackFilter").value}`);
+    if ($("statusFilter")?.value) labels.push(`Status: ${$("statusFilter").value.replaceAll("_", " ")}`);
     if ($("characterFilter")?.value) labels.push(`Character: ${$("characterFilter").value}`);
     if ($("eraFilter")?.value) labels.push(`Era: ${$("eraFilter").value}`);
     if (($("sortBy")?.value || "order") !== "order") labels.push(`Sort: ${$("sortBy").value}`);
@@ -719,6 +744,7 @@
     if ($("onlyRemaining")?.checked) count++;
     if ($("hideOptional")?.checked) count++;
     if ($("trackFilter")?.value) count++;
+    if ($("statusFilter")?.value) count++;
     if ($("characterFilter")?.value) count++;
     if ($("eraFilter")?.value) count++;
     if (($("sortBy")?.value || "order") !== "order") count++;
@@ -1274,6 +1300,16 @@
               <span class="muted progress-note-label">Note</span>
               <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
             </label>
+            <label class="progress-note-group">
+              <span class="muted progress-note-label">Status</span>
+              <select class="select" data-action="status">
+                <option value="unread" ${ensureStatus(st) === "unread" ? "selected" : ""}>Unread</option>
+                <option value="in_progress" ${ensureStatus(st) === "in_progress" ? "selected" : ""}>In progress</option>
+                <option value="read" ${ensureStatus(st) === "read" ? "selected" : ""}>Read</option>
+                <option value="paused" ${ensureStatus(st) === "paused" ? "selected" : ""}>Paused</option>
+                <option value="dropped" ${ensureStatus(st) === "dropped" ? "selected" : ""}>Dropped</option>
+              </select>
+            </label>
           `;
 
           const shouldShowEditor = showCoverEditor;
@@ -1290,6 +1326,7 @@
 
           top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
             st.done = e.target.checked;
+            st.status = st.done ? READ_STATUS : "unread";
             if (entry.type === "collection") {
               const issues = collectionIssues(entry);
               issues.forEach((issue) => {
@@ -1331,6 +1368,18 @@
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();
+          });
+
+          progress.querySelector('[data-action="status"]').addEventListener("change", (e) => {
+            const nextStatus = ITEM_STATUSES.includes(e.target.value) ? e.target.value : "unread";
+            st.status = nextStatus;
+            st.done = nextStatus === READ_STATUS;
+            const doneCheckbox = top.querySelector('[data-action="done"]');
+            if (doneCheckbox) doneCheckbox.checked = st.done;
+            st.touchedAt = nowISO();
+            state.lastTouchedId = entry.id;
+            saveState();
+            refreshHeader(filtered);
           });
 
           if (manualCover) {
@@ -1407,8 +1456,10 @@
     const updated = collectionIssueStats(entry, st);
     if (updated.total && updated.done === updated.total) {
       st.done = true;
+      st.status = READ_STATUS;
     } else if (updated.done < updated.total) {
       st.done = false;
+      st.status = "in_progress";
     }
     st.touchedAt = nowISO();
     state.lastTouchedId = entry.id;
@@ -1990,7 +2041,7 @@
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
-      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "character", "era"].some((key) => params.has(key));
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "status", "character", "era"].some((key) => params.has(key));
       const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
 
       $("search").value = activeFilters.search || "";
@@ -1999,6 +2050,7 @@
       $("hideOptional").checked = !!activeFilters.hideOptional;
       $("sortBy").value = activeFilters.sortBy || "order";
       $("trackFilter").value = activeFilters.track || "";
+      $("statusFilter").value = activeFilters.status || "";
       $("characterFilter").value = activeFilters.character || "";
       $("eraFilter").value = ERA_OPTIONS.includes(activeFilters.era) ? activeFilters.era : "";
       syncQuickFilterChips();
@@ -2025,7 +2077,7 @@
       const panel = $("advancedFiltersPanel");
       if (!panel) return;
       const prefs = readUiPrefs();
-      const hasAdvancedFilters = !!($("trackFilter").value || $("characterFilter").value || $("eraFilter").value || ($("sortBy").value || "order") !== "order");
+      const hasAdvancedFilters = !!($("trackFilter").value || $("statusFilter").value || $("characterFilter").value || $("eraFilter").value || ($("sortBy").value || "order") !== "order");
       panel.open = hasAdvancedFilters || !!prefs.advancedFiltersOpen;
       panel.addEventListener("toggle", () => {
         writeUiPrefs({ advancedFiltersOpen: panel.open });
@@ -2054,7 +2106,7 @@
         syncEraToggleButton();
       };
 
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "characterFilter", "eraFilter"]) {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "statusFilter", "characterFilter", "eraFilter"]) {
         const el = $(id);
         const shouldDebounce = id === "search";
         el.addEventListener("input", () => {
@@ -2077,6 +2129,7 @@
             $("hideOptional").checked = false;
             $("typeFilter").value = "";
             $("trackFilter").value = "";
+            $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
             $("sortBy").value = "recent";
@@ -2085,6 +2138,7 @@
             $("hideOptional").checked = true;
             $("typeFilter").value = "";
             $("trackFilter").value = "main";
+            $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
             $("sortBy").value = "order";
@@ -2094,6 +2148,7 @@
             $("hideOptional").checked = false;
             $("typeFilter").value = "";
             $("trackFilter").value = "";
+            $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
             $("sortBy").value = "order";
@@ -2220,6 +2275,7 @@
         $("hideOptional").checked = false;
         $("sortBy").value = "order";
         $("trackFilter").value = "";
+        $("statusFilter").value = "";
         $("characterFilter").value = "";
         $("eraFilter").value = "";
         writeFilters();
