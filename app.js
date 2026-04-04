@@ -1295,13 +1295,9 @@
           coverTitle.innerHTML = safeTitle;
           cover.append(coverLink, coverTitle);
           top.innerHTML = `
-            <label class="item-title-row">
-              <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-              <span class="title-wrap">
-                <span class="title">Reading progress</span>
-                <span class="item-hint">${safeHint || "Reading progress"}</span>
-              </span>
-            </label>
+            <div class="item-title-row panel-heading">
+              <span class="title">Reading progress</span>
+            </div>
             <div class="item-actions">
               ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
               <button class="btn subtle item-close" type="button" data-action="collapse">Close</button>
@@ -1361,21 +1357,6 @@
             `;
           }
 
-          top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
-            st.done = e.target.checked;
-            st.status = st.done ? READ_STATUS : "unread";
-            if (entry.type === "collection") {
-              const issues = collectionIssues(entry);
-              issues.forEach((issue) => {
-                st.issueStates[issue.title] = !!e.target.checked;
-              });
-            }
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-          });
-
           top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
             openCollectionModal(entry.id);
           });
@@ -1419,8 +1400,6 @@
             const resolvedNextStatus = nextStatus(currentStatus, direction);
             st.status = resolvedNextStatus;
             st.done = resolvedNextStatus === READ_STATUS;
-            const doneCheckbox = top.querySelector('[data-action="done"]');
-            if (doneCheckbox) doneCheckbox.checked = st.done;
             cycleButton.dataset.status = resolvedNextStatus;
             cycleButton.className = `status-cycle status-${resolvedNextStatus}`;
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
