@@ -1315,7 +1315,7 @@
               <span class="muted progress-note-label">Note</span>
               <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
             </label>
-            <label class="progress-note-group">
+            <label class="progress-note-group progress-status-group">
               <span class="muted progress-note-label">Status</span>
               <button
                 class="status-cycle status-${ensureStatus(st)}"
