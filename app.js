@@ -1264,7 +1264,15 @@
           cover.className = "cover";
           cover.style.background = coverGradient(entry);
           cover.innerHTML = entryCoverFallback(entry);
-          void applyBestCover(cover, entry);
+          const coverStatusBadge = document.createElement("span");
+          coverStatusBadge.className = "cover-status-badge";
+          coverStatusBadge.textContent = STATUS_META[ensureStatus(st)]?.label || "Unread";
+          const coverIdBadge = document.createElement("span");
+          coverIdBadge.className = "cover-id-badge";
+          coverIdBadge.textContent = entry.id;
+          void applyBestCover(cover, entry).finally(() => {
+            cover.append(coverStatusBadge, coverIdBadge);
+          });
 
           const content = document.createElement("div");
 
@@ -1405,6 +1413,7 @@
             const labelNode = cycleButton.querySelector(".status-cycle-label");
             if (shortNode) shortNode.textContent = STATUS_META[resolvedNextStatus]?.short || "U";
             if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
+            if (coverStatusBadge) coverStatusBadge.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
             saveState();
