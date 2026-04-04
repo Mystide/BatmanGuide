@@ -1314,9 +1314,7 @@
           tags.innerHTML = `
             <span class="tag">${escapeHtml(entry.type)}</span>
             <span class="tag">${entry.optional ? "optional" : "required"}</span>
-            ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
             ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-            ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
             ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
             ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
             <span class="muted">${escapeHtml(entry.id)}</span>
