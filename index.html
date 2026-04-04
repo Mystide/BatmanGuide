@@ -331,7 +331,7 @@
     .items {
       padding: 12px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 12px;
     }
     .item {
@@ -347,8 +347,8 @@
       transition: border-color var(--motion-fast) var(--ease-std), transform var(--motion-fast) var(--ease-std), background var(--motion-med) var(--ease-std), box-shadow var(--motion-med) var(--ease-std);
     }
     .item-grid { display:grid; grid-template-columns: 112px minmax(0,1fr); gap: 10px; align-items: start; }
-    .item-head { display:flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: nowrap; padding: 10px 10px 0; }
-    .item-actions { display:flex; gap: var(--space-2); align-items:center; flex-wrap: wrap; }
+    .item-head { display:flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 10px 0; }
+    .item-actions { display:flex; gap: var(--space-2); align-items:center; flex-wrap: wrap; margin-left: auto; }
     .item-title-row { display:flex; gap: 8px; align-items:flex-start; flex: 1; min-width: 0; }
     .item-title-row input[type="checkbox"] { margin: 0; width: 18px; height: 18px; accent-color: #60a5fa; }
     .title-wrap { display:flex; flex-direction:column; min-width:0; gap:2px; }
@@ -837,8 +837,8 @@
     }
     @media (max-width: 1280px) {
       .item { padding: 9px; }
-      .item-grid { grid-template-columns: 1fr; gap: 0; }
-      .cover { width: 100%; height: auto; }
+      .item-grid { grid-template-columns: 96px minmax(0,1fr); gap: 10px; }
+      .cover { width: 96px; height: 144px; }
       .title { font-size: 17px; }
       .top-actions .btn { min-width: 0; }
     }
@@ -864,8 +864,8 @@
       .title { font-size: 20px; }
       .muted { font-size: 14px; }
       .item { padding: 11px; }
-      .item-grid { grid-template-columns: 1fr; gap: 0; }
-      .cover { width: 100%; height: auto; }
+      .item-grid { grid-template-columns: 84px minmax(0,1fr); gap: 10px; }
+      .cover { width: 84px; height: 126px; }
     }
     @media (max-width: 760px) {
       h1 { font-size: 24px; }
