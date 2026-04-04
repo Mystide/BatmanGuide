@@ -1102,8 +1102,19 @@
   function normalizeCoverUrl(url) {
 
     if (!url) return "";
-    if (!url.includes("covers.openlibrary.org")) return url;
-    return url.includes("?") ? `${url}&default=false` : `${url}?default=false`;
+    let normalized = String(url).trim();
+    try {
+      const parsed = new URL(normalized);
+      const isGoogleBooksCover = parsed.hostname === "books.google.com" && parsed.pathname.includes("/books/content");
+      if (isGoogleBooksCover && parsed.searchParams.has("edge")) {
+        parsed.searchParams.delete("edge");
+      }
+      normalized = parsed.toString();
+    } catch (_) {
+      // Keep original URL if parsing fails.
+    }
+    if (!normalized.includes("covers.openlibrary.org")) return normalized;
+    return normalized.includes("?") ? `${normalized}&default=false` : `${normalized}?default=false`;
   }
 
   function sanitizeManualCoverUrl(url) {
