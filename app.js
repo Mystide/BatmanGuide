@@ -299,6 +299,7 @@
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
   let focusCoverRenderToken = 0;
+  let outsideCollapseBound = false;
   const coverCache = loadJSON(KEYS.coverCache, {});
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
@@ -1274,6 +1275,7 @@
           });
 
           const content = document.createElement("div");
+          content.className = "item-content";
 
           const top = document.createElement("div");
           top.className = "item-head";
@@ -1281,49 +1283,32 @@
           const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
           const safeUrl = escapeAttr(safeExternalUrl(entry.url));
           const entryIssueStats = collectionIssueStats(entry, st);
-          top.innerHTML = `
-            <label class="item-title-row">
-              <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
-              <span class="title-wrap">
-                <span class="title">${safeTitle}</span>
-                ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
-              </span>
-            </label>
-            <div class="item-actions">
-              ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-              <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
-            </div>
-          `;
-
-          const tags = document.createElement("div");
-          tags.className = "tags";
-          tags.innerHTML = `
-            <span class="tag">${escapeHtml(entry.type)}</span>
-            <span class="tag">${entry.optional ? "optional" : "required"}</span>
-            ${entry.track === "batfamily" ? "<span class=\"tag\">bat-family</span>" : ""}
-            ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-            ${showCoverEditor && hasSavedCover ? "<span class=\"tag cover-saved-tag\">cover saved</span>" : ""}
-            ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
-            ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
-            <span class="muted">${escapeHtml(entry.id)}</span>
-          `;
+          const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
+          if (hasProgress) item.classList.add("expanded");
+          const coverLink = document.createElement("a");
+          coverLink.className = "cover-link";
+          coverLink.href = safeUrl;
+          coverLink.target = "_blank";
+          coverLink.rel = "noopener noreferrer";
+          coverLink.textContent = "DCUI";
+          const coverTitle = document.createElement("span");
+          coverTitle.className = "cover-title";
+          coverTitle.innerHTML = safeTitle;
+          cover.append(coverLink, coverTitle);
+          const hasTopActions = !!entryIssueStats.total;
+          top.innerHTML = hasTopActions
+            ? `
+              <div class="item-actions">
+                <button class="btn" type="button" data-action="open-issues">Issues</button>
+              </div>
+            `
+            : "";
 
           const progress = document.createElement("div");
           progress.className = "progress-fields";
           progress.innerHTML = `
-            <div class="progress-pos-group">
-              <div class="progress-pos-meta">
-                <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
-                <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
-              </div>
-              <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-            </div>
-            <label class="progress-note-group">
-              <span class="muted progress-note-label">Note</span>
-              <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
-            </label>
-            <label class="progress-note-group progress-status-group">
-              <span class="muted progress-note-label">Status</span>
+            <div class="progress-inline">
+              <input class="input progress-inline-input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
               <button
                 class="status-cycle status-${ensureStatus(st)}"
                 data-action="status-cycle"
@@ -1335,7 +1320,7 @@
                 <span class="status-cycle-short">${escapeHtml(STATUS_META[ensureStatus(st)]?.short || "U")}</span>
                 <span class="status-cycle-label">${escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread")}</span>
               </button>
-            </label>
+            </div>
           `;
 
           const shouldShowEditor = showCoverEditor;
@@ -1349,21 +1334,6 @@
               <button class="btn" type="button" data-action="clear-cover">Clear</button>
             `;
           }
-
-          top.querySelector('[data-action="done"]').addEventListener("change", (e) => {
-            st.done = e.target.checked;
-            st.status = st.done ? READ_STATUS : "unread";
-            if (entry.type === "collection") {
-              const issues = collectionIssues(entry);
-              issues.forEach((issue) => {
-                st.issueStates[issue.title] = !!e.target.checked;
-              });
-            }
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-            render();
-          });
 
           top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
             openCollectionModal(entry.id);
@@ -1389,13 +1359,6 @@
             persistPos(e.target.value, { immediate: true });
           });
 
-          progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
-            st.note = e.target.value.trim();
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
-          });
-
           progress.querySelector('[data-action="status-cycle"]').addEventListener("click", (e) => {
             const cycleButton = e.currentTarget;
             const direction = e.shiftKey ? -1 : 1;
@@ -1403,8 +1366,6 @@
             const resolvedNextStatus = nextStatus(currentStatus, direction);
             st.status = resolvedNextStatus;
             st.done = resolvedNextStatus === READ_STATUS;
-            const doneCheckbox = top.querySelector('[data-action="done"]');
-            if (doneCheckbox) doneCheckbox.checked = st.done;
             cycleButton.dataset.status = resolvedNextStatus;
             cycleButton.className = `status-cycle status-${resolvedNextStatus}`;
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
@@ -1452,12 +1413,19 @@
             });
           }
 
-          content.append(top, tags, progress);
+          if (hasTopActions) content.append(top);
+          content.append(progress);
           if (manualCover) content.append(manualCover);
 
           const layout = document.createElement("div");
           layout.className = "item-grid";
           layout.append(cover, content);
+          item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          item.addEventListener("click", (e) => {
+            if (e.target.closest("a, button, input, textarea, select, label")) return;
+            item.classList.toggle("expanded");
+            item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          });
 
           item.appendChild(layout);
           list.appendChild(item);
@@ -1482,11 +1450,25 @@
       rootFrag.appendChild(details);
     }
     root.appendChild(rootFrag);
+    bindOutsideCollapse();
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
     if (t0) recordPerf("render", perfNow() - t0);
     updateDebugHealth();
+  }
+
+  function bindOutsideCollapse() {
+    if (outsideCollapseBound) return;
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest(".item")) return;
+      document.querySelectorAll(".item.expanded").forEach((node) => {
+        node.classList.remove("expanded");
+        node.setAttribute("aria-expanded", "false");
+      });
+    });
+    outsideCollapseBound = true;
   }
 
   function persistCollectionState(entry, st) {
