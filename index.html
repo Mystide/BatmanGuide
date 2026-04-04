@@ -73,9 +73,6 @@
     }
     .top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px) saturate(120%); background: rgba(7,11,22,.72); border-bottom: 1px solid rgba(70, 85, 116, .45); transition: transform .28s ease, opacity .28s ease, box-shadow .28s ease; }
     .top.compact { box-shadow: 0 10px 20px rgba(0,0,0,.28); }
-    .top.header-hidden { transform: translateY(-100%); opacity: .72; }
-    .top.header-hidden:hover,
-    .top.header-hidden:focus-within { transform: translateY(0); opacity: 1; }
     .top:hover,
     .top:focus-within { transform: translateY(0); opacity: 1; }
     .row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }

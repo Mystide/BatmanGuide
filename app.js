@@ -1855,21 +1855,12 @@
     if (missing.length) render();
   }
 
-  function touchOptimizedHeader() {
-    const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    return coarsePointer && window.innerWidth <= 1366;
-  }
-
   function bindAdaptiveHeader() {
     const header = document.querySelector(".top");
     const controls = $("headerControls");
     const filterToggle = $("btnFilterMenu");
-    const revealHeader = $("btnRevealHeader");
     if (!header || !controls || !filterToggle) return;
-    let lastScrollY = window.scrollY;
     let userWantsFiltersOpen = !!readUiPrefs().filtersOpen;
-    let headerHidden = false;
-    let forceHeaderVisibleUntil = 0;
 
     const syncFilterToggle = () => {
       const open = !controls.classList.contains("hidden");
@@ -1887,63 +1878,23 @@
       writeUiPrefs({ filtersOpen: userWantsFiltersOpen });
     };
 
-    const setHeaderHidden = (hidden) => {
-      headerHidden = !!hidden;
-      header.classList.toggle("header-hidden", headerHidden);
-      syncRevealButton();
-      syncStickySearchOffset();
-    };
-
     const syncStickySearchOffset = () => {
-      if (headerHidden) {
-        document.documentElement.style.setProperty("--sticky-search-top", "0px");
-        return;
-      }
       const rect = header.getBoundingClientRect();
       const visible = Math.max(0, Math.min(rect.bottom, header.offsetHeight || 0));
       document.documentElement.style.setProperty("--sticky-search-top", `${Math.round(visible)}px`);
-    };
-
-    const syncRevealButton = () => {
-      if (!revealHeader) return;
-      const shouldShow = headerHidden;
-      revealHeader.classList.toggle("hidden", !shouldShow);
-    };
-
-    const releaseHeaderFocus = () => {
-      const active = document.activeElement;
-      if (!active || active === document.body) return;
-      if (!header.contains(active)) return;
-      if (typeof active.blur === "function") active.blur();
     };
 
     filterToggle.addEventListener("click", () => {
       const opening = controls.classList.contains("hidden");
       setFiltersOpen(opening);
       if (opening) {
-        forceHeaderVisibleUntil = Date.now() + 900;
-        setHeaderHidden(false);
         controls.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
-    if (revealHeader) {
-      revealHeader.addEventListener("click", () => {
-        forceHeaderVisibleUntil = Date.now() + 900;
-        setHeaderHidden(false);
-        queueUpdate();
-      });
-    }
-
     const updateCompactMode = () => {
       const y = window.scrollY;
       const shouldCompact = y > 24 || window.innerHeight < 860;
-      const forceVisible = Date.now() < forceHeaderVisibleUntil;
-
-      // Keep header behavior stable and identical across devices.
-      // Only compact styling changes on scroll; header never auto-hides.
-      if (forceVisible) setHeaderHidden(false);
-      setHeaderHidden(false);
 
       header.classList.toggle("compact", shouldCompact);
       syncStickySearchOffset();
@@ -1955,7 +1906,6 @@
       raf = requestAnimationFrame(() => {
         raf = 0;
         updateCompactMode();
-        lastScrollY = window.scrollY;
       });
     };
 
