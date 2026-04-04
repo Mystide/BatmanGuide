@@ -1339,6 +1339,11 @@
             openCollectionModal(entry.id);
           });
 
+          top.querySelector('[data-action="collapse"]')?.addEventListener("click", () => {
+            item.classList.remove("expanded");
+            item.setAttribute("aria-expanded", "false");
+          });
+
           const posInput = progress.querySelector('[data-action="pos"]');
           const persistPos = (value, { immediate = false } = {}) => {
             const nextPos = String(value || "").trim();
@@ -1371,8 +1376,10 @@
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
             const shortNode = cycleButton.querySelector(".status-cycle-short");
             const labelNode = cycleButton.querySelector(".status-cycle-label");
+            const headingNode = top.querySelector(".title");
             if (shortNode) shortNode.textContent = STATUS_META[resolvedNextStatus]?.short || "U";
             if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
+            if (headingNode) headingNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             if (coverStatusBadge) coverStatusBadge.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
