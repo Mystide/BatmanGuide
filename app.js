@@ -299,6 +299,7 @@
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
   let focusCoverRenderToken = 0;
+  let outsideCollapseBound = false;
   const coverCache = loadJSON(KEYS.coverCache, {});
   const fallbackCoverCache = loadJSON(KEYS.fallbackCoverCache, {});
   const coverFetchInFlight = new Map();
@@ -1295,12 +1296,9 @@
           coverTitle.innerHTML = safeTitle;
           cover.append(coverLink, coverTitle);
           top.innerHTML = `
-            <div class="item-title-row panel-heading">
-              <span class="title">Reading progress</span>
-            </div>
             <div class="item-actions">
               ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-              <button class="btn subtle item-close" type="button" data-action="collapse">Close</button>
+              <button class="btn subtle item-close" type="button" data-action="collapse" aria-label="Close details">×</button>
             </div>
           `;
 
@@ -1325,10 +1323,6 @@
               </div>
               <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
             </div>
-            <label class="progress-note-group">
-              <span class="muted progress-note-label">Note</span>
-              <input class="input" data-action="note" placeholder="optional note" value="${escapeAttr(st.note || "")}" />
-            </label>
             <label class="progress-note-group progress-status-group">
               <span class="muted progress-note-label">Status</span>
               <button
@@ -1384,13 +1378,6 @@
 
           posInput.addEventListener("change", (e) => {
             persistPos(e.target.value, { immediate: true });
-          });
-
-          progress.querySelector('[data-action="note"]').addEventListener("change", (e) => {
-            st.note = e.target.value.trim();
-            st.touchedAt = nowISO();
-            state.lastTouchedId = entry.id;
-            saveState();
           });
 
           progress.querySelector('[data-action="status-cycle"]').addEventListener("click", (e) => {
@@ -1485,11 +1472,25 @@
       rootFrag.appendChild(details);
     }
     root.appendChild(rootFrag);
+    bindOutsideCollapse();
 
     refreshHeader(filtered);
     window.__BATMAN_APP_READY = true;
     if (t0) recordPerf("render", perfNow() - t0);
     updateDebugHealth();
+  }
+
+  function bindOutsideCollapse() {
+    if (outsideCollapseBound) return;
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest(".item")) return;
+      document.querySelectorAll(".item.expanded").forEach((node) => {
+        node.classList.remove("expanded");
+        node.setAttribute("aria-expanded", "false");
+      });
+    });
+    outsideCollapseBound = true;
   }
 
   function persistCollectionState(entry, st) {
