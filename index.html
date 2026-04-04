@@ -562,11 +562,12 @@
     }
     .progress-inline {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 6px;
       align-items: center;
     }
-    .progress-inline-input { min-height: 34px; padding: 6px 10px; }
+    .progress-inline-input { min-height: 34px; padding: 6px 10px; min-width: 0; }
+    .progress-inline .status-cycle { min-width: 104px; justify-content: center; }
     .item-content .input {
       background: rgba(30, 41, 59, .52);
       border-color: rgba(100, 116, 139, .42);
@@ -1007,6 +1008,8 @@
       .item { padding: 10px; }
       .item-grid { grid-template-columns: 1fr; gap: 8px; }
       .item-content { top: auto; }
+      .progress-inline { grid-template-columns: 1fr; }
+      .progress-inline .status-cycle { width: 100%; justify-content: center; }
       .cover {
         width: min(100%, 220px);
         height: auto;

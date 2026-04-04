@@ -1306,7 +1306,6 @@
           progress.className = "progress-fields";
           progress.innerHTML = `
             <div class="progress-inline">
-              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
               <input class="input progress-inline-input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
               <button
                 class="status-cycle status-${ensureStatus(st)}"
