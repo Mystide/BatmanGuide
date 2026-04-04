@@ -813,12 +813,14 @@
         padding: 9px;
       }
       #headerControls.modal-backdrop {
-        place-items: center;
-        padding-top: 8px;
+        place-items: end stretch;
+        padding: 0;
       }
       #headerControls .modal-panel {
-        width: calc(100vw - 16px);
-        max-height: min(88vh, 880px);
+        width: 100vw;
+        max-height: min(84vh, 880px);
+        border-radius: 14px 14px 0 0;
+        padding-bottom: max(9px, env(safe-area-inset-bottom));
       }
       .modal-header h2 { font-size: 17px; }
       .modal-subtitle { font-size: 11px; }
