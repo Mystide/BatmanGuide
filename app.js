@@ -1274,6 +1274,7 @@
           });
 
           const content = document.createElement("div");
+          content.className = "item-content";
 
           const top = document.createElement("div");
           top.className = "item-head";
@@ -1281,17 +1282,29 @@
           const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
           const safeUrl = escapeAttr(safeExternalUrl(entry.url));
           const entryIssueStats = collectionIssueStats(entry, st);
+          const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
+          if (hasProgress) item.classList.add("expanded");
+          const safeStatusLabel = escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread");
+          const coverLink = document.createElement("a");
+          coverLink.className = "cover-link";
+          coverLink.href = safeUrl;
+          coverLink.target = "_blank";
+          coverLink.rel = "noopener noreferrer";
+          coverLink.textContent = "DCUI";
+          const coverTitle = document.createElement("span");
+          coverTitle.className = "cover-title";
+          coverTitle.innerHTML = safeTitle;
+          cover.append(coverLink, coverTitle);
           top.innerHTML = `
             <label class="item-title-row">
               <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
               <span class="title-wrap">
-                <span class="title">${safeTitle}</span>
-                ${safeHint ? `<span class="item-hint">${safeHint}</span>` : ""}
+                <span class="title">${safeStatusLabel}</span>
+                <span class="item-hint">${safeHint || "Tap card to open reading progress"}</span>
               </span>
             </label>
             <div class="item-actions">
               ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-              <a class="item-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">Open</a>
             </div>
           `;
 
@@ -1410,8 +1423,10 @@
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
             const shortNode = cycleButton.querySelector(".status-cycle-short");
             const labelNode = cycleButton.querySelector(".status-cycle-label");
+            const headingNode = top.querySelector(".title");
             if (shortNode) shortNode.textContent = STATUS_META[resolvedNextStatus]?.short || "U";
             if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
+            if (headingNode) headingNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             if (coverStatusBadge) coverStatusBadge.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
@@ -1458,6 +1473,12 @@
           const layout = document.createElement("div");
           layout.className = "item-grid";
           layout.append(cover, content);
+          item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          item.addEventListener("click", (e) => {
+            if (e.target.closest("a, button, input, textarea, select, label")) return;
+            item.classList.toggle("expanded");
+            item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          });
 
           item.appendChild(layout);
           list.appendChild(item);
