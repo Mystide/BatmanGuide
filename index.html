@@ -441,7 +441,7 @@
     .progress-fields {
       margin: 8px 10px 10px;
       display:grid;
-      grid-template-columns: minmax(140px, 220px) minmax(160px, 260px) auto;
+      grid-template-columns: 1fr;
       gap: 6px;
       align-items: end;
       justify-content: start;
@@ -456,6 +456,9 @@
       max-height: 180px;
       opacity: 1;
       pointer-events: auto;
+    }
+    @media (min-width: 1380px) {
+      .progress-fields { grid-template-columns: minmax(120px, 200px) minmax(160px, 1fr) auto; }
     }
     .progress-fields .input { min-height: 34px; padding: 6px 10px; }
     .collection-issues { margin-top: 10px; border: 1px solid rgba(148,163,184,.35); border-radius: 10px; background: rgba(15,23,42,.45); }
