@@ -644,7 +644,7 @@
       box-shadow: none;
     }
     .btn.subtle:hover { border-color: rgba(148, 163, 184, .75); }
-    .filters-advanced { display:grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 8px; align-items:end; }
+    .filters-advanced { display:grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: 8px; align-items:end; }
     .filters-actions { display:flex; gap:8px; flex-wrap:wrap; }
     .debug-health { margin-top: 8px; border: 1px dashed rgba(148,163,184,.45); border-radius: 10px; padding: 6px 8px; font-size: 12px; color: #cbd5e1; background: rgba(15, 23, 42, .35); }
     .debug-health strong { color: #f8fafc; }
@@ -973,6 +973,17 @@
                     <option value="redhood">Red Hood</option>
                     <option value="joker">Joker</option>
                     <option value="superman">Superman</option>
+                  </select>
+                </label>
+                <label class="field-label">
+                  <strong>Status</strong>
+                  <select id="statusFilter" class="select">
+                    <option value="">All statuses</option>
+                    <option value="unread">Unread</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="read">Read</option>
+                    <option value="paused">Paused</option>
+                    <option value="dropped">Dropped</option>
                   </select>
                 </label>
                 <label class="field-label">
