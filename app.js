@@ -351,6 +351,7 @@
     void saveJSON(KEYS.state, state);
   }
 
+  migrateCoverCacheUrls();
 
   function clampPullInterval(ms) {
     const n = Number(ms);
@@ -1097,6 +1098,26 @@
     }
 
     return "";
+  }
+
+  function migrateCoverCacheUrls() {
+    if (!coverCache || typeof coverCache !== "object") return;
+    let changed = false;
+    for (const [entryId, rawUrl] of Object.entries(coverCache)) {
+      const nextUrl = normalizeCoverUrl(rawUrl);
+      if (!nextUrl) {
+        if (rawUrl) {
+          delete coverCache[entryId];
+          changed = true;
+        }
+        continue;
+      }
+      if (nextUrl !== rawUrl) {
+        coverCache[entryId] = nextUrl;
+        changed = true;
+      }
+    }
+    if (changed) void saveJSON(KEYS.coverCache, coverCache);
   }
 
   function normalizeCoverUrl(url) {
