@@ -558,21 +558,15 @@
       margin: 0;
       padding-top: 8px;
       border-top: 1px solid rgba(148, 163, 184, .22);
-      display:grid;
-      grid-template-columns: minmax(90px, 120px) minmax(0, 1fr);
-      gap: 5px;
-      align-items: end;
-      justify-content: start;
-      align-content: start;
-      max-height: none;
-      opacity: 1;
-      overflow: visible;
-      pointer-events: auto;
+      display: block;
     }
-    .progress-pos-group { grid-column: 1 / 2; }
-    .progress-note-group { grid-column: 2 / 3; }
-    .progress-status-group { grid-column: 1 / -1; justify-items: flex-start; }
-    .progress-fields .input { min-height: 34px; padding: 6px 10px; }
+    .progress-inline {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+    }
+    .progress-inline-input { min-height: 34px; padding: 6px 10px; }
     .item-content .input {
       background: rgba(30, 41, 59, .52);
       border-color: rgba(100, 116, 139, .42);

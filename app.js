@@ -1302,29 +1302,12 @@
             </div>
           `;
 
-          const tags = document.createElement("div");
-          tags.className = "tags";
-          tags.innerHTML = `
-            <span class="tag">${escapeHtml(entry.type)}</span>
-            <span class="tag">${entry.optional ? "optional" : "required"}</span>
-            ${entryIssueStats.total ? `<span class="tag">${entryIssueStats.done}/${entryIssueStats.total} issues</span>` : ""}
-            ${isContinueTarget ? "<span class=\"tag continue-tag\">continue</span>" : ""}
-            ${isRandomTarget ? "<span class=\"tag random-tag\">random pick</span>" : ""}
-            <span class="muted">${escapeHtml(entry.id)}</span>
-          `;
-
           const progress = document.createElement("div");
           progress.className = "progress-fields";
           progress.innerHTML = `
-            <div class="progress-pos-group">
-              <div class="progress-pos-meta">
-                <span class="muted">${entry.type === "collection" ? "Current arc / issue" : "Where you stopped"}</span>
-                <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
-              </div>
-              <input class="input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-            </div>
-            <label class="progress-note-group progress-status-group">
-              <span class="muted progress-note-label">Status</span>
+            <div class="progress-inline">
+              <span class="progress-unit-pill">${escapeHtml(progressUnitLabel(st.unit))}</span>
+              <input class="input progress-inline-input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
               <button
                 class="status-cycle status-${ensureStatus(st)}"
                 data-action="status-cycle"
@@ -1336,7 +1319,7 @@
                 <span class="status-cycle-short">${escapeHtml(STATUS_META[ensureStatus(st)]?.short || "U")}</span>
                 <span class="status-cycle-label">${escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread")}</span>
               </button>
-            </label>
+            </div>
           `;
 
           const shouldShowEditor = showCoverEditor;
@@ -1436,7 +1419,7 @@
             });
           }
 
-          content.append(top, tags, progress);
+          content.append(top, progress);
           if (manualCover) content.append(manualCover);
 
           const layout = document.createElement("div");
