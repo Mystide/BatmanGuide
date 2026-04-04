@@ -1305,6 +1305,7 @@
             </label>
             <div class="item-actions">
               ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
+              <button class="btn subtle item-close" type="button" data-action="collapse">Close</button>
             </div>
           `;
 
@@ -1380,6 +1381,11 @@
 
           top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
             openCollectionModal(entry.id);
+          });
+
+          top.querySelector('[data-action="collapse"]')?.addEventListener("click", () => {
+            item.classList.remove("expanded");
+            item.setAttribute("aria-expanded", "false");
           });
 
           const posInput = progress.querySelector('[data-action="pos"]');
