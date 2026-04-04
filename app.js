@@ -1295,12 +1295,14 @@
           coverTitle.className = "cover-title";
           coverTitle.innerHTML = safeTitle;
           cover.append(coverLink, coverTitle);
-          top.innerHTML = `
-            <div class="item-actions">
-              ${entryIssueStats.total ? '<button class="btn" type="button" data-action="open-issues">Issues</button>' : ""}
-              <button class="btn subtle item-close" type="button" data-action="collapse" aria-label="Close details">×</button>
-            </div>
-          `;
+          const hasTopActions = !!entryIssueStats.total;
+          top.innerHTML = hasTopActions
+            ? `
+              <div class="item-actions">
+                <button class="btn" type="button" data-action="open-issues">Issues</button>
+              </div>
+            `
+            : "";
 
           const progress = document.createElement("div");
           progress.className = "progress-fields";
@@ -1418,7 +1420,8 @@
             });
           }
 
-          content.append(top, progress);
+          if (hasTopActions) content.append(top);
+          content.append(progress);
           if (manualCover) content.append(manualCover);
 
           const layout = document.createElement("div");
