@@ -1300,7 +1300,7 @@
               <input type="checkbox" ${st.done ? "checked" : ""} data-action="done" />
               <span class="title-wrap">
                 <span class="title">${safeStatusLabel}</span>
-                <span class="item-hint">${safeHint || "Tap card to open reading progress"}</span>
+                <span class="item-hint">${safeHint || "Reading progress"}</span>
               </span>
             </label>
             <div class="item-actions">
