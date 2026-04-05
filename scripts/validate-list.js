@@ -28,7 +28,9 @@ if (list.length < 20) {
 
 const allowedTypes = new Set(["book", "series", "collection"]);
 const ids = new Set();
+const seenUrls = new Map();
 let previousOrder = null;
+const warnings = [];
 
 function parseOrderFromId(id) {
   const match = /^E(\d+)-(\d+)([A-Z]*)$/.exec(id);
@@ -108,6 +110,13 @@ list.forEach((item, index) => {
     fail(`${at} has invalid url '${item.url}'`);
   }
 
+  const normalizedUrl = item.url.trim();
+  if (normalizedUrl) {
+    const duplicates = seenUrls.get(normalizedUrl) || [];
+    duplicates.push(item.id);
+    seenUrls.set(normalizedUrl, duplicates);
+  }
+
   if (typeof item.cover !== "undefined") {
     if (typeof item.cover !== "string" || item.cover.trim() === "") {
       fail(`${at} has invalid optional 'cover'`);
@@ -135,5 +144,14 @@ list.forEach((item, index) => {
     });
   }
 });
+
+for (const [url, duplicateIds] of seenUrls.entries()) {
+  if (duplicateIds.length <= 1) continue;
+  warnings.push(`duplicate top-level URL used by ids: ${duplicateIds.join(", ")} (${url})`);
+}
+
+for (const warning of warnings) {
+  console.warn(`[list-validate] WARN: ${warning}`);
+}
 
 console.log(`[list-validate] ok (${list.length} entries)`);
