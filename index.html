@@ -258,6 +258,8 @@
       transform: translateY(8px);
       pointer-events: none;
       transition: opacity var(--motion-fast) var(--ease-std), transform var(--motion-fast) var(--ease-std);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
     .sync-toast.show {
       opacity: 1;
@@ -404,13 +406,15 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-      transform: translateY(10px) scale(.985);
+      transform: translateY(10px) scale(.985) translateZ(0);
       pointer-events: none;
       transition: opacity var(--motion-fast) var(--ease-std), transform var(--motion-fast) var(--ease-std);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
     .item.expanded .item-content {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0) scale(1) translateZ(0);
       pointer-events: auto;
       background: rgba(10, 14, 24, .86);
       box-shadow: inset 0 0 0 1px rgba(10, 14, 24, .92), inset 0 1px 0 rgba(255,255,255,.04);
