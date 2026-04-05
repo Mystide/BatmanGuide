@@ -342,8 +342,9 @@
       width: min(100%, 280px);
     }
     .item {
+      --item-radius: 18px;
       border: 1px solid rgba(180, 144, 68, .38);
-      border-radius: 18px;
+      border-radius: var(--item-radius);
       padding: 10px;
       margin-bottom: 0;
       overflow: hidden;
@@ -380,13 +381,13 @@
       position: relative;
       z-index: 1;
       overflow: hidden;
-      border-radius: 18px;
+      border-radius: var(--item-radius);
     }
     .item-content {
       position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
+      left: 0;
+      right: 0;
+      bottom: 0;
       top: auto;
       z-index: 4;
       display: grid;
@@ -396,7 +397,7 @@
       opacity: 0;
       overflow: hidden;
       padding: 10px 10px 10px;
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 var(--item-radius) var(--item-radius);
       border: 0;
       background: rgba(0, 0, 0, .48);
       background-clip: padding-box;
@@ -465,7 +466,7 @@
       height: auto;
       justify-self: stretch;
       align-self: start;
-      border-radius: 8px;
+      border-radius: var(--item-radius);
       border: 0;
       position: relative;
       overflow: hidden;
@@ -807,7 +808,7 @@
     .focus-cover {
       width: 54px;
       height: 78px;
-      border-radius: 8px;
+      border-radius: var(--item-radius);
       border: 1px solid rgba(255,255,255,.2);
       overflow: hidden;
       box-shadow: 0 6px 14px rgba(0,0,0,.35);
