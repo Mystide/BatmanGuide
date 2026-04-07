@@ -2103,7 +2103,9 @@
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
       const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "status", "character", "era"].some((key) => params.has(key));
-      const activeFilters = hasURLFilters ? Object.assign(savedFilters, urlFilters) : savedFilters;
+      const activeFilters = hasURLFilters
+        ? Object.assign({}, savedFilters, urlFilters)
+        : Object.assign({}, savedFilters);
 
       $("search").value = activeFilters.search || "";
       $("typeFilter").value = activeFilters.type || "";
