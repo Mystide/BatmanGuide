@@ -1044,7 +1044,16 @@
         margin-inline: auto;
       }
       .item-grid { grid-template-columns: 1fr; gap: 8px; }
-      .item-content { top: auto; }
+      .item-content {
+        position: static;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        transform: none;
+        border-radius: var(--radius-md);
+        margin-top: 2px;
+      }
+      .item.expanded .item-content { transform: none; }
       .progress-inline { grid-template-columns: 1fr; }
       .progress-inline .status-cycle { width: 100%; justify-content: center; }
       .cover {
@@ -1052,7 +1061,6 @@
         max-width: 250px;
         height: auto;
         border-radius: 10px;
-        margin-inline: auto;
       }
       .item-head { grid-template-columns: 1fr; align-items: start; gap: 8px; }
       .item-actions { justify-content: flex-start; }
