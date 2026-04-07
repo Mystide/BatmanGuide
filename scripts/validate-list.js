@@ -31,6 +31,16 @@ const ids = new Set();
 const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
+const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
+  [
+    "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
+    new Set(["E6-00", "E6-03", "E6-04", "E6-05", "E6-07", "E6-08", "E6-09", "E6-10", "E6-11", "E6-12"])
+  ],
+  [
+    "https://www.dcuniverseinfinite.com/comics/series/detective-comics-2016-/2a8f64e9-9f8f-47f4-a6d1-e6f14a3cd59a",
+    new Set(["E6-13", "E7-29"])
+  ]
+]);
 
 function parseOrderFromId(id) {
   const match = /^E(\d+)-(\d+)([A-Z]*)$/.exec(id);
@@ -147,7 +157,19 @@ list.forEach((item, index) => {
 
 for (const [url, duplicateIds] of seenUrls.entries()) {
   if (duplicateIds.length <= 1) continue;
-  warnings.push(`duplicate top-level URL used by ids: ${duplicateIds.join(", ")} (${url})`);
+  const expectedIds = INTENTIONAL_DUPLICATE_URL_GROUPS.get(url);
+  if (!expectedIds) {
+    fail(`unexpected duplicate top-level URL used by ids: ${duplicateIds.join(", ")} (${url})`);
+  }
+
+  const actualIds = new Set(duplicateIds);
+  const expectedMatches = actualIds.size === expectedIds.size
+    && [...actualIds].every((id) => expectedIds.has(id));
+  if (!expectedMatches) {
+    fail(`duplicate URL mapping drift for ${url}; expected ids [${[...expectedIds].join(", ")}], got [${duplicateIds.join(", ")}]`);
+  }
+
+  warnings.push(`intentional shared top-level URL used by ids: ${duplicateIds.join(", ")} (${url})`);
 }
 
 for (const warning of warnings) {
