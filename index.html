@@ -1006,7 +1006,7 @@
 
     @media (min-width: 761px) and (max-width: 1180px) {
       .items {
-        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
       }
       .era-bat-icon {
         filter: brightness(0) drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
@@ -1018,7 +1018,6 @@
       .advanced-controls { grid-template-columns: repeat(2, minmax(170px, 1fr)); }
       .top-actions { justify-content: flex-start; }
       .btn, .input, .select, .chip { min-height: 44px; font-size: 15px; padding: 10px 12px; }
-      .title { font-size: 20px; }
       .muted { font-size: 14px; }
       .item { padding: 9px; }
     }
@@ -1040,17 +1039,23 @@
       .items { grid-template-columns: 1fr; }
       .item { padding: 10px; }
       .item-grid { grid-template-columns: 1fr; gap: 8px; }
-      .item-content { top: auto; }
+      .item-content {
+        position: static;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        transform: none;
+        border-radius: var(--radius-md);
+        margin-top: 2px;
+      }
+      .item.expanded .item-content { transform: none; }
       .progress-inline { grid-template-columns: 1fr; }
       .progress-inline .status-cycle { width: 100%; justify-content: center; }
       .cover {
         width: 100%;
-        max-width: 240px;
         height: auto;
         border-radius: 10px;
-        margin-inline: auto;
       }
-      .title { font-size: 16px; }
       .item-head { grid-template-columns: 1fr; align-items: start; gap: 8px; }
       .item-actions { justify-content: flex-start; }
       .item-link { align-self: auto; margin-left: 0; }
