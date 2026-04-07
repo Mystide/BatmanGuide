@@ -1005,9 +1005,6 @@
     }
 
     @media (min-width: 761px) and (max-width: 1180px) {
-      .items {
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-      }
       .era-bat-icon {
         filter: brightness(0) drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
         -webkit-filter: brightness(0) drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
@@ -1036,32 +1033,10 @@
       .top-actions { justify-content: stretch; }
       .top-actions .btn { flex: 1 1 110px; }
       .row.space { align-items: flex-start; }
-      .items { grid-template-columns: 1fr; }
-      .item {
-        padding: 10px;
-        max-width: 320px;
-        width: 100%;
-        margin-inline: auto;
-      }
+      .item { padding: 10px; }
       .item-grid { grid-template-columns: 1fr; gap: 8px; }
-      .item-content {
-        position: static;
-        left: auto;
-        right: auto;
-        bottom: auto;
-        transform: none;
-        border-radius: var(--radius-md);
-        margin-top: 2px;
-      }
-      .item.expanded .item-content { transform: none; }
       .progress-inline { grid-template-columns: 1fr; }
       .progress-inline .status-cycle { width: 100%; justify-content: center; }
-      .cover {
-        width: 100%;
-        max-width: 250px;
-        height: auto;
-        border-radius: 10px;
-      }
       .item-head { grid-template-columns: 1fr; align-items: start; gap: 8px; }
       .item-actions { justify-content: flex-start; }
       .item-link { align-self: auto; margin-left: 0; }
