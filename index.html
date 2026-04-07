@@ -540,6 +540,12 @@
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      transition: transform var(--motion-fast) var(--ease-std);
+      transform: translateY(0);
+    }
+    .item.expanded .cover-title {
+      transform: translateY(-86px);
+      z-index: 5;
     }
     .cover small { display:block; font-size:9px; opacity:.85; }
     .cover.fallback-logo { position: relative; background: radial-gradient(circle at 30% 20%, rgba(250,204,21,.16), rgba(15,23,42,.95)); }
