@@ -334,7 +334,7 @@
     .items {
       padding: 12px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
       justify-content: stretch;
       gap: 12px;
       align-items: stretch;
@@ -581,6 +581,10 @@
       word-break: normal;
       hyphens: auto;
       color: #f8fafc;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
     .tags { margin: 0; display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 10px; color: #e1e9f7; border: 1px solid rgba(148, 163, 184, .32); border-radius: 999px; padding: 1px 8px; background: rgba(15,23,42,.36); }
@@ -986,7 +990,7 @@
       color: var(--muted);
     }
     @media (max-width: 1280px) {
-      .items { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+      .items { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
       .item { padding: 8px; }
       .title { font-size: 17px; }
       .top-actions .btn { min-width: 0; }
@@ -1002,8 +1006,7 @@
 
     @media (min-width: 761px) and (max-width: 1180px) {
       .items {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
-        justify-content: flex-start;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       }
       .era-bat-icon {
         filter: brightness(0) drop-shadow(0 2px 4px rgba(0,0,0,.45)) !important;
@@ -1041,7 +1044,8 @@
       .progress-inline { grid-template-columns: 1fr; }
       .progress-inline .status-cycle { width: 100%; justify-content: center; }
       .cover {
-        width: min(100%, 220px);
+        width: 100%;
+        max-width: 240px;
         height: auto;
         border-radius: 10px;
         margin-inline: auto;
