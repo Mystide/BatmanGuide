@@ -1037,7 +1037,12 @@
       .top-actions .btn { flex: 1 1 110px; }
       .row.space { align-items: flex-start; }
       .items { grid-template-columns: 1fr; }
-      .item { padding: 10px; }
+      .item {
+        padding: 10px;
+        max-width: 320px;
+        width: 100%;
+        margin-inline: auto;
+      }
       .item-grid { grid-template-columns: 1fr; gap: 8px; }
       .item-content {
         position: static;
@@ -1053,6 +1058,7 @@
       .progress-inline .status-cycle { width: 100%; justify-content: center; }
       .cover {
         width: 100%;
+        max-width: 250px;
         height: auto;
         border-radius: 10px;
       }
