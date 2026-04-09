@@ -56,8 +56,14 @@ curl -fsS "${BASE}/manifest.webmanifest" >/tmp/batman-smoke-manifest.json || fai
 echo "[smoke] validate key markers"
 grep -q 'script src="list.js"' /tmp/batman-smoke-index.html || fail "index missing list.js script"
 grep -q 'script src="app.js"' /tmp/batman-smoke-index.html || fail "index missing app.js script"
+grep -q '<meta name="description"' /tmp/batman-smoke-index.html || fail "index missing meta description"
+grep -q '<meta property="og:title"' /tmp/batman-smoke-index.html || fail "index missing og:title"
 grep -q 'window.BATMAN_GUIDE_LIST' /tmp/batman-smoke-list.js || fail "list payload missing"
 grep -q 'function bootstrap()' /tmp/batman-smoke-app.js || fail "bootstrap function missing"
+grep -q 'function bindEraIconFallback()' /tmp/batman-smoke-app.js || fail "era icon fallback binding missing"
+if grep -q 'onerror=' /tmp/batman-smoke-app.js; then
+  fail "inline onerror handler found in app.js"
+fi
 grep -q 'NETWORK_FIRST_PATHS' /tmp/batman-smoke-sw.js || fail "service worker marker missing"
 
 echo "[smoke] validate list payload schema"
