@@ -1331,8 +1331,6 @@
 
           const top = document.createElement("div");
           top.className = "item-head";
-          const safeTitle = escapeHtml(entry.title);
-          const safeHint = entry.hint ? escapeHtml(entry.hint) : "";
           const safeUrl = escapeAttr(safeExternalUrl(entry.url));
           const entryIssueStats = collectionIssueStats(entry, st);
           const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
@@ -1345,46 +1343,71 @@
           coverLink.textContent = "DCUI";
           const coverTitle = document.createElement("span");
           coverTitle.className = "cover-title";
-          coverTitle.innerHTML = safeTitle;
+          coverTitle.textContent = entry.title;
           cover.append(coverLink, coverTitle);
           const hasTopActions = !!entryIssueStats.total;
-          top.innerHTML = hasTopActions
-            ? `
-              <div class="item-actions">
-                <button class="btn" type="button" data-action="open-issues">Issues</button>
-              </div>
-            `
-            : "";
+          if (hasTopActions) {
+            const itemActions = document.createElement("div");
+            itemActions.className = "item-actions";
+            const issuesButton = document.createElement("button");
+            issuesButton.className = "btn";
+            issuesButton.type = "button";
+            issuesButton.dataset.action = "open-issues";
+            issuesButton.textContent = "Issues";
+            itemActions.appendChild(issuesButton);
+            top.appendChild(itemActions);
+          }
 
           const progress = document.createElement("div");
           progress.className = "progress-fields";
-          progress.innerHTML = `
-            <div class="progress-inline">
-              <input class="input progress-inline-input" data-action="pos" placeholder="${escapeAttr(entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit))}" value="${escapeAttr(st.pos || "")}" />
-              <button
-                class="status-cycle status-${ensureStatus(st)}"
-                data-action="status-cycle"
-                data-status="${ensureStatus(st)}"
-                type="button"
-                title="Click to cycle status • Shift+Click for previous"
-                aria-label="Reading status: ${escapeAttr(STATUS_META[ensureStatus(st)]?.label || "Unread")}"
-              >
-                <span class="status-cycle-short">${escapeHtml(STATUS_META[ensureStatus(st)]?.short || "U")}</span>
-                <span class="status-cycle-label">${escapeHtml(STATUS_META[ensureStatus(st)]?.label || "Unread")}</span>
-              </button>
-            </div>
-          `;
+          const progressInline = document.createElement("div");
+          progressInline.className = "progress-inline";
+          const posInput = document.createElement("input");
+          posInput.className = "input progress-inline-input";
+          posInput.dataset.action = "pos";
+          posInput.placeholder = entry.type === "collection" ? "issue / arc" : progressPlaceholder(st.unit);
+          posInput.value = st.pos || "";
+          const statusValue = ensureStatus(st);
+          const statusLabel = STATUS_META[statusValue]?.label || "Unread";
+          const statusShort = STATUS_META[statusValue]?.short || "U";
+          const cycleButton = document.createElement("button");
+          cycleButton.className = `status-cycle status-${statusValue}`;
+          cycleButton.dataset.action = "status-cycle";
+          cycleButton.dataset.status = statusValue;
+          cycleButton.type = "button";
+          cycleButton.title = "Click to cycle status • Shift+Click for previous";
+          cycleButton.setAttribute("aria-label", `Reading status: ${statusLabel}`);
+          const statusShortNode = document.createElement("span");
+          statusShortNode.className = "status-cycle-short";
+          statusShortNode.textContent = statusShort;
+          const statusLabelNode = document.createElement("span");
+          statusLabelNode.className = "status-cycle-label";
+          statusLabelNode.textContent = statusLabel;
+          cycleButton.append(statusShortNode, statusLabelNode);
+          progressInline.append(posInput, cycleButton);
+          progress.appendChild(progressInline);
 
           const shouldShowEditor = showCoverEditor;
           let manualCover = null;
           if (shouldShowEditor) {
             manualCover = document.createElement("div");
             manualCover.className = "manual-cover-fields";
-            manualCover.innerHTML = `
-              <input class="input" data-action="cover-url" placeholder="manual cover URL (https://...)" value="${escapeAttr(customCovers?.[entry.id] || "")}" />
-              <button class="btn" type="button" data-action="save-cover">Save cover</button>
-              <button class="btn" type="button" data-action="clear-cover">Clear</button>
-            `;
+            const coverUrlInput = document.createElement("input");
+            coverUrlInput.className = "input";
+            coverUrlInput.dataset.action = "cover-url";
+            coverUrlInput.placeholder = "manual cover URL (https://...)";
+            coverUrlInput.value = customCovers?.[entry.id] || "";
+            const saveCoverButton = document.createElement("button");
+            saveCoverButton.className = "btn";
+            saveCoverButton.type = "button";
+            saveCoverButton.dataset.action = "save-cover";
+            saveCoverButton.textContent = "Save cover";
+            const clearCoverButton = document.createElement("button");
+            clearCoverButton.className = "btn";
+            clearCoverButton.type = "button";
+            clearCoverButton.dataset.action = "clear-cover";
+            clearCoverButton.textContent = "Clear";
+            manualCover.append(coverUrlInput, saveCoverButton, clearCoverButton);
           }
 
           top.querySelector('[data-action="open-issues"]')?.addEventListener("click", () => {
@@ -1396,7 +1419,6 @@
             item.setAttribute("aria-expanded", "false");
           });
 
-          const posInput = progress.querySelector('[data-action="pos"]');
           const persistPos = (value, { immediate = false } = {}) => {
             const nextPos = String(value || "").trim();
             if (st.pos === nextPos && !immediate) return;
