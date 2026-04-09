@@ -595,7 +595,24 @@
     if (!iconUrl) {
       return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))}" aria-hidden="true">${escapeHtml(symbol)}</span>`;
     }
-    return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))} has-icon" data-fallback-symbol="${escapeAttr(symbol)}" aria-label="${escapeAttr(symbol)}"><img class="era-bat-icon" src="${escapeAttr(iconUrl)}" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;const host=this.parentElement;if(host){host.classList.remove('has-icon');host.setAttribute('aria-hidden','true');host.removeAttribute('aria-label');host.textContent=host.getAttribute('data-fallback-symbol')||'🦇';}" /></span>`;
+    return `<span class="era-bat era-bat-${Math.max(1, Math.min(eraNumber(era), 7))} has-icon" data-fallback-symbol="${escapeAttr(symbol)}" aria-label="${escapeAttr(symbol)}"><img class="era-bat-icon" src="${escapeAttr(iconUrl)}" alt="" loading="lazy" decoding="async" /></span>`;
+  }
+
+  function applyEraIconFallback(img) {
+    if (!(img instanceof HTMLImageElement)) return;
+    if (!img.classList.contains("era-bat-icon")) return;
+    const host = img.parentElement;
+    if (!host) return;
+    host.classList.remove("has-icon");
+    host.setAttribute("aria-hidden", "true");
+    host.removeAttribute("aria-label");
+    host.textContent = host.getAttribute("data-fallback-symbol") || "🦇";
+  }
+
+  function bindEraIconFallback() {
+    document.addEventListener("error", (event) => {
+      applyEraIconFallback(event.target);
+    }, true);
   }
 
   function getCfg() {
@@ -2795,6 +2812,7 @@
   function bootstrap() {
     updateDebugHealth();
     runStartupStep("normalizeDomConflicts", normalizeDomConflicts, false);
+    runStartupStep("bindEraIconFallback", bindEraIconFallback, false);
     runStartupStep("applyBrand", applyBrand, false);
     runStartupStep("applyBuildVersion", applyBuildVersion, false);
 
