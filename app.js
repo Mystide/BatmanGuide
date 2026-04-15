@@ -142,6 +142,23 @@
     item.classList.add(`${ITEM_STATUS_CLASS_PREFIX}${resolved}`);
   }
 
+  function syncExpandedPanelLift(item) {
+    if (!item) return;
+    if (!item.classList.contains("expanded")) {
+      item.style.removeProperty("--expanded-panel-lift");
+      return;
+    }
+    const panel = item.querySelector(".item-content");
+    if (!panel) return;
+    const panelHeight = Math.round(panel.getBoundingClientRect().height || panel.scrollHeight || 0);
+    const lift = Math.min(180, Math.max(66, panelHeight + 12));
+    item.style.setProperty("--expanded-panel-lift", `${lift}px`);
+  }
+
+  function syncAllExpandedPanelLifts() {
+    document.querySelectorAll(".item").forEach((item) => syncExpandedPanelLift(item));
+  }
+
   const defaultState = () => ({
     build: BUILD_ID,
     updatedAt: null,
@@ -1520,10 +1537,12 @@
           layout.className = "item-grid";
           layout.append(cover, content);
           item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+          syncExpandedPanelLift(item);
           item.addEventListener("click", (e) => {
             if (e.target.closest("a, button, input, textarea, select, label")) return;
             item.classList.toggle("expanded");
             item.setAttribute("aria-expanded", item.classList.contains("expanded") ? "true" : "false");
+            syncExpandedPanelLift(item);
           });
 
           item.appendChild(layout);
@@ -1552,6 +1571,7 @@
     bindOutsideCollapse();
 
     refreshHeader(filtered);
+    syncAllExpandedPanelLifts();
     window.__BATMAN_APP_READY = true;
     if (t0) recordPerf("render", perfNow() - t0);
     updateDebugHealth();
@@ -1565,6 +1585,7 @@
       document.querySelectorAll(".item.expanded").forEach((node) => {
         node.classList.remove("expanded");
         node.setAttribute("aria-expanded", "false");
+        syncExpandedPanelLift(node);
       });
     });
     outsideCollapseBound = true;
@@ -2080,6 +2101,7 @@
 
     window.addEventListener("scroll", queueUpdate, { passive: true });
     window.addEventListener("resize", queueUpdate);
+    window.addEventListener("resize", syncAllExpandedPanelLifts);
     setFiltersOpen(userWantsFiltersOpen, false);
     updateCompactMode();
     syncStickySearchOffset();
