@@ -1335,6 +1335,24 @@
           const entryIssueStats = collectionIssueStats(entry, st);
           const hasProgress = Boolean((st.pos || "").trim() || (st.note || "").trim() || ensureStatus(st) !== "unread" || st.done);
           if (hasProgress) item.classList.add("expanded");
+          const titleRow = document.createElement("div");
+          titleRow.className = "item-title-row panel-heading";
+          const titleWrap = document.createElement("div");
+          titleWrap.className = "title-wrap";
+          const panelTitle = document.createElement("div");
+          panelTitle.className = "title";
+          panelTitle.textContent = entry.title;
+          const panelHint = document.createElement("div");
+          panelHint.className = "item-hint";
+          const hintText = String(entry.hint || "").trim();
+          if (hintText) {
+            panelHint.textContent = hintText;
+            titleWrap.append(panelTitle, panelHint);
+          } else {
+            titleWrap.append(panelTitle);
+          }
+          titleRow.appendChild(titleWrap);
+          top.appendChild(titleRow);
           const coverLink = document.createElement("a");
           coverLink.className = "cover-link";
           coverLink.href = safeUrl;
@@ -1494,7 +1512,7 @@
             });
           }
 
-          if (hasTopActions) content.append(top);
+          content.append(top);
           content.append(progress);
           if (manualCover) content.append(manualCover);
 
