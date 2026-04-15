@@ -1361,8 +1361,13 @@
           panelTitle.textContent = entry.title;
           const panelHint = document.createElement("div");
           panelHint.className = "item-hint";
-          panelHint.textContent = entry.hint || "";
-          titleWrap.append(panelTitle, panelHint);
+          const hintText = String(entry.hint || "").trim();
+          if (hintText) {
+            panelHint.textContent = hintText;
+            titleWrap.append(panelTitle, panelHint);
+          } else {
+            titleWrap.append(panelTitle);
+          }
           titleRow.appendChild(titleWrap);
           top.appendChild(titleRow);
           const coverLink = document.createElement("a");
@@ -1524,7 +1529,7 @@
             });
           }
 
-          if (hasTopActions) content.append(top);
+          content.append(top);
           content.append(progress);
           if (manualCover) content.append(manualCover);
 
