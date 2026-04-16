@@ -2455,11 +2455,15 @@
       });
 
       const scrollTopBtn = $("btnScrollTop");
+      const heroTopLink = $("heroTopLink");
       const syncScrollTopVisibility = () => {
         if (!scrollTopBtn) return;
         scrollTopBtn.classList.toggle("hidden", window.scrollY <= 480);
       };
       scrollTopBtn?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      heroTopLink?.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
       window.addEventListener("scroll", syncScrollTopVisibility, { passive: true });

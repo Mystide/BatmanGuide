@@ -96,6 +96,13 @@
       object-position: left center;
     }
     .hero-wordmark.hidden { display: none; }
+    .hero-wordmark-btn {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+    }
     .muted { color: var(--muted); font-size: var(--font-md); }
     .top .container { padding-top: 4px; padding-bottom: 4px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
@@ -1135,7 +1142,9 @@
           <div class="hero-brand">
             <div>
               <h1>
-                <img id="heroWordmark" class="hero-wordmark" src="./assets/lettering/batmanletters1.png" alt="Batman" width="1412" height="644" loading="eager" fetchpriority="high" decoding="async" />
+                <button id="heroTopLink" class="hero-wordmark-btn" type="button" aria-label="Zum Seitenanfang springen">
+                  <img id="heroWordmark" class="hero-wordmark" src="./assets/lettering/batmanletters1.png" alt="Batman" width="1412" height="644" loading="eager" fetchpriority="high" decoding="async" />
+                </button>
               </h1>
               <div class="hero-partners" aria-label="Brand logos">
                 <span>Batman</span>
