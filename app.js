@@ -922,7 +922,7 @@
     const filterButton = $("btnFilterMenu");
     const filtersDialogOpen = !$("headerControls")?.classList.contains("hidden");
     if (filterButton) {
-      filterButton.textContent = filtersDialogOpen ? "Close actions" : (activeCount > 0 ? `Actions (${activeCount})` : "Actions");
+      filterButton.textContent = filtersDialogOpen ? "Filter schließen" : (activeCount > 0 ? `Filter (${activeCount})` : "Filter");
     }
   }
 
@@ -2056,8 +2056,8 @@
       const open = !controls.classList.contains("hidden");
       const count = activeFilterCount();
       filterToggle.setAttribute("aria-expanded", String(open));
-      if (open) filterToggle.textContent = "Close actions";
-      else filterToggle.textContent = count > 0 ? `Actions (${count})` : "Actions";
+      if (open) filterToggle.textContent = "Filter schließen";
+      else filterToggle.textContent = count > 0 ? `Filter (${count})` : "Filter";
     };
 
     const setFiltersOpen = (open, persist = true) => {
@@ -2077,9 +2077,6 @@
     filterToggle.addEventListener("click", () => {
       const opening = controls.classList.contains("hidden");
       setFiltersOpen(opening);
-      if (opening) {
-        controls.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
     });
 
     const updateCompactMode = () => {
@@ -2455,11 +2452,15 @@
       });
 
       const scrollTopBtn = $("btnScrollTop");
+      const heroTopLink = $("heroTopLink");
       const syncScrollTopVisibility = () => {
         if (!scrollTopBtn) return;
         scrollTopBtn.classList.toggle("hidden", window.scrollY <= 480);
       };
       scrollTopBtn?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      heroTopLink?.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
       window.addEventListener("scroll", syncScrollTopVisibility, { passive: true });
@@ -2493,7 +2494,7 @@
 	        writeUiPrefs({ filtersOpen: false });
 	        $("btnFilterMenu")?.setAttribute("aria-expanded", "false");
 	        const activeCount = activeFilterCount();
-	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = activeCount > 0 ? `Actions (${activeCount})` : "Actions";
+	        if ($("btnFilterMenu")) $("btnFilterMenu").textContent = activeCount > 0 ? `Filter (${activeCount})` : "Filter";
 	      });
       $("btnDoneFilters")?.addEventListener("click", () => {
         $("btnCloseFilters")?.click();

@@ -96,6 +96,13 @@
       object-position: left center;
     }
     .hero-wordmark.hidden { display: none; }
+    .hero-wordmark-btn {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+    }
     .muted { color: var(--muted); font-size: var(--font-md); }
     .top .container { padding-top: 4px; padding-bottom: 4px; }
     .hero { display: grid; gap: var(--space-1); min-width: 0; }
@@ -1105,13 +1112,15 @@
         padding: 9px;
       }
       #headerControls.modal-backdrop {
-        place-items: end stretch;
+        place-items: stretch;
         padding: 0;
+        background: rgba(2, 6, 23, .48);
+        backdrop-filter: blur(3px);
       }
       #headerControls .modal-panel {
         width: 100vw;
-        max-height: min(84vh, 880px);
-        border-radius: 14px 14px 0 0;
+        max-height: 100vh;
+        border-radius: 0;
         padding-bottom: max(9px, env(safe-area-inset-bottom));
       }
       .modal-header h2 { font-size: 17px; }
@@ -1135,7 +1144,9 @@
           <div class="hero-brand">
             <div>
               <h1>
-                <img id="heroWordmark" class="hero-wordmark" src="./assets/lettering/batmanletters1.png" alt="Batman" width="1412" height="644" loading="eager" fetchpriority="high" decoding="async" />
+                <button id="heroTopLink" class="hero-wordmark-btn" type="button" aria-label="Zum Seitenanfang springen">
+                  <img id="heroWordmark" class="hero-wordmark" src="./assets/lettering/batmanletters1.png" alt="Batman" width="1412" height="644" loading="eager" fetchpriority="high" decoding="async" />
+                </button>
               </h1>
               <div class="hero-partners" aria-label="Brand logos">
                 <span>Batman</span>
@@ -1152,7 +1163,7 @@
             <span class="hero-metric">Visible <strong id="heroVisible">-</strong></span>
           </div>
           <div class="top-actions top-actions-minimal">
-            <button class="btn primary" id="btnFilterMenu" aria-expanded="false">Actions</button>
+            <button class="btn subtle" id="btnFilterMenu" aria-expanded="false">Filter</button>
           </div>
           <div id="headerActionsHint" class="header-actions-hint"></div>
         </div>
@@ -1210,7 +1221,7 @@
       <div class="card modal-panel">
         <div class="modal-header">
           <div>
-            <h2 id="filterDialogTitle">Actions & filters</h2>
+            <h2 id="filterDialogTitle">Filter & tools</h2>
             <p class="modal-subtitle">Everything in one place: navigate, filter, and manage your view.</p>
           </div>
           <button class="btn" id="btnCloseFilters" type="button">Close</button>
