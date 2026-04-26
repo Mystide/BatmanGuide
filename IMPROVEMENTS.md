@@ -5,7 +5,7 @@
 - [x] SEO/Sharing-Basics ergänzt (`meta description`, Open Graph, Twitter Card)
 - [x] Smoke-Check als GitHub Action für Push/PR aktiv
 - [ ] App-Version + Service-Worker-Cache bei jedem relevanten Release synchron mitziehen
-- [ ] `package.json`-Scripts als Standard-Workflow etablieren
+- [x] `package.json`-Scripts als Standard-Workflow etabliert
 - [ ] Social-Preview testen (inkl. OG-Image als absolute URL prüfen)
 
 ## P1 – Datenqualität
@@ -14,7 +14,7 @@
 - [ ] `dcuiStatus` semantisch gegen URL-Typ validieren (direct/collection/search_fallback)
 - [ ] `dcuiChecked` auf Alter prüfen (Warnung bei veraltetem Check)
 - [ ] `issues[]` für Collections konsistent vervollständigen
-- [ ] `DATA_SCHEMA.md` erstellen (Felder + erlaubte Werte dokumentieren)
+- [x] `DATA_SCHEMA.md` erstellt (Felder + erlaubte Werte dokumentiert)
 
 ## P2 – UI/UX
 
@@ -27,9 +27,9 @@
 ## Operativ/CI
 
 - [x] Nightly-Link-Check vorhanden
-- [ ] Nightly-Link-Check mit Report-Artefakt archivieren
+- [x] Nightly-Link-Check mit Report-Artefakt archiviert
 - [ ] A11y-Smoke-Checks (z. B. axe/pa11y) ergänzen
-- [ ] Link-Check toleranter machen (HEAD → GET Fallback bei 403/405/ERR)
+- [x] Link-Check toleranter gemacht (HEAD → GET Fallback bei 403/405/ERR)
 
 ## Laufende technische Pflege
 

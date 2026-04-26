@@ -36,6 +36,56 @@ echo "[smoke] syntax checks"
 node --check app.js
 node --check sw.js
 
+echo "[smoke] validate manifest JSON"
+node -e 'JSON.parse(require("fs").readFileSync("manifest.webmanifest","utf8"))'
+
+echo "[smoke] verify app/sw version coherence"
+APP_VERSION=$(node - <<'NODE'
+const fs = require("fs");
+const app = fs.readFileSync("app.js", "utf8");
+const m = app.match(/const\s+APP_VERSION\s*=\s*"([^"]+)"/);
+if (!m) process.exit(1);
+process.stdout.write(m[1]);
+NODE
+) || fail "APP_VERSION not found in app.js"
+
+CACHE_KEY=$(node - <<'NODE'
+const fs = require("fs");
+const sw = fs.readFileSync("sw.js", "utf8");
+const m = sw.match(/const\s+CACHE\s*=\s*"([^"]+)"/);
+if (!m) process.exit(1);
+process.stdout.write(m[1]);
+NODE
+) || fail "CACHE key not found in sw.js"
+
+APP_VERSION_DATE="${APP_VERSION%%-*}"
+APP_VERSION_DATE_DASHED="${APP_VERSION_DATE//./-}"
+if [[ "${CACHE_KEY}" != *"${APP_VERSION_DATE_DASHED}"* ]]; then
+  fail "CACHE key (${CACHE_KEY}) does not include APP_VERSION date (${APP_VERSION_DATE_DASHED})"
+fi
+
+echo "[smoke] verify APP_SHELL assets exist"
+node - <<'NODE'
+const fs = require("fs");
+const path = require("path");
+const sw = fs.readFileSync("sw.js", "utf8");
+const m = sw.match(/const\s+APP_SHELL\s*=\s*\[([\s\S]*?)\];/);
+if (!m) {
+  console.error("APP_SHELL not found");
+  process.exit(1);
+}
+const shell = Function(`"use strict"; return [${m[1]}];`)();
+for (const asset of shell) {
+  if (typeof asset !== "string") continue;
+  const normalized = asset.replace(/^\.\//, "");
+  if (!normalized || normalized.endsWith("/")) continue;
+  if (!fs.existsSync(path.resolve(normalized))) {
+    console.error(`Missing APP_SHELL asset: ${asset}`);
+    process.exit(1);
+  }
+}
+NODE
+
 echo "[smoke] start local server on ${PORT}"
 python3 -m http.server "${PORT}" --directory . >/tmp/batman-smoke-http.log 2>&1 &
 SERVER_PID=$!
