@@ -528,7 +528,7 @@
   }
 
   function collectionIssues(entry) {
-    if (entry?.type !== "collection" || !Array.isArray(entry.issues)) return [];
+    if (!Array.isArray(entry?.issues)) return [];
     return entry.issues
       .filter((issue) => issue && typeof issue === "object")
       .map((issue) => {
@@ -547,6 +547,43 @@
     const done = issues.filter((issue) => st.issueStates?.[issue.title] === true).length;
     const nextIssue = issues.find((issue) => st.issueStates?.[issue.title] !== true);
     return { total: issues.length, done, nextTitle: nextIssue?.title || "" };
+  }
+
+  function idOrderParts(id) {
+    const match = /^E(\d+)-(\d+)([A-Z]*)$/.exec(String(id || ""));
+    if (!match) return null;
+    const era = Number(match[1]);
+    const number = Number(match[2]);
+    const suffix = match[3] || "";
+    if (!Number.isFinite(era) || !Number.isFinite(number)) return null;
+    let suffixRank = 0;
+    for (let i = 0; i < suffix.length; i += 1) {
+      suffixRank = (suffixRank * 26) + (suffix.charCodeAt(i) - 64);
+    }
+    return { era, within: (number * 100) + suffixRank };
+  }
+
+  function sortPartsForEntry(entry, fallbackIndex = 0) {
+    const explicitOrder = Number(entry?.order);
+    if (Number.isFinite(explicitOrder)) {
+      return {
+        era: Math.floor(explicitOrder / 1000),
+        within: explicitOrder % 1000
+      };
+    }
+    const parsed = idOrderParts(entry?.id);
+    if (parsed) return parsed;
+    return { era: 0, within: fallbackIndex };
+  }
+
+  function compareReadingOrder(a, b, fallbackIndexMap = null) {
+    const fallbackA = fallbackIndexMap?.get(a.id) ?? 0;
+    const fallbackB = fallbackIndexMap?.get(b.id) ?? 0;
+    const pa = sortPartsForEntry(a, fallbackA);
+    const pb = sortPartsForEntry(b, fallbackB);
+    if (pa.era !== pb.era) return pa.era - pb.era;
+    if (pa.within !== pb.within) return pa.within - pb.within;
+    return String(a.id || "").localeCompare(String(b.id || ""));
   }
 
   function setModalOpen(el, open) {
@@ -752,6 +789,11 @@
       return true;
     });
 
+    const baseOrder = new Map();
+    for (let i = 0; i < LIST.length; i += 1) {
+      baseOrder.set(LIST[i].id, i);
+    }
+
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -764,16 +806,14 @@
         return ta - tb;
       });
     } else if (sortBy === "recent") {
-      const baseOrder = new Map();
-      for (let i = 0; i < LIST.length; i += 1) {
-        baseOrder.set(LIST[i].id, i);
-      }
       filtered.sort((a, b) => {
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
         if (ta !== tb) return tb - ta;
-        return (baseOrder.get(a.id) || 0) - (baseOrder.get(b.id) || 0);
+        return compareReadingOrder(a, b, baseOrder);
       });
+    } else {
+      filtered.sort((a, b) => compareReadingOrder(a, b, baseOrder));
     }
 
     if (t0) recordPerf("filter", perfNow() - t0);
