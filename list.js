@@ -9,7 +9,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1010,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-02",
@@ -20,7 +26,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1020,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-03",
@@ -31,7 +43,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1030,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-04",
@@ -42,7 +60,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1040,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-05",
@@ -54,7 +78,13 @@ window.BATMAN_GUIDE_LIST = [
     "cover": "https://imgix-media.wbdndc.net/ingest/book/preview/91031541-9328-474c-9d6d-a67d249b6783/198d8835-5e2a-46af-8ac0-bd862ef573b1/0.jpg",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1050,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-06",
@@ -65,7 +95,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1060,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E1-07",
@@ -76,7 +112,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 1070,
+    "importance": "core",
+    "continuity": "golden-age",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E2-01",
@@ -98,7 +140,13 @@ window.BATMAN_GUIDE_LIST = [
         "title": "Detective Comics (1937) — Silver Age block",
         "url": "https://www.dcuniverseinfinite.com/search?text=Detective%20Comics%201937%20Silver%20Age"
       }
-    ]
+    ],
+    "order": 2010,
+    "importance": "core",
+    "continuity": "pre-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E3-01",
@@ -124,7 +172,13 @@ window.BATMAN_GUIDE_LIST = [
         "title": "The Brave and the Bold — Bronze Age block",
         "url": "https://www.dcuniverseinfinite.com/search?text=Brave%20and%20the%20Bold%20Batman%20Bronze%20Age"
       }
-    ]
+    ],
+    "order": 3010,
+    "importance": "core",
+    "continuity": "pre-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E3-02",
@@ -135,7 +189,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 3020,
+    "importance": "core",
+    "continuity": "pre-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E3-03",
@@ -146,7 +206,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 3030,
+    "importance": "core",
+    "continuity": "pre-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E3-04",
@@ -157,7 +223,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 3040,
+    "importance": "core",
+    "continuity": "pre-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-00",
@@ -169,7 +241,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Checkpoint before Post-Crisis era entries.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4000,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "checkpoint",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-01",
@@ -180,7 +258,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4010,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-02",
@@ -191,7 +275,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4020,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-02A",
@@ -202,7 +292,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4021,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-03",
@@ -231,7 +327,13 @@ window.BATMAN_GUIDE_LIST = [
       {
         "title": "Legends of the Dark Knight (1989) #5"
       }
-    ]
+    ],
+    "order": 4030,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-03A",
@@ -264,7 +366,13 @@ window.BATMAN_GUIDE_LIST = [
         "title": "Legends of the Dark Knight (1989) #15",
         "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2315"
       }
-    ]
+    ],
+    "order": 4031,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-03B",
@@ -292,7 +400,13 @@ window.BATMAN_GUIDE_LIST = [
       {
         "title": "Legends of the Dark Knight (1989) #10"
       }
-    ]
+    ],
+    "order": 4032,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-03C",
@@ -303,7 +417,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4033,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-04",
@@ -314,7 +434,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4040,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-05",
@@ -325,7 +451,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4050,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-06",
@@ -336,7 +468,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4060,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-07",
@@ -347,7 +485,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4070,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-08",
@@ -358,7 +502,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4080,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-08A",
@@ -371,7 +521,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "robin"
-    ]
+    ],
+    "order": 4081,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-09",
@@ -383,7 +539,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "robin",
       "batman"
-    ]
+    ],
+    "order": 4090,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-10",
@@ -395,7 +557,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batgirl",
       "batman"
-    ]
+    ],
+    "order": 4100,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-11",
@@ -406,7 +574,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4110,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-12",
@@ -417,7 +591,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4120,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-12A",
@@ -430,7 +610,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "robin",
       "batman"
-    ]
+    ],
+    "order": 4121,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-13",
@@ -442,7 +628,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Important setup for Azrael before Knightfall."
+    "hint": "Important setup for Azrael before Knightfall.",
+    "order": 4130,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-14",
@@ -453,7 +645,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4140,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-14A",
@@ -464,7 +662,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4141,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-14B",
@@ -475,7 +679,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4142,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-14C",
@@ -486,7 +696,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4143,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-15",
@@ -497,7 +713,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4150,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-16",
@@ -508,7 +730,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4160,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-17",
@@ -519,7 +747,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4170,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-18",
@@ -530,7 +764,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4180,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-19A",
@@ -542,7 +782,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Read before No Man's Land Vol. 1."
+    "hint": "Read before No Man's Land Vol. 1.",
+    "order": 4191,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-19B",
@@ -554,7 +800,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Read before No Man's Land Vol. 1."
+    "hint": "Read before No Man's Land Vol. 1.",
+    "order": 4192,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-20",
@@ -565,7 +817,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4200,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-21",
@@ -576,7 +834,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4210,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-22",
@@ -587,7 +851,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4220,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-23",
@@ -598,7 +868,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4230,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-24",
@@ -609,7 +885,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4240,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-25",
@@ -620,7 +902,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4250,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-26",
@@ -631,7 +919,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4260,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-27",
@@ -643,7 +937,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "redhood"
-    ]
+    ],
+    "order": 4270,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-28",
@@ -656,7 +956,13 @@ window.BATMAN_GUIDE_LIST = [
       "redhood",
       "batman"
     ],
-    "hint": "Read after Under the Hood for full Jason Todd context."
+    "hint": "Read after Under the Hood for full Jason Todd context.",
+    "order": 4280,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-29",
@@ -667,7 +973,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4290,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-30",
@@ -678,7 +990,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4300,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-31",
@@ -689,7 +1007,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4310,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-32A",
@@ -700,7 +1024,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4321,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-32B",
@@ -712,7 +1042,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "robin"
-    ]
+    ],
+    "order": 4322,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-33",
@@ -724,7 +1060,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "robin"
-    ]
+    ],
+    "order": 4330,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-34",
@@ -736,7 +1078,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "robin"
-    ]
+    ],
+    "order": 4340,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-35",
@@ -747,7 +1095,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4350,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E4-36",
@@ -759,7 +1113,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Checkpoint that leads into New 52.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 4360,
+    "importance": "core",
+    "continuity": "post-crisis",
+    "readingMode": "checkpoint",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-01",
@@ -770,7 +1130,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5010,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-02",
@@ -781,7 +1147,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5020,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-03",
@@ -792,7 +1164,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5030,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-04",
@@ -803,7 +1181,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5040,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-05",
@@ -814,7 +1198,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5050,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-06",
@@ -825,7 +1215,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5060,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-07",
@@ -836,7 +1232,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5070,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-08",
@@ -847,7 +1249,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5080,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-09",
@@ -858,7 +1266,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 5090,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E5-10",
@@ -873,7 +1287,13 @@ window.BATMAN_GUIDE_LIST = [
       "robin",
       "nightwing",
       "batgirl"
-    ]
+    ],
+    "order": 5100,
+    "importance": "core",
+    "continuity": "new-52",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-00",
@@ -885,7 +1305,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Tom King mainline entrypoint. Follow the ordered steps below with issue ranges for a no-guess path.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 6000,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-01",
@@ -897,7 +1323,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Core step: Batman (2016) #1–6.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 6010,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-02",
@@ -909,7 +1341,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #9–15."
+    "hint": "Core step: Batman (2016) #9–15.",
+    "order": 6020,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-03",
@@ -921,7 +1359,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #16–20 (I Am Bane)."
+    "hint": "Core step: Batman (2016) #16–20 (I Am Bane).",
+    "order": 6030,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-04",
@@ -933,7 +1377,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core checkpoint: Batman #21–22 + Flash #21–22 (The Button)."
+    "hint": "Core checkpoint: Batman #21–22 + Flash #21–22 (The Button).",
+    "order": 6040,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "checkpoint",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-05",
@@ -945,7 +1395,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #33–37 (Rules of Engagement)."
+    "hint": "Core step: Batman (2016) #33–37 (Rules of Engagement).",
+    "order": 6050,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-06",
@@ -957,7 +1413,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Core step: Batman (2016) #25–32 (War of Jokes and Riddles).",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 6060,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-07",
@@ -970,7 +1432,13 @@ window.BATMAN_GUIDE_LIST = [
       "batman",
       "catwoman"
     ],
-    "hint": "Core step: Batman (2016) #38–44 (Bride or Burglar?)."
+    "hint": "Core step: Batman (2016) #38–44 (Bride or Burglar?).",
+    "order": 6070,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-08",
@@ -983,7 +1451,13 @@ window.BATMAN_GUIDE_LIST = [
       "batman",
       "catwoman"
     ],
-    "hint": "Core step: Batman (2016) #45–50 (The Wedding)."
+    "hint": "Core step: Batman (2016) #45–50 (The Wedding).",
+    "order": 6080,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-09",
@@ -995,7 +1469,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #51–57 (Cold Days)."
+    "hint": "Core step: Batman (2016) #51–57 (Cold Days).",
+    "order": 6090,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-10",
@@ -1008,7 +1488,13 @@ window.BATMAN_GUIDE_LIST = [
       "batman",
       "catwoman"
     ],
-    "hint": "Core step: Batman (2016) #58–63 + Annual #3 (The Tyrant Wing)."
+    "hint": "Core step: Batman (2016) #58–63 + Annual #3 (The Tyrant Wing).",
+    "order": 6100,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-11",
@@ -1020,7 +1506,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #64–69 (Knightmares)."
+    "hint": "Core step: Batman (2016) #64–69 (Knightmares).",
+    "order": 6110,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-12",
@@ -1032,7 +1524,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Core step: Batman (2016) #70–74 (The Fall and the Fallen)."
+    "hint": "Core step: Batman (2016) #70–74 (The Fall and the Fallen).",
+    "order": 6120,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-13",
@@ -1047,7 +1545,13 @@ window.BATMAN_GUIDE_LIST = [
       "batgirl",
       "robin"
     ],
-    "hint": "Optional Bat-family lane start during Rebirth (Tynion-era Detectives)."
+    "hint": "Optional Bat-family lane start during Rebirth (Tynion-era Detectives).",
+    "order": 6130,
+    "importance": "optional",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-14",
@@ -1059,7 +1563,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Core finale: Batman (2016) #75–85 (City of Bane).",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 6140,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-15",
@@ -1071,7 +1581,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Companion omnibus for Joker War tie-ins; optional if you only follow Batman core issues.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 6150,
+    "importance": "optional",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-16",
@@ -1083,7 +1599,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Main event: Batman (2016) #95–100 (Joker War)."
+    "hint": "Main event: Batman (2016) #95–100 (Joker War).",
+    "order": 6160,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-17",
@@ -1095,7 +1617,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Read before Joker War: Batman (2016) #86–94 (Their Dark Designs)."
+    "hint": "Read before Joker War: Batman (2016) #86–94 (Their Dark Designs).",
+    "order": 6170,
+    "importance": "core",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E6-18",
@@ -1107,7 +1635,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Optional side material during Joker War (one-shots/backups)."
+    "hint": "Optional side material during Joker War (one-shots/backups).",
+    "order": 6180,
+    "importance": "optional",
+    "continuity": "rebirth",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-01",
@@ -1120,7 +1654,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Start here after Joker War/Infinite Frontier transition, then continue with Fear State."
+    "hint": "Start here after Joker War/Infinite Frontier transition, then continue with Fear State.",
+    "order": 7010,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-02",
@@ -1132,7 +1672,13 @@ window.BATMAN_GUIDE_LIST = [
     "hint": "Full crossover book.",
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 7020,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-03",
@@ -1143,7 +1689,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 7030,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-04",
@@ -1154,7 +1706,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 7040,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-04A",
@@ -1165,7 +1723,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 7041,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-05",
@@ -1177,7 +1741,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "catwoman"
-    ]
+    ],
+    "order": 7050,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-06",
@@ -1188,7 +1758,13 @@ window.BATMAN_GUIDE_LIST = [
     "optional": false,
     "characters": [
       "batman"
-    ]
+    ],
+    "order": 7060,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-07",
@@ -1200,7 +1776,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "joker"
-    ]
+    ],
+    "order": 7070,
+    "importance": "core",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-08",
@@ -1214,7 +1796,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman",
       "superman"
-    ]
+    ],
+    "order": 7080,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-09",
@@ -1228,7 +1816,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "joker",
       "batman"
-    ]
+    ],
+    "order": 7090,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-10",
@@ -1242,7 +1836,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "robin",
       "batman"
-    ]
+    ],
+    "order": 7100,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-11",
@@ -1256,7 +1856,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "nightwing",
       "batman"
-    ]
+    ],
+    "order": 7110,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-12",
@@ -1270,7 +1876,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batgirl",
       "batman"
-    ]
+    ],
+    "order": 7120,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-13",
@@ -1284,7 +1896,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "catwoman",
       "batman"
-    ]
+    ],
+    "order": 7130,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-14",
@@ -1298,7 +1916,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "redhood",
       "batman"
-    ]
+    ],
+    "order": 7140,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-15",
@@ -1312,7 +1936,13 @@ window.BATMAN_GUIDE_LIST = [
       "batman",
       "robin"
     ],
-    "hint": "Optional Bruce & Damian companion run after the Gotham War period."
+    "hint": "Optional Bruce & Damian companion run after the Gotham War period.",
+    "order": 7150,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-16",
@@ -1326,7 +1956,13 @@ window.BATMAN_GUIDE_LIST = [
       "nightwing",
       "batman"
     ],
-    "hint": "Optional Nightwing continuation companion arc."
+    "hint": "Optional Nightwing continuation companion arc.",
+    "order": 7160,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-17",
@@ -1340,7 +1976,13 @@ window.BATMAN_GUIDE_LIST = [
       "nightwing",
       "batman"
     ],
-    "hint": "Optional follow-up to the modern Nightwing companion path."
+    "hint": "Optional follow-up to the modern Nightwing companion path.",
+    "order": 7170,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-18",
@@ -1354,7 +1996,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional Gotham-side companion read adjacent to Bat-family stories."
+    "hint": "Optional Gotham-side companion read adjacent to Bat-family stories.",
+    "order": 7180,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-19",
@@ -1368,7 +2016,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional Catwoman continuation after Dangerous Liaisons."
+    "hint": "Optional Catwoman continuation after Dangerous Liaisons.",
+    "order": 7190,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-20",
@@ -1382,7 +2036,13 @@ window.BATMAN_GUIDE_LIST = [
       "redhood",
       "batman"
     ],
-    "hint": "Optional Red Hood companion continuation for Bat-family readers."
+    "hint": "Optional Red Hood companion continuation for Bat-family readers.",
+    "order": 7200,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-21",
@@ -1397,7 +2057,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional Bat-family team companion arc in Dawn of DC."
+    "hint": "Optional Bat-family team companion arc in Dawn of DC.",
+    "order": 7210,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-22",
@@ -1412,7 +2078,13 @@ window.BATMAN_GUIDE_LIST = [
       "robin",
       "batman"
     ],
-    "hint": "Optional Nightwing-led team companion read."
+    "hint": "Optional Nightwing-led team companion read.",
+    "order": 7220,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-23",
@@ -1426,7 +2098,13 @@ window.BATMAN_GUIDE_LIST = [
       "batman",
       "robin"
     ],
-    "hint": "Optional ongoing Bruce & Damian run after the initial companion volumes."
+    "hint": "Optional ongoing Bruce & Damian run after the initial companion volumes.",
+    "order": 7230,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-24",
@@ -1440,7 +2118,13 @@ window.BATMAN_GUIDE_LIST = [
       "nightwing",
       "batman"
     ],
-    "hint": "Optional ongoing Nightwing thread parallel to modern Batman."
+    "hint": "Optional ongoing Nightwing thread parallel to modern Batman.",
+    "order": 7240,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-25",
@@ -1454,7 +2138,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional ongoing Catwoman lane for Gotham-status-quo context."
+    "hint": "Optional ongoing Catwoman lane for Gotham-status-quo context.",
+    "order": 7250,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-26",
@@ -1468,7 +2158,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional Gotham-adjacent side series that intersects Bat-family tone."
+    "hint": "Optional Gotham-adjacent side series that intersects Bat-family tone.",
+    "order": 7260,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-27",
@@ -1483,7 +2179,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional team-book branch for Bat-family continuity fans."
+    "hint": "Optional team-book branch for Bat-family continuity fans.",
+    "order": 7270,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-28",
@@ -1498,7 +2200,13 @@ window.BATMAN_GUIDE_LIST = [
       "robin",
       "batman"
     ],
-    "hint": "Optional Nightwing-led team branch alongside Batman-era events."
+    "hint": "Optional Nightwing-led team branch alongside Batman-era events.",
+    "order": 7280,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-29",
@@ -1511,7 +2219,13 @@ window.BATMAN_GUIDE_LIST = [
     "characters": [
       "batman"
     ],
-    "hint": "Optional continuation of Detective Comics into Infinite Frontier / Dawn of DC."
+    "hint": "Optional continuation of Detective Comics into Infinite Frontier / Dawn of DC.",
+    "order": 7290,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-30",
@@ -1527,7 +2241,13 @@ window.BATMAN_GUIDE_LIST = [
       "nightwing",
       "catwoman"
     ],
-    "hint": "Optional anthology companion for short Bat-family arcs."
+    "hint": "Optional anthology companion for short Bat-family arcs.",
+    "order": 7300,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-31",
@@ -1543,7 +2263,13 @@ window.BATMAN_GUIDE_LIST = [
       "nightwing",
       "catwoman"
     ],
-    "hint": "Optional continuation anthology with modern Bat-family backups."
+    "hint": "Optional continuation anthology with modern Bat-family backups.",
+    "order": 7310,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-32",
@@ -1558,7 +2284,13 @@ window.BATMAN_GUIDE_LIST = [
       "catwoman",
       "batman"
     ],
-    "hint": "Optional Gotham side-read; useful for broader Joker/Gotham context."
+    "hint": "Optional Gotham side-read; useful for broader Joker/Gotham context.",
+    "order": 7320,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   },
   {
     "id": "E7-33",
@@ -1572,6 +2304,12 @@ window.BATMAN_GUIDE_LIST = [
       "redhood",
       "batman"
     ],
-    "hint": "Optional short Red Hood follow-up after Task Force Z."
+    "hint": "Optional short Red Hood follow-up after Task Force Z.",
+    "order": 7330,
+    "importance": "optional",
+    "continuity": "infinite-frontier",
+    "readingMode": "read_all",
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-04-26"
   }
 ];
