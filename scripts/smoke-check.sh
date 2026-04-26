@@ -89,7 +89,14 @@ if (!m) {
   console.error("APP_SHELL not found");
   process.exit(1);
 }
-const shell = Function(`"use strict"; return [${m[1]}];`)();
+const shell = [];
+for (const match of m[1].matchAll(/"([^"]+)"/g)) {
+  shell.push(match[1]);
+}
+if (!shell.length) {
+  console.error("APP_SHELL found but no string assets parsed");
+  process.exit(1);
+}
 for (const asset of shell) {
   if (typeof asset !== "string") continue;
   const normalized = asset.replace(/^\.\//, "");

@@ -110,6 +110,7 @@ sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespie
 - Tests: `TESTING.md`
 - Konfliktregeln: `MERGE_POLICY.md`
 - Datenschema: `DATA_SCHEMA.md`
+
 ## Weitere Verbesserungen (Ideen/Fixes)
 
 - **Export/Import für Lesefortschritt** (JSON-Datei), damit der Fortschritt unabhängig von Browser-Storage gesichert ist.
