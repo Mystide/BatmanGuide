@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.03.31-5";
+  const APP_VERSION = "2026.04.26-1";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -104,6 +104,39 @@
     dropped: { label: "Dropped", short: "D" }
   };
 
+  const VALUE_LABELS = {
+    importance: {
+      core: "Core",
+      recommended: "Recommended",
+      context: "Context",
+      optional: "Optional"
+    },
+    continuity: {
+      "golden-age": "Golden Age",
+      "silver-age": "Silver Age",
+      "bronze-age": "Bronze Age",
+      "pre-crisis": "Pre-Crisis",
+      "post-crisis": "Post-Crisis",
+      "new-52": "New 52",
+      rebirth: "Rebirth",
+      "infinite-frontier": "Infinite Frontier",
+      elseworld: "Elseworld",
+      "black-label": "Black Label"
+    },
+    readingMode: {
+      read_all: "Read all",
+      selected_issues: "Selected issues",
+      checkpoint: "Checkpoint",
+      context: "Context"
+    },
+    dcuiStatus: {
+      direct: "Direct",
+      collection: "Collection",
+      search_fallback: "Search fallback",
+      missing: "Missing"
+    }
+  };
+
   const SEARCH_SYNONYMS = {
     bruce: "batman",
     wayne: "batman",
@@ -185,10 +218,18 @@
     track: "",
     status: "",
     character: "",
-    era: ""
+    era: "",
+    importance: "",
+    continuity: "",
+    readingMode: "",
+    dcuiStatus: ""
   });
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
+  const IMPORTANCE_OPTIONS = [...new Set(LIST.map((entry) => entry.importance).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const CONTINUITY_OPTIONS = [...new Set(LIST.map((entry) => entry.continuity).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const READING_MODE_OPTIONS = [...new Set(LIST.map((entry) => entry.readingMode).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const DCUI_STATUS_OPTIONS = [...new Set(LIST.map((entry) => entry.dcuiStatus).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const SEARCH_BLOB_CACHE = new Map();
   const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
 
@@ -230,7 +271,11 @@
       track: $("trackFilter").value || "",
       status: $("statusFilter").value || "",
       character: $("characterFilter").value || "",
-      era: $("eraFilter").value || ""
+      era: $("eraFilter").value || "",
+      importance: $("importanceFilter").value || "",
+      continuity: $("continuityFilter").value || "",
+      readingMode: $("readingModeFilter").value || "",
+      dcuiStatus: $("dcuiStatusFilter").value || ""
     });
   }
 
@@ -243,6 +288,10 @@
       const status = params.get("status") || "";
       const character = params.get("character") || "";
       const era = params.get("era") || "";
+      const importance = params.get("importance") || "";
+      const continuity = params.get("continuity") || "";
+      const readingMode = params.get("reading_mode") || "";
+      const dcuiStatus = params.get("dcui_status") || "";
       return {
         search: params.get("q") || "",
         type: ["", "book", "series", "collection"].includes(type) ? type : "",
@@ -252,7 +301,11 @@
         track: ["", "main", "batfamily"].includes(track) ? track : "",
         status: ITEM_STATUSES.includes(status) ? status : "",
         character: character,
-        era: ERA_OPTIONS.includes(era) ? era : ""
+        era: ERA_OPTIONS.includes(era) ? era : "",
+        importance: IMPORTANCE_OPTIONS.includes(importance) ? importance : "",
+        continuity: CONTINUITY_OPTIONS.includes(continuity) ? continuity : "",
+        readingMode: READING_MODE_OPTIONS.includes(readingMode) ? readingMode : "",
+        dcuiStatus: DCUI_STATUS_OPTIONS.includes(dcuiStatus) ? dcuiStatus : ""
       };
     } catch {
       return defaultFilters();
@@ -270,7 +323,11 @@
         track: $("trackFilter").value || "",
         status: $("statusFilter").value || "",
         character: $("characterFilter").value || "",
-        era: $("eraFilter").value || ""
+        era: $("eraFilter").value || "",
+        importance: $("importanceFilter").value || "",
+        continuity: $("continuityFilter").value || "",
+        readingMode: $("readingModeFilter").value || "",
+        dcuiStatus: $("dcuiStatusFilter").value || ""
       };
       const defaults = defaultFilters();
       const next = new URLSearchParams(window.location.search || "");
@@ -301,6 +358,18 @@
 
       if (filters.era && filters.era !== defaults.era) next.set("era", filters.era);
       else next.delete("era");
+
+      if (filters.importance && filters.importance !== defaults.importance) next.set("importance", filters.importance);
+      else next.delete("importance");
+
+      if (filters.continuity && filters.continuity !== defaults.continuity) next.set("continuity", filters.continuity);
+      else next.delete("continuity");
+
+      if (filters.readingMode && filters.readingMode !== defaults.readingMode) next.set("reading_mode", filters.readingMode);
+      else next.delete("reading_mode");
+
+      if (filters.dcuiStatus && filters.dcuiStatus !== defaults.dcuiStatus) next.set("dcui_status", filters.dcuiStatus);
+      else next.delete("dcui_status");
 
       const nextQuery = next.toString();
       const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
@@ -766,6 +835,10 @@
     const status = $("statusFilter").value;
     const character = $("characterFilter").value;
     const era = $("eraFilter").value;
+    const importance = $("importanceFilter").value;
+    const continuity = $("continuityFilter").value;
+    const readingMode = $("readingModeFilter").value;
+    const dcuiStatus = $("dcuiStatusFilter").value;
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
@@ -790,6 +863,10 @@
       if (track === "batfamily" && entry.track !== "batfamily") return false;
       if (status && ensureStatus(st) !== status) return false;
       if (era && entry.era !== era) return false;
+      if (importance && (entry.importance || "") !== importance) return false;
+      if (continuity && (entry.continuity || "") !== continuity) return false;
+      if (readingMode && (entry.readingMode || "") !== readingMode) return false;
+      if (dcuiStatus && (entry.dcuiStatus || "") !== dcuiStatus) return false;
       if (character) {
         const chars = Array.isArray(entry.characters) ? entry.characters : [];
         if (!chars.includes(character)) return false;
@@ -839,6 +916,10 @@
     if ($("statusFilter")?.value) labels.push(`Status: ${$("statusFilter").value.replaceAll("_", " ")}`);
     if ($("characterFilter")?.value) labels.push(`Character: ${$("characterFilter").value}`);
     if ($("eraFilter")?.value) labels.push(`Era: ${$("eraFilter").value}`);
+    if ($("importanceFilter")?.value) labels.push(`Importance: ${toLabel("importance", $("importanceFilter").value)}`);
+    if ($("continuityFilter")?.value) labels.push(`Continuity: ${toLabel("continuity", $("continuityFilter").value)}`);
+    if ($("readingModeFilter")?.value) labels.push(`Reading mode: ${toLabel("readingMode", $("readingModeFilter").value)}`);
+    if ($("dcuiStatusFilter")?.value) labels.push(`DCUI status: ${toLabel("dcuiStatus", $("dcuiStatusFilter").value)}`);
     if (($("sortBy")?.value || "order") !== "order") labels.push(`Sort: ${$("sortBy").value}`);
 
     if (!labels.length) return "";
@@ -855,6 +936,10 @@
     if ($("statusFilter")?.value) count++;
     if ($("characterFilter")?.value) count++;
     if ($("eraFilter")?.value) count++;
+    if ($("importanceFilter")?.value) count++;
+    if ($("continuityFilter")?.value) count++;
+    if ($("readingModeFilter")?.value) count++;
+    if ($("dcuiStatusFilter")?.value) count++;
     if (($("sortBy")?.value || "order") !== "order") count++;
     return count;
   }
@@ -1410,11 +1495,20 @@
           const panelHint = document.createElement("div");
           panelHint.className = "item-hint";
           const hintText = String(entry.hint || "").trim();
+          const infoTags = [];
+          if (entry.importance) infoTags.push(toLabel("importance", entry.importance));
+          if (entry.continuity) infoTags.push(toLabel("continuity", entry.continuity));
+          if (entry.readingMode) infoTags.push(toLabel("readingMode", entry.readingMode));
+          const panelMeta = document.createElement("div");
+          panelMeta.className = "item-hint";
+          panelMeta.textContent = infoTags.join(" · ");
           if (hintText) {
             panelHint.textContent = hintText;
-            titleWrap.append(panelTitle, panelHint);
+            if (infoTags.length) titleWrap.append(panelTitle, panelMeta, panelHint);
+            else titleWrap.append(panelTitle, panelHint);
           } else {
-            titleWrap.append(panelTitle);
+            if (infoTags.length) titleWrap.append(panelTitle, panelMeta);
+            else titleWrap.append(panelTitle);
           }
           titleRow.appendChild(titleWrap);
           top.appendChild(titleRow);
@@ -1423,7 +1517,13 @@
           coverLink.href = safeUrl;
           coverLink.target = "_blank";
           coverLink.rel = "noopener noreferrer";
-          coverLink.textContent = "DCUI";
+          const dcuiLabel = {
+            direct: "Open DCUI",
+            collection: "Open DCUI Collection",
+            search_fallback: "Search on DCUI",
+            missing: "Missing DCUI link"
+          }[entry.dcuiStatus] || "Open DCUI";
+          coverLink.textContent = dcuiLabel;
           const coverTitle = document.createElement("span");
           coverTitle.className = "cover-title";
           coverTitle.textContent = entry.title;
@@ -1533,10 +1633,8 @@
             cycleButton.setAttribute("aria-label", `Reading status: ${STATUS_META[resolvedNextStatus]?.label || "Unread"}`);
             const shortNode = cycleButton.querySelector(".status-cycle-short");
             const labelNode = cycleButton.querySelector(".status-cycle-label");
-            const headingNode = top.querySelector(".title");
             if (shortNode) shortNode.textContent = STATUS_META[resolvedNextStatus]?.short || "U";
             if (labelNode) labelNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
-            if (headingNode) headingNode.textContent = STATUS_META[resolvedNextStatus]?.label || "Unread";
             applyItemStatusClass(item, resolvedNextStatus);
             st.touchedAt = nowISO();
             state.lastTouchedId = entry.id;
@@ -2181,6 +2279,26 @@
     box.innerHTML = `<strong>Debug health</strong> · ready: ${ready} · startup: ${escapeHtml(lastStep)} · ui: ${escapeHtml(lastUiStep)} · error: ${escapeHtml(err)} · avg(filter): ${filterAvg} · avg(render): ${renderAvg}`;
   }
 
+  function toLabel(group, value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    return VALUE_LABELS[group]?.[raw] || raw.replaceAll("_", " ").replaceAll("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function populateEnumFilter(selectId, values, group, allLabel) {
+    const select = $(selectId);
+    if (!select) return;
+    const selected = select.value || "";
+    select.innerHTML = `<option value="">${allLabel}</option>`;
+    for (const value of values) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = toLabel(group, value);
+      select.appendChild(opt);
+    }
+    select.value = values.includes(selected) ? selected : "";
+  }
+
   function populateEraFilter() {
     const select = $("eraFilter");
     if (!select) return;
@@ -2243,10 +2361,14 @@
     runUIStep("restoreFilters", () => {
       populateEraFilter();
       populateCharacterFilter();
+      populateEnumFilter("importanceFilter", IMPORTANCE_OPTIONS, "importance", "All importance");
+      populateEnumFilter("continuityFilter", CONTINUITY_OPTIONS, "continuity", "All continuity");
+      populateEnumFilter("readingModeFilter", READING_MODE_OPTIONS, "readingMode", "All reading modes");
+      populateEnumFilter("dcuiStatusFilter", DCUI_STATUS_OPTIONS, "dcuiStatus", "All DCUI statuses");
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
-      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "status", "character", "era"].some((key) => params.has(key));
+      const hasURLFilters = ["q", "type", "remaining", "required", "sort", "track", "status", "character", "era", "importance", "continuity", "reading_mode", "dcui_status"].some((key) => params.has(key));
       const activeFilters = hasURLFilters
         ? Object.assign({}, savedFilters, urlFilters)
         : Object.assign({}, savedFilters);
@@ -2260,6 +2382,10 @@
       $("statusFilter").value = activeFilters.status || "";
       $("characterFilter").value = activeFilters.character || "";
       $("eraFilter").value = ERA_OPTIONS.includes(activeFilters.era) ? activeFilters.era : "";
+      $("importanceFilter").value = IMPORTANCE_OPTIONS.includes(activeFilters.importance) ? activeFilters.importance : "";
+      $("continuityFilter").value = CONTINUITY_OPTIONS.includes(activeFilters.continuity) ? activeFilters.continuity : "";
+      $("readingModeFilter").value = READING_MODE_OPTIONS.includes(activeFilters.readingMode) ? activeFilters.readingMode : "";
+      $("dcuiStatusFilter").value = DCUI_STATUS_OPTIONS.includes(activeFilters.dcuiStatus) ? activeFilters.dcuiStatus : "";
       syncQuickFilterChips();
       writeFilters();
       writeFiltersToURL();
@@ -2284,7 +2410,7 @@
       const panel = $("advancedFiltersPanel");
       if (!panel) return;
       const prefs = readUiPrefs();
-      const hasAdvancedFilters = !!($("trackFilter").value || $("statusFilter").value || $("characterFilter").value || $("eraFilter").value || ($("sortBy").value || "order") !== "order");
+      const hasAdvancedFilters = !!($("trackFilter").value || $("statusFilter").value || $("characterFilter").value || $("eraFilter").value || $("importanceFilter").value || $("continuityFilter").value || $("readingModeFilter").value || $("dcuiStatusFilter").value || ($("sortBy").value || "order") !== "order");
       panel.open = hasAdvancedFilters || !!prefs.advancedFiltersOpen;
       panel.addEventListener("toggle", () => {
         writeUiPrefs({ advancedFiltersOpen: panel.open });
@@ -2313,7 +2439,7 @@
         syncEraToggleButton();
       };
 
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "statusFilter", "characterFilter", "eraFilter"]) {
+      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "statusFilter", "characterFilter", "eraFilter", "importanceFilter", "continuityFilter", "readingModeFilter", "dcuiStatusFilter"]) {
         const el = $(id);
         const shouldDebounce = id === "search";
         el.addEventListener("input", () => {
@@ -2339,6 +2465,10 @@
             $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
+            $("importanceFilter").value = "";
+            $("continuityFilter").value = "";
+            $("readingModeFilter").value = "";
+            $("dcuiStatusFilter").value = "";
             $("sortBy").value = "recent";
           } else if (preset === "mainline") {
             $("onlyRemaining").checked = true;
@@ -2348,6 +2478,10 @@
             $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
+            $("importanceFilter").value = "core";
+            $("continuityFilter").value = "";
+            $("readingModeFilter").value = "";
+            $("dcuiStatusFilter").value = "";
             $("sortBy").value = "order";
           } else {
             $("search").value = "";
@@ -2358,6 +2492,10 @@
             $("statusFilter").value = "";
             $("characterFilter").value = "";
             $("eraFilter").value = "";
+            $("importanceFilter").value = "";
+            $("continuityFilter").value = "";
+            $("readingModeFilter").value = "";
+            $("dcuiStatusFilter").value = "";
             $("sortBy").value = "order";
           }
           writeFilters();
@@ -2485,6 +2623,10 @@
         $("statusFilter").value = "";
         $("characterFilter").value = "";
         $("eraFilter").value = "";
+        $("importanceFilter").value = "";
+        $("continuityFilter").value = "";
+        $("readingModeFilter").value = "";
+        $("dcuiStatusFilter").value = "";
         writeFilters();
         writeFiltersToURL();
         syncQuickFilterChips();
