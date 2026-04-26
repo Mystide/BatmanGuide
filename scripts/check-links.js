@@ -97,9 +97,14 @@ function collectUrls(list, includeCovers) {
     const candidates = [{ id: entry.id, field: "url", value: entry.url }];
 
     if (Array.isArray(entry.issues)) {
-      for (const issue of entry.issues) {
-        candidates.push({ id: `${entry.id} issue`, field: "issue.url", value: issue && issue.url });
-      }
+      entry.issues.forEach((issue, issueIndex) => {
+        candidates.push({
+          id: `${entry.id} issue #${issueIndex + 1}`,
+          label: issue && issue.title ? String(issue.title) : "",
+          field: "issue.url",
+          value: issue && issue.url
+        });
+      });
     }
 
     if (includeCovers && typeof entry.cover === "string") {
@@ -205,7 +210,8 @@ async function main() {
 
   let failCount = 0;
   for (const result of results) {
-    const label = `${result.target.id} ${result.target.field}`;
+    const issueLabel = result.target.label ? ` "${result.target.label}"` : "";
+    const label = `${result.target.id}${issueLabel} ${result.target.field}`;
     if (result.ok) {
       const suffix = result.fallbackFromHead ? ` (fallback HEAD:${result.headStatus} -> GET)` : "";
       console.log(`[link-check] OK  ${result.status} ${label} (${result.ms}ms) ${result.target.value}${suffix}`);
