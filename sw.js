@@ -1,4 +1,5 @@
-const CACHE = "batman-guide-cache-2026-04-26.01-metadata-filters";
+const APP_VERSION = "2026.04.26-1";
+const CACHE = `batman-guide-cache-${APP_VERSION}`;
 const APP_SHELL = [
   "./",
   "./index.html",

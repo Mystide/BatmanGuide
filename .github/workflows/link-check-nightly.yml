@@ -15,4 +15,11 @@ jobs:
         with:
           node-version: '20'
       - name: Run link quality check
-        run: node ./scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers
+        run: node ./scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers --report link-check-report.json
+      - name: Upload link report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-check-report
+          path: link-check-report.json
+          if-no-files-found: warn
