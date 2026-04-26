@@ -4,7 +4,7 @@
 
 - [x] SEO/Sharing-Basics ergänzt (`meta description`, Open Graph, Twitter Card)
 - [x] Smoke-Check als GitHub Action für Push/PR aktiv
-- [ ] App-Version + Service-Worker-Cache bei jedem relevanten Release synchron mitziehen
+- [x] App-Version + Service-Worker-Cache synchronisiert (`APP_VERSION` auch im Service Worker)
 - [x] `package.json`-Scripts als Standard-Workflow etabliert
 - [ ] Social-Preview testen (inkl. OG-Image als absolute URL prüfen)
 

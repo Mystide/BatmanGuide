@@ -49,19 +49,34 @@ process.stdout.write(m[1]);
 NODE
 ) || fail "APP_VERSION not found in app.js"
 
+SW_APP_VERSION=$(node - <<'NODE'
+const fs = require("fs");
+const sw = fs.readFileSync("sw.js", "utf8");
+const m = sw.match(/const\s+APP_VERSION\s*=\s*"([^"]+)"/);
+if (!m) process.exit(1);
+process.stdout.write(m[1]);
+NODE
+) || fail "APP_VERSION not found in sw.js"
+
 CACHE_KEY=$(node - <<'NODE'
 const fs = require("fs");
 const sw = fs.readFileSync("sw.js", "utf8");
 const m = sw.match(/const\s+CACHE\s*=\s*"([^"]+)"/);
-if (!m) process.exit(1);
-process.stdout.write(m[1]);
+if (m) {
+  process.stdout.write(m[1]);
+  process.exit(0);
+}
+const t = sw.match(/const\s+CACHE\s*=\s*`([^`]+)`/);
+if (!t) process.exit(1);
+process.stdout.write(t[1]);
 NODE
 ) || fail "CACHE key not found in sw.js"
 
-APP_VERSION_DATE="${APP_VERSION%%-*}"
-APP_VERSION_DATE_DASHED="${APP_VERSION_DATE//./-}"
-if [[ "${CACHE_KEY}" != *"${APP_VERSION_DATE_DASHED}"* ]]; then
-  fail "CACHE key (${CACHE_KEY}) does not include APP_VERSION date (${APP_VERSION_DATE_DASHED})"
+if [[ "${APP_VERSION}" != "${SW_APP_VERSION}" ]]; then
+  fail "APP_VERSION mismatch (app.js=${APP_VERSION}, sw.js=${SW_APP_VERSION})"
+fi
+if [[ "${CACHE_KEY}" != *'${APP_VERSION}'* && "${CACHE_KEY}" != *"${APP_VERSION}"* ]]; then
+  fail "CACHE key (${CACHE_KEY}) does not include APP_VERSION (${APP_VERSION})"
 fi
 
 echo "[smoke] verify APP_SHELL assets exist"
