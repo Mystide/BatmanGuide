@@ -1,4 +1,4 @@
-const CACHE = "batman-guide-cache-2026-03-31.07-restore-binary-wordmark";
+const CACHE = "batman-guide-cache-2026-04-26.01-metadata-filters";
 const APP_SHELL = [
   "./",
   "./index.html",

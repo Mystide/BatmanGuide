@@ -117,6 +117,12 @@ function validateTypeUrlConsistency(item, at) {
   }
 }
 
+function isPlaceholderUrl(url) {
+  const value = String(url || "").trim().toLowerCase();
+  if (!value) return true;
+  return value === "tbd" || value === "missing" || value === "n/a" || value === "about:blank";
+}
+
 list.forEach((item, index) => {
   const at = `entry #${index + 1}`;
   if (!item || typeof item !== "object") fail(`${at} is not an object`);
@@ -168,15 +174,16 @@ list.forEach((item, index) => {
 
   validateTypeUrlConsistency(item, at);
 
-  if (typeof item.optional !== "boolean") {
-    fail(`${at} has non-boolean 'optional'`);
-  }
-
   if (typeof item.importance !== "string" || !allowedImportance.has(item.importance)) {
     fail(`${at} has invalid 'importance' (expected one of: ${[...allowedImportance].join(", ")})`);
   }
-  if (item.optional === false && item.importance === "optional") {
-    fail(`${at} has contradictory 'optional=false' and 'importance=optional'`);
+  if (typeof item.optional !== "undefined" && typeof item.optional !== "boolean") {
+    fail(`${at} has non-boolean 'optional'`);
+  }
+  if (typeof item.optional === "undefined") {
+    warnings.push(`${at} has no 'optional' flag (derive from importance instead)`);
+  } else if (item.optional !== (item.importance === "optional")) {
+    fail(`${at} has contradictory optional/importance values`);
   }
 
   if (typeof item.readingMode !== "string" || !allowedReadingModes.has(item.readingMode)) {
@@ -195,6 +202,12 @@ list.forEach((item, index) => {
   }
   if (typeof item.dcuiChecked !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.dcuiChecked)) {
     fail(`${at} has invalid 'dcuiChecked' (expected YYYY-MM-DD)`);
+  } else {
+    const checkedAt = Date.parse(`${item.dcuiChecked}T00:00:00Z`);
+    const staleThresholdMs = 90 * 24 * 60 * 60 * 1000;
+    if (Number.isFinite(checkedAt) && (Date.now() - checkedAt) > staleThresholdMs) {
+      warnings.push(`${at} has stale dcuiChecked date (${item.dcuiChecked})`);
+    }
   }
 
   if (typeof item.placementNote === "undefined") {
@@ -203,6 +216,22 @@ list.forEach((item, index) => {
 
   if (!/^https?:\/\//.test(item.url)) {
     fail(`${at} has invalid url '${item.url}'`);
+  }
+
+  const normalizedTopLevelUrl = item.url.trim().toLowerCase();
+  const isCollectionUrl = normalizedTopLevelUrl.includes("/collections/");
+  const isSearchUrl = normalizedTopLevelUrl.includes("/search");
+  if (isCollectionUrl && item.dcuiStatus !== "collection") {
+    warnings.push(`${at} has collection URL but dcuiStatus='${item.dcuiStatus}'`);
+  }
+  if (isSearchUrl && item.dcuiStatus !== "search_fallback") {
+    warnings.push(`${at} has search URL but dcuiStatus='${item.dcuiStatus}'`);
+  }
+  if (item.dcuiStatus === "missing" && !isPlaceholderUrl(item.url)) {
+    warnings.push(`${at} uses dcuiStatus='missing' but has a real URL`);
+  }
+  if (item.dcuiStatus !== "missing" && isPlaceholderUrl(item.url)) {
+    warnings.push(`${at} has placeholder URL but dcuiStatus='${item.dcuiStatus}'`);
   }
 
   const normalizedUrl = item.url.trim();
@@ -237,6 +266,17 @@ list.forEach((item, index) => {
         }
       }
     });
+  }
+
+  const issueCount = Array.isArray(item.issues) ? item.issues.length : 0;
+  if (item.readingMode === "selected_issues" && issueCount === 0) {
+    fail(`${at} has readingMode='selected_issues' but no issues[]`);
+  }
+  if (item.readingMode === "checkpoint" && issueCount > 0) {
+    warnings.push(`${at} is a checkpoint but also defines issues[]`);
+  }
+  if (item.readingMode === "read_all" && item.type === "collection" && issueCount === 0) {
+    warnings.push(`${at} is read_all collection without issues[] detail`);
   }
 
   if (item.type === "collection" && !Array.isArray(item.issues)) {
