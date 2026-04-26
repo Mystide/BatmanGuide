@@ -27,7 +27,21 @@ if (list.length < 20) {
 }
 
 const allowedTypes = new Set(["book", "series", "collection"]);
+const allowedImportance = new Set(["core", "recommended", "context", "optional"]);
+const allowedReadingModes = new Set(["read_all", "selected_issues", "checkpoint", "context"]);
+const allowedContinuity = new Set([
+  "golden-age",
+  "pre-crisis",
+  "post-crisis",
+  "new-52",
+  "rebirth",
+  "infinite-frontier",
+  "elseworld",
+  "black-label"
+]);
+const allowedDcuiStatus = new Set(["direct", "collection", "search_fallback", "missing"]);
 const ids = new Set();
+const seenOrders = new Set();
 const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
@@ -132,6 +146,10 @@ list.forEach((item, index) => {
   if (explicitOrder && explicitOrder.era !== idOrder.era) {
     fail(`${at} has mismatching explicit order '${item.order}' for id '${item.id}'`);
   }
+  if (explicitOrder) {
+    if (seenOrders.has(item.order)) fail(`${at} has duplicate explicit 'order' value '${item.order}'`);
+    seenOrders.add(item.order);
+  }
 
   const order = explicitOrder || idBasedSortToken(item);
   if (previousOrder && compareOrder(order, previousOrder) < 0) {
@@ -152,6 +170,35 @@ list.forEach((item, index) => {
 
   if (typeof item.optional !== "boolean") {
     fail(`${at} has non-boolean 'optional'`);
+  }
+
+  if (typeof item.importance !== "string" || !allowedImportance.has(item.importance)) {
+    fail(`${at} has invalid 'importance' (expected one of: ${[...allowedImportance].join(", ")})`);
+  }
+  if (item.optional === false && item.importance === "optional") {
+    fail(`${at} has contradictory 'optional=false' and 'importance=optional'`);
+  }
+
+  if (typeof item.readingMode !== "string" || !allowedReadingModes.has(item.readingMode)) {
+    fail(`${at} has invalid 'readingMode' (expected one of: ${[...allowedReadingModes].join(", ")})`);
+  }
+
+  if (typeof item.continuity !== "string" || !allowedContinuity.has(item.continuity)) {
+    fail(`${at} has invalid 'continuity' (expected one of: ${[...allowedContinuity].join(", ")})`);
+  }
+
+  if (typeof item.dcuiStatus !== "string" || !allowedDcuiStatus.has(item.dcuiStatus)) {
+    fail(`${at} has invalid 'dcuiStatus' (expected one of: ${[...allowedDcuiStatus].join(", ")})`);
+  }
+  if (item.dcuiStatus === "search_fallback") {
+    warnings.push(`${at} uses DCUI search fallback link`);
+  }
+  if (typeof item.dcuiChecked !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.dcuiChecked)) {
+    fail(`${at} has invalid 'dcuiChecked' (expected YYYY-MM-DD)`);
+  }
+
+  if (typeof item.placementNote === "undefined") {
+    warnings.push(`${at} has no placementNote`);
   }
 
   if (!/^https?:\/\//.test(item.url)) {
@@ -190,6 +237,10 @@ list.forEach((item, index) => {
         }
       }
     });
+  }
+
+  if (item.type === "collection" && !Array.isArray(item.issues)) {
+    warnings.push(`${at} is collection without issues[] details`);
   }
 });
 

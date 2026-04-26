@@ -527,6 +527,14 @@
     return String(text || "").toLowerCase().replace(/[^a-z0-9]+/g, " ");
   }
 
+  function isOptionalEntry(entry) {
+    if (!entry || typeof entry !== "object") return false;
+    if (typeof entry.importance === "string") {
+      return entry.importance === "optional";
+    }
+    return !!entry.optional;
+  }
+
   function collectionIssues(entry) {
     if (!Array.isArray(entry?.issues)) return [];
     return entry.issues
@@ -777,7 +785,7 @@
       }
       if (type && entry.type !== type) return false;
       if (onlyRemaining && st.done) return false;
-      if (hideOptional && entry.optional) return false;
+      if (hideOptional && isOptionalEntry(entry)) return false;
       if (track === "main" && entry.track === "batfamily") return false;
       if (track === "batfamily" && entry.track !== "batfamily") return false;
       if (status && ensureStatus(st) !== status) return false;
@@ -947,7 +955,7 @@
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
     setText("randomText", `Random: ${randomEntry ? randomEntry.title : "-"}`);
 
-    const requiredRemaining = filtered.filter((entry) => !entry.optional && !ensureItemState(entry).done).length;
+    const requiredRemaining = filtered.filter((entry) => !isOptionalEntry(entry) && !ensureItemState(entry).done).length;
     setText("statVisible", String(s.total));
     setText("statDone", String(s.done));
     setText("statRemaining", String(Math.max(0, s.total - s.done)));
@@ -2187,6 +2195,25 @@
     select.value = ERA_OPTIONS.includes(selected) ? selected : "";
   }
 
+  function populateCharacterFilter() {
+    const select = $("characterFilter");
+    if (!select) return;
+    const selected = select.value || "";
+    const slugs = [...new Set(
+      LIST.flatMap((entry) => (Array.isArray(entry.characters) ? entry.characters : []))
+        .map((slug) => String(slug || "").trim())
+        .filter(Boolean)
+    )].sort((a, b) => a.localeCompare(b));
+    select.innerHTML = '<option value="">All characters</option>';
+    for (const slug of slugs) {
+      const opt = document.createElement("option");
+      opt.value = slug;
+      opt.textContent = slug.replaceAll("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      select.appendChild(opt);
+    }
+    select.value = slugs.includes(selected) ? selected : "";
+  }
+
   function syncQuickFilterChips() {
     const chipOpen = $("chipOpen");
     const chipRequired = $("chipRequired");
@@ -2215,6 +2242,7 @@
 
     runUIStep("restoreFilters", () => {
       populateEraFilter();
+      populateCharacterFilter();
       const savedFilters = readFilters();
       const urlFilters = readFiltersFromURL();
       const params = new URLSearchParams(window.location.search || "");
