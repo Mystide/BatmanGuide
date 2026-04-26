@@ -34,6 +34,19 @@ Für Solo-Projekte ist ein kleiner Backup-Rhythmus oft hilfreicher als komplexe 
 - Regelmäßig eine Kopie von `list.js` sichern (z. B. als Datums-Datei).
 - Vor größeren Inhaltsänderungen einen separaten Commit machen.
 
+## NPM-Skripte (pflegeleicht)
+
+Es gibt jetzt einen einfachen Script-Workflow:
+
+```bash
+npm run validate-list
+npm run smoke
+npm run links
+npm run links:full
+```
+
+`links:full` prüft zusätzlich Cover-URLs und nutzt konservative Timeouts/Concurrency.
+
 ## Optional: Broken-Link-Check (URL-Qualität)
 
 Wenn du nach größeren Listen-Änderungen prüfen willst, ob die hinterlegten Links erreichbar sind:
