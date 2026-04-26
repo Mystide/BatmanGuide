@@ -103,3 +103,57 @@ sie auf GitHub verfügbar und können nach lokalem Datenverlust wieder eingespie
 - **Datenpflege-Workflow**: kleine `npm run`-Kommandos für `format-list`, `validate-list`, `smoke`.
 - **UX**: „Zuletzt gelesen“-Filter/Shortcut, um schneller wieder einzusteigen.
 - **Performance**: Lazy Rendering für sehr große Listen (falls die Liste weiter wächst).
+
+
+## Migrations-Checkliste: `order` + erweiterte `issues` (minimal risk)
+
+Empfohlene Reihenfolge, um die Datenstruktur zu verbessern ohne bestehende IDs/Links zu brechen:
+
+1. **Schema erweitern (rückwärtskompatibel)**
+   - In `list.js` pro Eintrag optionales Feld `order` zulassen.
+   - Bestehende `id`-Werte unverändert lassen (stabile technische Referenz).
+
+2. **Sortierung umstellen (mit Fallback)**
+   - Primär nach `order` sortieren.
+   - Wenn `order` fehlt: auf bisherige ID-Logik zurückfallen.
+   - Ergebnis: Alte Daten funktionieren weiter, neue Einträge sind sauber einfügbar.
+
+3. **Validator schrittweise härten**
+   - Phase A: `order` optional validieren (Typ, Eindeutigkeit, Monotonie innerhalb einer Ära).
+   - Phase B: Warnung ausgeben, wenn `order` fehlt.
+   - Phase C (später): `order` verpflichtend machen.
+
+4. **`issues` auf `book` und `series` erweitern**
+   - Rendering-/Checklist-Logik in `app.js` so anpassen, dass Unterpunkte nicht nur bei `collection` funktionieren.
+   - UI-Verhalten konsistent halten (Count, Häkchen, optional/required).
+
+5. **Cover-Quelle vereinheitlichen**
+   - Neue Cover möglichst direkt in `list.js` pflegen.
+   - `REAL_COVERS` in `app.js` nur noch als Legacy-Fallback nutzen.
+   - Danach schrittweise Migration bestehender Cover-Zuordnungen.
+
+6. **Inhaltliche Pflege separat behandeln**
+   - Technische Migration zuerst abschließen.
+   - Erst danach größere Content-Erweiterungen (neue Runs/Events), damit Fehlerursachen klar trennbar bleiben.
+
+7. **Abschluss-Checks pro Schritt**
+   - `./scripts/smoke-check.sh`
+   - optional: `node ./scripts/check-links.js --max 30`
+
+Beispiel-Eintrag:
+
+```js
+{
+  id: "E4-25",
+  order: 4250,
+  era: "Era 4 — Post-Crisis (1986–2011)",
+  type: "collection",
+  title: "Batman: Hush",
+  url: "...",
+  optional: false,
+  track: "main",
+  characters: ["batman"],
+  hint: "Main continuity placement after Bruce Wayne: Fugitive.",
+  issues: []
+}
+```
