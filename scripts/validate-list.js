@@ -31,6 +31,7 @@ const ids = new Set();
 const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
+let missingOrderCount = 0;
 const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
   [
     "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
@@ -54,8 +55,38 @@ function parseOrderFromId(id) {
 
 function compareOrder(a, b) {
   if (a.era !== b.era) return a.era - b.era;
-  if (a.number !== b.number) return a.number - b.number;
-  return a.suffix.localeCompare(b.suffix);
+  if (a.within !== b.within) return a.within - b.within;
+  return String(a.id || "").localeCompare(String(b.id || ""));
+}
+
+function suffixRank(suffix) {
+  let rank = 0;
+  for (let i = 0; i < suffix.length; i += 1) {
+    rank = (rank * 26) + (suffix.charCodeAt(i) - 64);
+  }
+  return rank;
+}
+
+function idBasedSortToken(item) {
+  const parsed = parseOrderFromId(item.id);
+  if (!parsed) return null;
+  return {
+    id: item.id,
+    era: parsed.era,
+    within: (parsed.number * 100) + suffixRank(parsed.suffix)
+  };
+}
+
+function explicitOrderToken(item) {
+  if (typeof item.order === "undefined") return null;
+  if (typeof item.order !== "number" || !Number.isInteger(item.order) || item.order < 1000) {
+    fail(`entry '${item.id}' has invalid 'order' (must be integer >= 1000)`);
+  }
+  return {
+    id: item.id,
+    era: Math.floor(item.order / 1000),
+    within: item.order % 1000
+  };
 }
 
 
@@ -87,15 +118,22 @@ list.forEach((item, index) => {
     fail(`${at} has invalid id format '${item.id}'`);
   }
 
-  const order = parseOrderFromId(item.id);
-  if (!order) {
+  const idOrder = parseOrderFromId(item.id);
+  if (!idOrder) {
     fail(`${at} has unparseable order id '${item.id}'`);
   }
 
-  if (!item.era.startsWith(`Era ${order.era} `)) {
+  if (!item.era.startsWith(`Era ${idOrder.era} `)) {
     fail(`${at} has mismatching era label '${item.era}' for id '${item.id}'`);
   }
 
+  const explicitOrder = explicitOrderToken(item);
+  if (!explicitOrder) missingOrderCount += 1;
+  if (explicitOrder && explicitOrder.era !== idOrder.era) {
+    fail(`${at} has mismatching explicit order '${item.order}' for id '${item.id}'`);
+  }
+
+  const order = explicitOrder || idBasedSortToken(item);
   if (previousOrder && compareOrder(order, previousOrder) < 0) {
     fail(`${at} is out of reading order ('${item.id}' appears after a later id)`);
   }
@@ -174,6 +212,9 @@ for (const [url, duplicateIds] of seenUrls.entries()) {
 
 for (const warning of warnings) {
   console.warn(`[list-validate] WARN: ${warning}`);
+}
+if (missingOrderCount > 0) {
+  console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
 }
 
 console.log(`[list-validate] ok (${list.length} entries)`);
