@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
+const fs = require("fs");
 const path = require("path");
 
 const listPath = path.resolve(__dirname, "..", "list.js");
@@ -11,7 +12,8 @@ function parseArgs(argv) {
     concurrency: 6,
     max: Infinity,
     includeCovers: false,
-    method: "head"
+    method: "head",
+    report: ""
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -36,6 +38,10 @@ function parseArgs(argv) {
       opts.max = Number(argv[++i]);
       continue;
     }
+    if (arg === "--report") {
+      opts.report = String(argv[++i] || "").trim();
+      continue;
+    }
     if (arg === "--help" || arg === "-h") {
       printHelpAndExit(0);
     }
@@ -52,12 +58,16 @@ function parseArgs(argv) {
     printHelpAndExit(1, "--max must be a number >= 1");
   }
 
+  if (opts.report && !opts.report.toLowerCase().endsWith(".json")) {
+    printHelpAndExit(1, "--report must point to a .json file");
+  }
+
   return opts;
 }
 
 function printHelpAndExit(code, message) {
   if (message) console.error(`[link-check] ${message}`);
-  console.log(`Usage: node scripts/check-links.js [options]\n\nOptions:\n  --max <n>            Check at most n URLs\n  --concurrency <n>    Concurrent requests (default: 6)\n  --timeout-ms <ms>    Request timeout in milliseconds (default: 12000)\n  --include-covers     Also validate optional cover URLs\n  --get                Use GET instead of HEAD\n  -h, --help           Show this help\n`);
+  console.log(`Usage: node scripts/check-links.js [options]\n\nOptions:\n  --max <n>            Check at most n URLs\n  --concurrency <n>    Concurrent requests (default: 6)\n  --timeout-ms <ms>    Request timeout in milliseconds (default: 12000)\n  --include-covers     Also validate optional cover URLs\n  --get                Use GET instead of HEAD\n  --report <file>      Write JSON report to file\n  -h, --help           Show this help\n`);
   process.exit(code);
 }
 
@@ -85,9 +95,17 @@ function collectUrls(list, includeCovers) {
 
   for (const entry of list) {
     const candidates = [{ id: entry.id, field: "url", value: entry.url }];
+
+    if (Array.isArray(entry.issues)) {
+      for (const issue of entry.issues) {
+        candidates.push({ id: `${entry.id} issue`, field: "issue.url", value: issue && issue.url });
+      }
+    }
+
     if (includeCovers && typeof entry.cover === "string") {
       candidates.push({ id: entry.id, field: "cover", value: entry.cover });
     }
+
     for (const candidate of candidates) {
       if (typeof candidate.value !== "string" || !/^https?:\/\//.test(candidate.value)) continue;
       const key = `${candidate.field}:${candidate.value}`;
@@ -100,14 +118,14 @@ function collectUrls(list, includeCovers) {
   return urls;
 }
 
-async function checkOne(target, opts) {
+async function request(target, method, timeoutMs) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   const started = Date.now();
 
   try {
     const response = await fetch(target.value, {
-      method: opts.method === "get" ? "GET" : "HEAD",
+      method,
       redirect: "follow",
       signal: controller.signal,
       headers: { "user-agent": "batman-guide-link-check/1.0" }
@@ -116,6 +134,7 @@ async function checkOne(target, opts) {
       ok: response.ok,
       status: response.status,
       ms: Date.now() - started,
+      method,
       target
     };
   } catch (error) {
@@ -126,12 +145,28 @@ async function checkOne(target, opts) {
       ok: false,
       status: "ERR",
       ms: Date.now() - started,
+      method,
       target,
       error: reason
     };
   } finally {
     clearTimeout(timer);
   }
+}
+
+async function checkOne(target, opts) {
+  if (opts.method === "get") {
+    return request(target, "GET", opts.timeoutMs);
+  }
+
+  const head = await request(target, "HEAD", opts.timeoutMs);
+  if (head.ok) return head;
+
+  const shouldFallback = head.status === 403 || head.status === 405 || head.status === "ERR";
+  if (!shouldFallback) return head;
+
+  const getResult = await request(target, "GET", opts.timeoutMs);
+  return Object.assign({}, getResult, { fallbackFromHead: true, headStatus: head.status, headError: head.error || "" });
 }
 
 async function runPool(items, limit, worker) {
@@ -172,12 +207,27 @@ async function main() {
   for (const result of results) {
     const label = `${result.target.id} ${result.target.field}`;
     if (result.ok) {
-      console.log(`[link-check] OK  ${result.status} ${label} (${result.ms}ms) ${result.target.value}`);
+      const suffix = result.fallbackFromHead ? ` (fallback HEAD:${result.headStatus} -> GET)` : "";
+      console.log(`[link-check] OK  ${result.status} ${label} (${result.ms}ms) ${result.target.value}${suffix}`);
     } else {
       failCount += 1;
       const reason = result.error ? ` ${result.error}` : "";
-      console.error(`[link-check] BAD ${result.status} ${label} (${result.ms}ms) ${result.target.value}${reason}`);
+      const suffix = result.fallbackFromHead ? ` (fallback HEAD:${result.headStatus} -> GET)` : "";
+      console.error(`[link-check] BAD ${result.status} ${label} (${result.ms}ms) ${result.target.value}${reason}${suffix}`);
     }
+  }
+
+
+  if (opts.report) {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      options: opts,
+      total: results.length,
+      failed: failCount,
+      results
+    };
+    fs.writeFileSync(path.resolve(process.cwd(), opts.report), JSON.stringify(payload, null, 2) + "\n", "utf8");
+    console.log(`[link-check] wrote report ${opts.report}`);
   }
 
   if (failCount > 0) {

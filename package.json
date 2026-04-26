@@ -1,0 +1,11 @@
+{
+  "name": "batman-guide",
+  "private": true,
+  "scripts": {
+    "validate-list": "node scripts/validate-list.js",
+    "smoke": "bash scripts/smoke-check.sh",
+    "links": "node scripts/check-links.js --max 30",
+    "links:full": "node scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers"
+  },
+  "devDependencies": {}
+}
