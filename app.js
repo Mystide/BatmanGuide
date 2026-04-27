@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.04.26-1";
+  const APP_VERSION = "2026.04.27-1";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -67,6 +67,7 @@
   const AUTO_PULL_MAX_INTERVAL_MS = 120000;
   const AUTO_PUSH_DEBOUNCE_MS = 120;
   const FILTER_INPUT_DEBOUNCE_MS = 120;
+  const DCUI_STALE_DAYS = 90;
   const SYNC_REQUEST_TIMEOUT_MS = 9000;
   const FIXED_LOGO_URL = "./batman-logo.png";
   const FIXED_WORDMARK_URL = "./assets/lettering/batmanletters1.png";
@@ -131,7 +132,8 @@
       direct: "Direct",
       collection: "Collection",
       search_fallback: "Search fallback",
-      missing: "Missing"
+      unavailable: "Unavailable in DCUI",
+      missing: "Unavailable in DCUI (legacy)"
     }
   };
 
@@ -226,7 +228,7 @@
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
   const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
   const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
-  const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "missing"];
+  const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "unavailable", "missing"];
 
   function orderEnumValues(values, preferredOrder = []) {
     const orderMap = new Map(preferredOrder.map((value, index) => [value, index]));
@@ -255,7 +257,8 @@
   const defaultUiPrefs = () => ({
     filtersOpen: false,
     advancedFiltersOpen: false,
-    showCoverEditor: false
+    showCoverEditor: false,
+    compactMode: false
   });
 
   let runtimeUiPrefs = loadJSON(KEYS.uiPrefs, defaultUiPrefs());
@@ -1213,6 +1216,44 @@
     return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
   }
 
+  function isDcuiCheckStale(dcuiChecked) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dcuiChecked || ""))) return false;
+    const checkedAt = Date.parse(`${dcuiChecked}T00:00:00Z`);
+    if (!Number.isFinite(checkedAt)) return false;
+    const staleThresholdMs = DCUI_STALE_DAYS * 24 * 60 * 60 * 1000;
+    return (Date.now() - checkedAt) > staleThresholdMs;
+  }
+
+  function computeMaintenanceStats() {
+    const stats = {
+      missingPlacementNote: 0,
+      staleDcuiChecked: 0,
+      searchFallback: 0,
+      collectionWithoutIssues: 0,
+      missingCover: 0,
+      legacyOptional: 0,
+      duplicateUrlGroups: 0
+    };
+
+    const seenUrls = new Map();
+    for (const entry of LIST) {
+      if (!String(entry.placementNote || "").trim()) stats.missingPlacementNote += 1;
+      if (isDcuiCheckStale(entry.dcuiChecked)) stats.staleDcuiChecked += 1;
+      if (entry.dcuiStatus === "search_fallback") stats.searchFallback += 1;
+      if (entry.type === "collection" && (!Array.isArray(entry.issues) || entry.issues.length === 0)) stats.collectionWithoutIssues += 1;
+      if (!REAL_COVERS[entry.id] && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
+      if (typeof entry.optional !== "undefined") stats.legacyOptional += 1;
+      const normalized = String(entry.url || "").trim();
+      if (!normalized) continue;
+      const list = seenUrls.get(normalized) || [];
+      list.push(entry.id);
+      seenUrls.set(normalized, list);
+    }
+
+    stats.duplicateUrlGroups = [...seenUrls.values()].filter((ids) => ids.length > 1).length;
+    return stats;
+  }
+
   function escapeSvgText(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -1414,14 +1455,37 @@
     coverEl.innerHTML = entryLogoFallback(entry);
   }
 
+  function renderMaintenancePanel(host) {
+    if (!host) return;
+    const stats = computeMaintenanceStats();
+    const card = document.createElement("section");
+    card.className = "card maintenance-card";
+    card.innerHTML = `
+      <h2 style="margin-top:0;">Maintenance</h2>
+      <div class="maintenance-grid">
+        <div class="maintenance-kpi"><strong>${stats.missingPlacementNote}</strong><span>missing placementNote</span></div>
+        <div class="maintenance-kpi"><strong>${stats.staleDcuiChecked}</strong><span>stale dcuiChecked (&gt;${DCUI_STALE_DAYS}d)</span></div>
+        <div class="maintenance-kpi"><strong>${stats.searchFallback}</strong><span>search_fallback links</span></div>
+        <div class="maintenance-kpi"><strong>${stats.collectionWithoutIssues}</strong><span>collection without issues[]</span></div>
+        <div class="maintenance-kpi"><strong>${stats.missingCover}</strong><span>entries without known cover</span></div>
+        <div class="maintenance-kpi"><strong>${stats.duplicateUrlGroups}</strong><span>duplicate URL groups</span></div>
+        <div class="maintenance-kpi"><strong>${stats.legacyOptional}</strong><span>legacy optional fields</span></div>
+      </div>
+    `;
+    host.appendChild(card);
+  }
+
   function render() {
     const t0 = isDebugMode() ? perfNow() : 0;
     setError("");
     const uiPrefs = readUiPrefs();
     const showCoverEditor = !!uiPrefs.showCoverEditor;
+    const compactMode = !!uiPrefs.compactMode;
     const filtered = getFiltered();
     const root = $("main");
+    root.classList.toggle("compact-mode", compactMode);
     root.innerHTML = "";
+    renderMaintenancePanel(root);
 
     if (!LIST.length) {
       setError("Reading list failed to load. Check that list.js exists and is loaded before app.js.");
@@ -1508,7 +1572,7 @@
           titleWrap.className = "title-wrap";
           const panelTitle = document.createElement("div");
           panelTitle.className = "title";
-          panelTitle.textContent = entry.title;
+          panelTitle.textContent = compactMode ? `${entry.id}  ${entry.title}` : entry.title;
           const panelHint = document.createElement("div");
           panelHint.className = "item-hint";
           const hintText = String(entry.hint || "").trim();
@@ -1519,13 +1583,30 @@
           const panelMeta = document.createElement("div");
           panelMeta.className = "item-hint";
           panelMeta.textContent = infoTags.join(" · ");
+          const chips = document.createElement("div");
+          chips.className = "tags";
+          if (entry.dcuiChecked) {
+            const checkedTag = document.createElement("span");
+            checkedTag.className = `tag${isDcuiCheckStale(entry.dcuiChecked) ? " stale" : ""}`;
+            checkedTag.textContent = `DCUI checked: ${entry.dcuiChecked}`;
+            chips.appendChild(checkedTag);
+            if (isDcuiCheckStale(entry.dcuiChecked)) {
+              const staleTag = document.createElement("span");
+              staleTag.className = "tag stale";
+              staleTag.textContent = "DCUI check stale";
+              chips.appendChild(staleTag);
+            }
+          }
           if (hintText) {
             panelHint.textContent = hintText;
-            if (infoTags.length) titleWrap.append(panelTitle, panelMeta, panelHint);
-            else titleWrap.append(panelTitle, panelHint);
+            if (infoTags.length) titleWrap.append(panelTitle, panelMeta);
+            else titleWrap.append(panelTitle);
+            if (chips.childElementCount) titleWrap.append(chips);
+            titleWrap.append(panelHint);
           } else {
             if (infoTags.length) titleWrap.append(panelTitle, panelMeta);
             else titleWrap.append(panelTitle);
+            if (chips.childElementCount) titleWrap.append(chips);
           }
           titleRow.appendChild(titleWrap);
           top.appendChild(titleRow);
@@ -1538,7 +1619,8 @@
             direct: "Open DCUI",
             collection: "Open DCUI Collection",
             search_fallback: "Search on DCUI",
-            missing: "Missing DCUI link"
+            unavailable: "Unavailable in DCUI",
+            missing: "Unavailable in DCUI"
           }[entry.dcuiStatus] || "Open DCUI";
           coverLink.textContent = dcuiLabel;
           const coverTitle = document.createElement("span");
@@ -2413,7 +2495,9 @@
     runUIStep("coverEditorPrefs", () => {
       const prefs = readUiPrefs();
       const showToggle = $("showCoverEditor");
+      const compactToggle = $("compactMode");
       if (showToggle) showToggle.checked = !!prefs.showCoverEditor;
+      if (compactToggle) compactToggle.checked = !!prefs.compactMode;
 
       if (showToggle) {
         const onCoverToggle = () => {
@@ -2422,6 +2506,15 @@
         };
         showToggle.addEventListener("change", onCoverToggle);
         showToggle.addEventListener("input", onCoverToggle);
+      }
+
+      if (compactToggle) {
+        const onCompactToggle = () => {
+          writeUiPrefs({ compactMode: !!compactToggle.checked });
+          render();
+        };
+        compactToggle.addEventListener("change", onCompactToggle);
+        compactToggle.addEventListener("input", onCompactToggle);
       }
     });
 

@@ -5,7 +5,7 @@ Diese Datei dokumentiert das Ziel-Schema für Einträge in `window.BATMAN_GUIDE_
 ## Pflichtfelder pro Eintrag
 
 - `id` *(string)*: stabile technische ID im Format `E<era>-<position>` (z. B. `E4-25`).
-- `era` *(string)*: lesbares Epochenlabel, passend zur ID (`Era 4 ...`).
+- `era` *(string)*: historische/lesestrukturelle Epoche, passend zur ID (`Era 4 ...`).
 - `type` *(string)*: DCUI-Linktyp.
   - Erlaubte Werte: `book`, `series`, `collection`
 - `title` *(string)*: Anzeige-Titel.
@@ -14,16 +14,17 @@ Diese Datei dokumentiert das Ziel-Schema für Einträge in `window.BATMAN_GUIDE_
   - Erlaubte Werte: `core`, `recommended`, `context`, `optional`
 - `readingMode` *(string)*: Leseart.
   - Erlaubte Werte: `read_all`, `selected_issues`, `checkpoint`, `context`
-- `continuity` *(string)*: Kontinuitäts-Zuordnung.
+- `continuity` *(string)*: Kontinuitäts-/Canon-Zuordnung (getrennt von `era`).
   - Erlaubte Werte: `golden-age`, `pre-crisis`, `post-crisis`, `new-52`, `rebirth`, `infinite-frontier`, `elseworld`, `black-label`
 - `dcuiStatus` *(string)*: Zugriffsstatus in DCUI.
-  - Erlaubte Werte: `direct`, `collection`, `search_fallback`, `missing`
+  - Erlaubte Werte: `direct`, `collection`, `search_fallback`, `unavailable`
+  - Legacy: `missing` wird noch akzeptiert, ist aber deprecated (verwende stattdessen `unavailable`).
 - `dcuiChecked` *(string)*: Prüfdatum im Format `YYYY-MM-DD`.
 
 ## Optionale Felder
 
 - `order` *(number)*: explizite Sortierung (empfohlen, integer >= 1000).
-- `optional` *(boolean)*: Legacy-Kompatibilität; sollte mit `importance === "optional"` konsistent sein.
+- `optional` *(boolean, deprecated)*: Legacy-Kompatibilität; Validator warnt bei Vorkommen. Konsistenz mit `importance === "optional"` bleibt verpflichtend, solange das Feld existiert.
 - `cover` *(string)*: direkte Cover-URL (HTTP/HTTPS).
 - `placementNote` *(string)*: Begründung der Position („Warum hier?“).
 - `issues` *(array)*: Untereinträge für Collections/Selektionen.
@@ -39,6 +40,7 @@ Diese Datei dokumentiert das Ziel-Schema für Einträge in `window.BATMAN_GUIDE_
 - `dcuiStatus` soll zum URL-Typ passen:
   - Collection-URL → `collection`
   - Search-URL → `search_fallback`
+  - Nicht verfügbare Inhalte in DCUI → `unavailable` (typisch mit Platzhalter-URL wie `missing`/`n/a`)
 - `readingMode: selected_issues` erfordert mindestens ein `issues[]`-Element.
 - `readingMode: checkpoint` sollte üblicherweise keine `issues[]` haben.
 

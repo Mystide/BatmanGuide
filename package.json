@@ -5,7 +5,10 @@
     "validate-list": "node scripts/validate-list.js",
     "smoke": "bash scripts/smoke-check.sh",
     "links": "node scripts/check-links.js --max 30",
-    "links:full": "node scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers"
+    "links:full": "node scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers",
+    "smoke:render": "node scripts/smoke-render-playwright.mjs"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "playwright": "^1.54.0"
+  }
 }

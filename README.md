@@ -2,6 +2,10 @@
 
 Kleine Web-App, um Batman-Comics/Stories als Leseliste zu verwalten.
 
+Aktuell enthält die App zusätzlich:
+- **Maintenance-Ansicht** mit Datenpflege-KPIs (z. B. fehlende `placementNote`, stale `dcuiChecked`, Legacy-`optional`).
+- **Compact mode** für eine dichtere Reading-Order-Darstellung ohne Cover-Fokus.
+
 ## Solo-Workflow (empfohlen)
 
 Da du alleine am Projekt arbeitest, reicht ein sehr schlanker Ablauf:
@@ -41,9 +45,12 @@ Es gibt jetzt einen einfachen Script-Workflow:
 ```bash
 npm run validate-list
 npm run smoke
+npm run smoke:render
 npm run links
 npm run links:full
 ```
+
+`smoke:render` führt einen minimalen Browser-Smoke (Playwright) inkl. Service Worker, Render, Suche/Filter und Reload unter `/BatmanGuide/` aus.
 
 `links:full` prüft zusätzlich Cover-URLs und nutzt konservative Timeouts/Concurrency.
 

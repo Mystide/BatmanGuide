@@ -39,13 +39,14 @@ const allowedContinuity = new Set([
   "elseworld",
   "black-label"
 ]);
-const allowedDcuiStatus = new Set(["direct", "collection", "search_fallback", "missing"]);
+const allowedDcuiStatus = new Set(["direct", "collection", "search_fallback", "unavailable", "missing"]);
 const ids = new Set();
 const seenOrders = new Set();
 const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
 let missingOrderCount = 0;
+let legacyOptionalCount = 0;
 const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
   [
     "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
@@ -180,10 +181,11 @@ list.forEach((item, index) => {
   if (typeof item.optional !== "undefined" && typeof item.optional !== "boolean") {
     fail(`${at} has non-boolean 'optional'`);
   }
-  if (typeof item.optional === "undefined") {
-    warnings.push(`${at} has no 'optional' flag (derive from importance instead)`);
-  } else if (item.optional !== (item.importance === "optional")) {
-    fail(`${at} has contradictory optional/importance values`);
+  if (typeof item.optional !== "undefined") {
+    legacyOptionalCount += 1;
+    if (item.optional !== (item.importance === "optional")) {
+      fail(`${at} has contradictory optional/importance values`);
+    }
   }
 
   if (typeof item.readingMode !== "string" || !allowedReadingModes.has(item.readingMode)) {
@@ -227,10 +229,13 @@ list.forEach((item, index) => {
   if (isSearchUrl && item.dcuiStatus !== "search_fallback") {
     warnings.push(`${at} has search URL but dcuiStatus='${item.dcuiStatus}'`);
   }
-  if (item.dcuiStatus === "missing" && !isPlaceholderUrl(item.url)) {
-    warnings.push(`${at} uses dcuiStatus='missing' but has a real URL`);
+  if (item.dcuiStatus === "missing") {
+    warnings.push(`${at} uses legacy dcuiStatus='missing' (prefer 'unavailable')`);
   }
-  if (item.dcuiStatus !== "missing" && isPlaceholderUrl(item.url)) {
+  if (["missing", "unavailable"].includes(item.dcuiStatus) && !isPlaceholderUrl(item.url)) {
+    warnings.push(`${at} uses dcuiStatus='${item.dcuiStatus}' but has a real URL`);
+  }
+  if (!["missing", "unavailable"].includes(item.dcuiStatus) && isPlaceholderUrl(item.url)) {
     warnings.push(`${at} has placeholder URL but dcuiStatus='${item.dcuiStatus}'`);
   }
 
@@ -306,6 +311,9 @@ for (const warning of warnings) {
 }
 if (missingOrderCount > 0) {
   console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
+}
+if (legacyOptionalCount > 0) {
+  console.warn(`[list-validate] WARN: ${legacyOptionalCount} entries still define legacy 'optional' (prefer only importance)`);
 }
 
 console.log(`[list-validate] ok (${list.length} entries)`);
