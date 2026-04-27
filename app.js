@@ -113,8 +113,6 @@
     },
     continuity: {
       "golden-age": "Golden Age",
-      "silver-age": "Silver Age",
-      "bronze-age": "Bronze Age",
       "pre-crisis": "Pre-Crisis",
       "post-crisis": "Post-Crisis",
       "new-52": "New 52",

@@ -66,20 +66,11 @@ function isNetworkFirstPath(url) {
   if (url.origin !== self.location.origin) return false;
 
   const pathname = url.pathname;
-  if (NETWORK_FIRST_PATHS.has(pathname)) return true;
+  if (SCOPE_PATH === "/") return NETWORK_FIRST_PATHS.has(pathname);
   if (pathname === SCOPE_PATH || pathname === `${SCOPE_PATH}/`) return true;
-
-  if (SCOPE_PATH !== "/" && pathname.startsWith(`${SCOPE_PATH}/`)) {
-    const withinScope = pathname.slice(SCOPE_PATH.length);
-    if (NETWORK_FIRST_PATHS.has(withinScope)) return true;
-  }
-
-  for (const path of NETWORK_FIRST_PATHS) {
-    if (path === "/") continue;
-    if (pathname.endsWith(path)) return true;
-  }
-
-  return false;
+  if (!pathname.startsWith(`${SCOPE_PATH}/`)) return false;
+  const withinScope = pathname.slice(SCOPE_PATH.length);
+  return NETWORK_FIRST_PATHS.has(withinScope);
 }
 
 self.addEventListener("fetch", (event) => {
