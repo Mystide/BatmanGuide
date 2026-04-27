@@ -27,5 +27,16 @@ jobs:
         run: |
           node --version
           python3 --version
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run render smoke
+        run: npm run smoke:render
       - name: Run smoke checks
         run: bash ./scripts/smoke-check.sh
