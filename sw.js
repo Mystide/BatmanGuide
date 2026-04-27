@@ -11,6 +11,15 @@ const APP_SHELL = [
 ];
 
 const NETWORK_FIRST_PATHS = new Set(["/", "/index.html", "/app.js", "/list.js", "/manifest.webmanifest", "/sw.js"]);
+const SCOPE_PATH = (() => {
+  try {
+    const scopeUrl = self.registration && self.registration.scope ? new URL(self.registration.scope) : null;
+    if (!scopeUrl) return "/";
+    return scopeUrl.pathname.replace(/\/+$/, "") || "/";
+  } catch {
+    return "/";
+  }
+})();
 
 
 self.addEventListener("message", (event) => {
@@ -53,12 +62,23 @@ async function networkFirst(event) {
   }
 }
 
+function isNetworkFirstPath(url) {
+  if (url.origin !== self.location.origin) return false;
+
+  const pathname = url.pathname;
+  if (SCOPE_PATH === "/") return NETWORK_FIRST_PATHS.has(pathname);
+  if (pathname === SCOPE_PATH || pathname === `${SCOPE_PATH}/`) return true;
+  if (!pathname.startsWith(`${SCOPE_PATH}/`)) return false;
+  const withinScope = pathname.slice(SCOPE_PATH.length);
+  return NETWORK_FIRST_PATHS.has(withinScope);
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
   const isSameOrigin = url.origin === self.location.origin;
-  const useNetworkFirst = isSameOrigin && NETWORK_FIRST_PATHS.has(url.pathname);
+  const useNetworkFirst = isNetworkFirstPath(url);
 
   if (useNetworkFirst) {
     event.respondWith(networkFirst(event));

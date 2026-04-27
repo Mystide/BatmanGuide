@@ -113,8 +113,6 @@
     },
     continuity: {
       "golden-age": "Golden Age",
-      "silver-age": "Silver Age",
-      "bronze-age": "Bronze Age",
       "pre-crisis": "Pre-Crisis",
       "post-crisis": "Post-Crisis",
       "new-52": "New 52",
@@ -226,10 +224,24 @@
   });
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
-  const IMPORTANCE_OPTIONS = [...new Set(LIST.map((entry) => entry.importance).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
+  const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
+  const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "missing"];
+
+  function orderEnumValues(values, preferredOrder = []) {
+    const orderMap = new Map(preferredOrder.map((value, index) => [value, index]));
+    return [...new Set(values.filter(Boolean))].sort((a, b) => {
+      const ai = orderMap.has(a) ? orderMap.get(a) : Number.MAX_SAFE_INTEGER;
+      const bi = orderMap.has(b) ? orderMap.get(b) : Number.MAX_SAFE_INTEGER;
+      if (ai !== bi) return ai - bi;
+      return a.localeCompare(b);
+    });
+  }
+
+  const IMPORTANCE_OPTIONS = orderEnumValues(LIST.map((entry) => entry.importance), IMPORTANCE_ORDER);
   const CONTINUITY_OPTIONS = [...new Set(LIST.map((entry) => entry.continuity).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-  const READING_MODE_OPTIONS = [...new Set(LIST.map((entry) => entry.readingMode).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-  const DCUI_STATUS_OPTIONS = [...new Set(LIST.map((entry) => entry.dcuiStatus).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const READING_MODE_OPTIONS = orderEnumValues(LIST.map((entry) => entry.readingMode), READING_MODE_ORDER);
+  const DCUI_STATUS_OPTIONS = orderEnumValues(LIST.map((entry) => entry.dcuiStatus), DCUI_STATUS_ORDER);
   const SEARCH_BLOB_CACHE = new Map();
   const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
 
@@ -587,6 +599,11 @@
       entry.era,
       entry.type,
       entry.track,
+      entry.importance,
+      entry.continuity,
+      entry.readingMode,
+      entry.dcuiStatus,
+      entry.placementNote,
       chars,
       issueTitles
     ].filter(Boolean).join(" ").toLowerCase();

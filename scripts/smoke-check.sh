@@ -13,6 +13,7 @@ PY
 
 PORT="${SMOKE_PORT:-$(default_port)}"
 BASE="http://127.0.0.1:${PORT}"
+SUBPATH_BASE="${BASE}/BatmanGuide"
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
@@ -109,21 +110,24 @@ for (const asset of shell) {
 NODE
 
 echo "[smoke] start local server on ${PORT}"
-python3 -m http.server "${PORT}" --directory . >/tmp/batman-smoke-http.log 2>&1 &
+python3 -m http.server "${PORT}" --directory .. >/tmp/batman-smoke-http.log 2>&1 &
 SERVER_PID=$!
 
 for _ in {1..40}; do
-  if curl -fsS "${BASE}/index.html" >/tmp/batman-smoke-index.html 2>/dev/null; then
+  if curl -fsS "${SUBPATH_BASE}/index.html" >/tmp/batman-smoke-index.html 2>/dev/null; then
     break
   fi
   sleep 0.1
 done
 
-curl -fsS "${BASE}/index.html" >/tmp/batman-smoke-index.html || fail "index.html not reachable"
-curl -fsS "${BASE}/app.js" >/tmp/batman-smoke-app.js || fail "app.js not reachable"
-curl -fsS "${BASE}/list.js" >/tmp/batman-smoke-list.js || fail "list.js not reachable"
-curl -fsS "${BASE}/sw.js" >/tmp/batman-smoke-sw.js || fail "sw.js not reachable"
-curl -fsS "${BASE}/manifest.webmanifest" >/tmp/batman-smoke-manifest.json || fail "manifest.webmanifest not reachable"
+curl -fsS "${SUBPATH_BASE}/index.html" >/tmp/batman-smoke-index.html || fail "index.html not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/app.js" >/tmp/batman-smoke-app.js || fail "app.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/list.js" >/tmp/batman-smoke-list.js || fail "list.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/sw.js" >/tmp/batman-smoke-sw.js || fail "sw.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/manifest.webmanifest" >/tmp/batman-smoke-manifest.json || fail "manifest.webmanifest not reachable under /BatmanGuide"
+
+echo "[smoke] verify root path still serves app"
+curl -fsS "${BASE}/BatmanGuide/" >/tmp/batman-smoke-subpath-root.html || fail "subpath root not reachable"
 
 echo "[smoke] validate key markers"
 grep -q 'script src="list.js"' /tmp/batman-smoke-index.html || fail "index missing list.js script"
@@ -136,7 +140,7 @@ grep -q 'function bindEraIconFallback()' /tmp/batman-smoke-app.js || fail "era i
 if grep -q 'onerror=' /tmp/batman-smoke-app.js; then
   fail "inline onerror handler found in app.js"
 fi
-grep -q 'NETWORK_FIRST_PATHS' /tmp/batman-smoke-sw.js || fail "service worker marker missing"
+grep -q 'function isNetworkFirstPath' /tmp/batman-smoke-sw.js || fail "service worker path matcher missing"
 
 echo "[smoke] validate list payload schema"
 node scripts/validate-list.js
