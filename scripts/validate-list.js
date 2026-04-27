@@ -39,7 +39,7 @@ const allowedContinuity = new Set([
   "elseworld",
   "black-label"
 ]);
-const allowedDcuiStatus = new Set(["direct", "collection", "search_fallback", "missing"]);
+const allowedDcuiStatus = new Set(["direct", "collection", "search_fallback", "unavailable", "missing"]);
 const ids = new Set();
 const seenOrders = new Set();
 const seenUrls = new Map();
@@ -229,10 +229,13 @@ list.forEach((item, index) => {
   if (isSearchUrl && item.dcuiStatus !== "search_fallback") {
     warnings.push(`${at} has search URL but dcuiStatus='${item.dcuiStatus}'`);
   }
-  if (item.dcuiStatus === "missing" && !isPlaceholderUrl(item.url)) {
-    warnings.push(`${at} uses dcuiStatus='missing' but has a real URL`);
+  if (item.dcuiStatus === "missing") {
+    warnings.push(`${at} uses legacy dcuiStatus='missing' (prefer 'unavailable')`);
   }
-  if (item.dcuiStatus !== "missing" && isPlaceholderUrl(item.url)) {
+  if (["missing", "unavailable"].includes(item.dcuiStatus) && !isPlaceholderUrl(item.url)) {
+    warnings.push(`${at} uses dcuiStatus='${item.dcuiStatus}' but has a real URL`);
+  }
+  if (!["missing", "unavailable"].includes(item.dcuiStatus) && isPlaceholderUrl(item.url)) {
     warnings.push(`${at} has placeholder URL but dcuiStatus='${item.dcuiStatus}'`);
   }
 

@@ -634,6 +634,7 @@
     }
     .tags { margin: 0; display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
     .tag { font-size: 10px; color: #e1e9f7; border: 1px solid rgba(148, 163, 184, .32); border-radius: 999px; padding: 1px 8px; background: rgba(15,23,42,.36); }
+    .tag.stale { color: #fde68a; border-color: rgba(245, 158, 11, .65); background: rgba(120, 53, 15, .34); }
     .tags .muted { display: none; }
     .cover-saved-tag { color: #bbf7d0; border-color: #166534; background: rgba(22, 163, 74, .18); }
     .progress-fields {
@@ -718,6 +719,22 @@
       white-space: nowrap;
     }
     .manual-cover-fields { margin-top: 8px; display:grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: 8px; align-items: center; }
+    .maintenance-card { margin-top: 10px; }
+    .maintenance-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+    .maintenance-kpi { border:1px solid rgba(148,163,184,.35); border-radius: 10px; padding: 8px 10px; background: rgba(15,23,42,.4); display:grid; gap:2px; }
+    .maintenance-kpi strong { font-size: 16px; }
+    .maintenance-kpi span { color: var(--muted); font-size: 12px; }
+    #main.compact-mode .items { grid-template-columns: 1fr; gap: 8px; }
+    #main.compact-mode .item { padding: 8px 10px; border-radius: 12px; }
+    #main.compact-mode .item-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    #main.compact-mode .cover { display: none; }
+    #main.compact-mode .item-content { position: static; opacity: 1; pointer-events: auto; transform: none; background: transparent; box-shadow: none; padding: 0; display:block; }
+    #main.compact-mode .item-content .item-head { display: grid; position: static; }
+    #main.compact-mode .item-head { gap: 4px; }
+    #main.compact-mode .item-title-row { align-items: center; }
+    #main.compact-mode .title { -webkit-line-clamp: 1; font-size: 15px; }
+    #main.compact-mode .progress-fields { border-top: 0; padding-top: 6px; }
+    #main.compact-mode .item:not(.expanded):hover { transform: none; }
     .stack { display: grid; gap: 8px; }
     .kbd {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -1241,6 +1258,7 @@
           <div class="filters-toggles">
             <label class="row muted"><input type="checkbox" id="onlyRemaining" /> Open only</label>
             <label class="row muted"><input type="checkbox" id="hideOptional" /> Required only</label>
+            <label class="row muted"><input type="checkbox" id="compactMode" /> Compact mode</label>
           </div>
           <div class="filters-actions" id="filterPresets">
             <button class="btn subtle" type="button" data-preset="resume">Resume mode</button>
