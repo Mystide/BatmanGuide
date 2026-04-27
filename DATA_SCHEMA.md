@@ -23,7 +23,7 @@ Diese Datei dokumentiert das Ziel-Schema für Einträge in `window.BATMAN_GUIDE_
 ## Optionale Felder
 
 - `order` *(number)*: explizite Sortierung (empfohlen, integer >= 1000).
-- `optional` *(boolean)*: Legacy-Kompatibilität; sollte mit `importance === "optional"` konsistent sein.
+- `optional` *(boolean, deprecated)*: Legacy-Kompatibilität; Validator warnt bei Vorkommen. Konsistenz mit `importance === "optional"` bleibt verpflichtend, solange das Feld existiert.
 - `cover` *(string)*: direkte Cover-URL (HTTP/HTTPS).
 - `placementNote` *(string)*: Begründung der Position („Warum hier?“).
 - `issues` *(array)*: Untereinträge für Collections/Selektionen.

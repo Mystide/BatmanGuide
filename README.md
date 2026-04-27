@@ -41,9 +41,12 @@ Es gibt jetzt einen einfachen Script-Workflow:
 ```bash
 npm run validate-list
 npm run smoke
+npm run smoke:render
 npm run links
 npm run links:full
 ```
+
+`smoke:render` führt einen minimalen Browser-Smoke (Playwright) inkl. Service Worker, Render, Suche/Filter und Reload unter `/BatmanGuide/` aus.
 
 `links:full` prüft zusätzlich Cover-URLs und nutzt konservative Timeouts/Concurrency.
 

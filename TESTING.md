@@ -13,6 +13,14 @@ This verifies:
 - reading list payload contains a minimum number of entries
 - list schema/quality checks (`scripts/validate-list.js`: required fields, ID format, duplicates, type/url validity)
 
+## Browser render smoke (Playwright)
+
+```bash
+npm run smoke:render
+```
+
+Prüft in einem echten Browserkontext u. a. Service Worker Readiness, Rendering, Suche, Filter und Reload-Verhalten unter `/BatmanGuide/`.
+
 ## CI
 
 A GitHub Actions workflow runs the same smoke check on push/PR:
