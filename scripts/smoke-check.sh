@@ -41,6 +41,59 @@ echo "[smoke] syntax checks"
 node --check app.js
 node --check sw.js
 
+echo "[smoke] validate service-worker path matcher behavior"
+node - <<'NODE'
+const fs = require("fs");
+const vm = require("vm");
+
+const source = fs.readFileSync("sw.js", "utf8");
+const ctx = {
+  URL,
+  Response,
+  Promise,
+  self: {
+    registration: { scope: "https://example.test/BatmanGuide/" },
+    location: { origin: "https://example.test" },
+    addEventListener: () => {},
+    skipWaiting: () => {},
+    clients: { claim: () => Promise.resolve() }
+  },
+  caches: {
+    open: async () => ({ addAll: async () => {}, put: async () => {}, match: async () => null }),
+    keys: async () => [],
+    delete: async () => true,
+    match: async () => null
+  },
+  fetch: async () => ({ ok: true, clone: () => ({}) })
+};
+
+vm.createContext(ctx);
+vm.runInContext(source, ctx, { filename: "sw.js" });
+
+const fn = ctx.networkFirstPathForScope;
+if (typeof fn !== "function") {
+  throw new Error("networkFirstPathForScope not found");
+}
+
+const cases = [
+  ["/BatmanGuide/index.html", "/BatmanGuide", true],
+  ["/BatmanGuide/app.js", "/BatmanGuide", true],
+  ["/BatmanGuide/list.js", "/BatmanGuide", true],
+  ["/BatmanGuide/manifest.webmanifest", "/BatmanGuide", true],
+  ["/BatmanGuide/assets/lettering/batmanletters1.png", "/BatmanGuide", false],
+  ["/index.html", "/BatmanGuide", false],
+  ["/index.html", "/", true],
+  ["/BatmanGuide/index.html", "/", false]
+];
+
+for (const [pathname, scopePath, expected] of cases) {
+  const got = fn(pathname, scopePath);
+  if (got !== expected) {
+    throw new Error(`unexpected matcher result for ${pathname} in scope ${scopePath}: got=${got} expected=${expected}`);
+  }
+}
+NODE
+
 echo "[smoke] validate manifest JSON"
 node -e 'JSON.parse(require("fs").readFileSync("manifest.webmanifest","utf8"))'
 

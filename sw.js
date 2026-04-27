@@ -64,12 +64,14 @@ async function networkFirst(event) {
 
 function isNetworkFirstPath(url) {
   if (url.origin !== self.location.origin) return false;
+  return networkFirstPathForScope(url.pathname, SCOPE_PATH);
+}
 
-  const pathname = url.pathname;
-  if (SCOPE_PATH === "/") return NETWORK_FIRST_PATHS.has(pathname);
-  if (pathname === SCOPE_PATH || pathname === `${SCOPE_PATH}/`) return true;
-  if (!pathname.startsWith(`${SCOPE_PATH}/`)) return false;
-  const withinScope = pathname.slice(SCOPE_PATH.length);
+function networkFirstPathForScope(pathname, scopePath = "/") {
+  if (scopePath === "/") return NETWORK_FIRST_PATHS.has(pathname);
+  if (pathname === scopePath || pathname === `${scopePath}/`) return true;
+  if (!pathname.startsWith(`${scopePath}/`)) return false;
+  const withinScope = pathname.slice(scopePath.length);
   return NETWORK_FIRST_PATHS.has(withinScope);
 }
 
