@@ -90,8 +90,7 @@ function loadList() {
 }
 
 function collectUrls(list, includeCovers) {
-  const seen = new Set();
-  const urls = [];
+  const byKey = new Map();
 
   for (const entry of list) {
     const candidates = [{ id: entry.id, field: "url", value: entry.url }];
@@ -114,13 +113,19 @@ function collectUrls(list, includeCovers) {
     for (const candidate of candidates) {
       if (typeof candidate.value !== "string" || !/^https?:\/\//.test(candidate.value)) continue;
       const key = `${candidate.field}:${candidate.value}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      urls.push(candidate);
+      const ref = candidate.label ? `${candidate.id} "${candidate.label}"` : candidate.id;
+      if (!byKey.has(key)) {
+        byKey.set(key, Object.assign({}, candidate, { refs: [ref] }));
+        continue;
+      }
+      const existing = byKey.get(key);
+      if (!existing.refs.includes(ref)) {
+        existing.refs.push(ref);
+      }
     }
   }
 
-  return urls;
+  return [...byKey.values()];
 }
 
 async function request(target, method, timeoutMs) {
@@ -212,14 +217,15 @@ async function main() {
   for (const result of results) {
     const issueLabel = result.target.label ? ` "${result.target.label}"` : "";
     const label = `${result.target.id}${issueLabel} ${result.target.field}`;
+    const refs = Array.isArray(result.target.refs) && result.target.refs.length > 1 ? ` refs=[${result.target.refs.join(", ")}]` : "";
     if (result.ok) {
       const suffix = result.fallbackFromHead ? ` (fallback HEAD:${result.headStatus} -> GET)` : "";
-      console.log(`[link-check] OK  ${result.status} ${label} (${result.ms}ms) ${result.target.value}${suffix}`);
+      console.log(`[link-check] OK  ${result.status} ${label} (${result.ms}ms) ${result.target.value}${suffix}${refs}`);
     } else {
       failCount += 1;
       const reason = result.error ? ` ${result.error}` : "";
       const suffix = result.fallbackFromHead ? ` (fallback HEAD:${result.headStatus} -> GET)` : "";
-      console.error(`[link-check] BAD ${result.status} ${label} (${result.ms}ms) ${result.target.value}${reason}${suffix}`);
+      console.error(`[link-check] BAD ${result.status} ${label} (${result.ms}ms) ${result.target.value}${reason}${suffix}${refs}`);
     }
   }
 

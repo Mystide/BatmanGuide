@@ -14,11 +14,15 @@ PY
 PORT="${SMOKE_PORT:-$(default_port)}"
 BASE="http://127.0.0.1:${PORT}"
 SUBPATH_BASE="${BASE}/BatmanGuide"
+SMOKE_SERVE_ROOT=""
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
     kill "${SERVER_PID}" 2>/dev/null || true
     wait "${SERVER_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${SMOKE_SERVE_ROOT:-}" ]] && [[ -d "${SMOKE_SERVE_ROOT}" ]]; then
+    rm -rf "${SMOKE_SERVE_ROOT}" || true
   fi
 }
 trap cleanup EXIT
@@ -110,7 +114,9 @@ for (const asset of shell) {
 NODE
 
 echo "[smoke] start local server on ${PORT}"
-python3 -m http.server "${PORT}" --directory .. >/tmp/batman-smoke-http.log 2>&1 &
+SMOKE_SERVE_ROOT="$(mktemp -d /tmp/batman-smoke-root.XXXXXX)"
+ln -s "$(pwd)" "${SMOKE_SERVE_ROOT}/BatmanGuide"
+python3 -m http.server "${PORT}" --directory "${SMOKE_SERVE_ROOT}" >/tmp/batman-smoke-http.log 2>&1 &
 SERVER_PID=$!
 
 for _ in {1..40}; do
