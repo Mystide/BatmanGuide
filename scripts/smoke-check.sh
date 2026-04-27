@@ -13,11 +13,16 @@ PY
 
 PORT="${SMOKE_PORT:-$(default_port)}"
 BASE="http://127.0.0.1:${PORT}"
+SUBPATH_BASE="${BASE}/BatmanGuide"
+SMOKE_SERVE_ROOT=""
 
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
     kill "${SERVER_PID}" 2>/dev/null || true
     wait "${SERVER_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${SMOKE_SERVE_ROOT:-}" ]] && [[ -d "${SMOKE_SERVE_ROOT}" ]]; then
+    rm -rf "${SMOKE_SERVE_ROOT}" || true
   fi
 }
 trap cleanup EXIT
@@ -35,6 +40,59 @@ fail() {
 echo "[smoke] syntax checks"
 node --check app.js
 node --check sw.js
+
+echo "[smoke] validate service-worker path matcher behavior"
+node - <<'NODE'
+const fs = require("fs");
+const vm = require("vm");
+
+const source = fs.readFileSync("sw.js", "utf8");
+const ctx = {
+  URL,
+  Response,
+  Promise,
+  self: {
+    registration: { scope: "https://example.test/BatmanGuide/" },
+    location: { origin: "https://example.test" },
+    addEventListener: () => {},
+    skipWaiting: () => {},
+    clients: { claim: () => Promise.resolve() }
+  },
+  caches: {
+    open: async () => ({ addAll: async () => {}, put: async () => {}, match: async () => null }),
+    keys: async () => [],
+    delete: async () => true,
+    match: async () => null
+  },
+  fetch: async () => ({ ok: true, clone: () => ({}) })
+};
+
+vm.createContext(ctx);
+vm.runInContext(source, ctx, { filename: "sw.js" });
+
+const fn = ctx.networkFirstPathForScope;
+if (typeof fn !== "function") {
+  throw new Error("networkFirstPathForScope not found");
+}
+
+const cases = [
+  ["/BatmanGuide/index.html", "/BatmanGuide", true],
+  ["/BatmanGuide/app.js", "/BatmanGuide", true],
+  ["/BatmanGuide/list.js", "/BatmanGuide", true],
+  ["/BatmanGuide/manifest.webmanifest", "/BatmanGuide", true],
+  ["/BatmanGuide/assets/lettering/batmanletters1.png", "/BatmanGuide", false],
+  ["/index.html", "/BatmanGuide", false],
+  ["/index.html", "/", true],
+  ["/BatmanGuide/index.html", "/", false]
+];
+
+for (const [pathname, scopePath, expected] of cases) {
+  const got = fn(pathname, scopePath);
+  if (got !== expected) {
+    throw new Error(`unexpected matcher result for ${pathname} in scope ${scopePath}: got=${got} expected=${expected}`);
+  }
+}
+NODE
 
 echo "[smoke] validate manifest JSON"
 node -e 'JSON.parse(require("fs").readFileSync("manifest.webmanifest","utf8"))'
@@ -109,21 +167,26 @@ for (const asset of shell) {
 NODE
 
 echo "[smoke] start local server on ${PORT}"
-python3 -m http.server "${PORT}" --directory . >/tmp/batman-smoke-http.log 2>&1 &
+SMOKE_SERVE_ROOT="$(mktemp -d /tmp/batman-smoke-root.XXXXXX)"
+ln -s "$(pwd)" "${SMOKE_SERVE_ROOT}/BatmanGuide"
+python3 -m http.server "${PORT}" --directory "${SMOKE_SERVE_ROOT}" >/tmp/batman-smoke-http.log 2>&1 &
 SERVER_PID=$!
 
 for _ in {1..40}; do
-  if curl -fsS "${BASE}/index.html" >/tmp/batman-smoke-index.html 2>/dev/null; then
+  if curl -fsS "${SUBPATH_BASE}/index.html" >/tmp/batman-smoke-index.html 2>/dev/null; then
     break
   fi
   sleep 0.1
 done
 
-curl -fsS "${BASE}/index.html" >/tmp/batman-smoke-index.html || fail "index.html not reachable"
-curl -fsS "${BASE}/app.js" >/tmp/batman-smoke-app.js || fail "app.js not reachable"
-curl -fsS "${BASE}/list.js" >/tmp/batman-smoke-list.js || fail "list.js not reachable"
-curl -fsS "${BASE}/sw.js" >/tmp/batman-smoke-sw.js || fail "sw.js not reachable"
-curl -fsS "${BASE}/manifest.webmanifest" >/tmp/batman-smoke-manifest.json || fail "manifest.webmanifest not reachable"
+curl -fsS "${SUBPATH_BASE}/index.html" >/tmp/batman-smoke-index.html || fail "index.html not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/app.js" >/tmp/batman-smoke-app.js || fail "app.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/list.js" >/tmp/batman-smoke-list.js || fail "list.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/sw.js" >/tmp/batman-smoke-sw.js || fail "sw.js not reachable under /BatmanGuide"
+curl -fsS "${SUBPATH_BASE}/manifest.webmanifest" >/tmp/batman-smoke-manifest.json || fail "manifest.webmanifest not reachable under /BatmanGuide"
+
+echo "[smoke] verify root path still serves app"
+curl -fsS "${BASE}/BatmanGuide/" >/tmp/batman-smoke-subpath-root.html || fail "subpath root not reachable"
 
 echo "[smoke] validate key markers"
 grep -q 'script src="list.js"' /tmp/batman-smoke-index.html || fail "index missing list.js script"
@@ -136,7 +199,7 @@ grep -q 'function bindEraIconFallback()' /tmp/batman-smoke-app.js || fail "era i
 if grep -q 'onerror=' /tmp/batman-smoke-app.js; then
   fail "inline onerror handler found in app.js"
 fi
-grep -q 'NETWORK_FIRST_PATHS' /tmp/batman-smoke-sw.js || fail "service worker marker missing"
+grep -q 'function isNetworkFirstPath' /tmp/batman-smoke-sw.js || fail "service worker path matcher missing"
 
 echo "[smoke] validate list payload schema"
 node scripts/validate-list.js
