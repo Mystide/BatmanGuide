@@ -229,6 +229,15 @@
   const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
   const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
   const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "unavailable", "missing"];
+  const MAINTENANCE_FOCUS_OPTIONS = new Set([
+    "missingPlacementNote",
+    "staleDcuiChecked",
+    "searchFallback",
+    "collectionWithoutIssues",
+    "missingCover",
+    "duplicateUrlGroups",
+    "legacyOptional"
+  ]);
 
   function orderEnumValues(values, preferredOrder = []) {
     const orderMap = new Map(preferredOrder.map((value, index) => [value, index]));
@@ -859,6 +868,8 @@
     const continuity = $("continuityFilter").value;
     const readingMode = $("readingModeFilter").value;
     const dcuiStatus = $("dcuiStatusFilter").value;
+    const maintenance = readMaintenanceView();
+    const duplicateUrlIds = maintenance.focus === "duplicateUrlGroups" ? buildDuplicateUrlIdSet() : null;
 
     const filtered = LIST.filter((entry) => {
       const st = ensureItemState(entry);
@@ -891,6 +902,7 @@
         const chars = Array.isArray(entry.characters) ? entry.characters : [];
         if (!chars.includes(character)) return false;
       }
+      if (maintenance.focus && !matchesMaintenanceFocus(entry, maintenance.focus, duplicateUrlIds)) return false;
       return true;
     });
 
@@ -1224,6 +1236,70 @@
     return (Date.now() - checkedAt) > staleThresholdMs;
   }
 
+  function readMaintenanceView() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const enabled = params.get("maintenance") === "1";
+      const focus = params.get("maintenance_focus") || "";
+      return {
+        enabled,
+        focus: enabled && MAINTENANCE_FOCUS_OPTIONS.has(focus) ? focus : ""
+      };
+    } catch {
+      return { enabled: false, focus: "" };
+    }
+  }
+
+  function updateMaintenanceView(next = {}) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const current = readMaintenanceView();
+      const enabled = typeof next.enabled === "boolean" ? next.enabled : current.enabled;
+      const focus = MAINTENANCE_FOCUS_OPTIONS.has(next.focus) ? next.focus : "";
+      if (enabled) params.set("maintenance", "1");
+      else params.delete("maintenance");
+      if (enabled && focus) params.set("maintenance_focus", focus);
+      else params.delete("maintenance_focus");
+      const nextQuery = params.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash || ""}`;
+      window.history.replaceState(null, "", nextUrl);
+    } catch {
+      // no-op
+    }
+  }
+
+  function buildDuplicateUrlIdSet() {
+    const seenUrls = new Map();
+    for (const entry of LIST) {
+      const normalized = String(entry.url || "").trim();
+      if (!normalized) continue;
+      const ids = seenUrls.get(normalized) || [];
+      ids.push(entry.id);
+      seenUrls.set(normalized, ids);
+    }
+    const duplicateIds = new Set();
+    for (const ids of seenUrls.values()) {
+      if (ids.length < 2) continue;
+      for (const id of ids) duplicateIds.add(id);
+    }
+    return duplicateIds;
+  }
+
+  function matchesMaintenanceFocus(entry, focus, duplicateUrlIds = null) {
+    if (!focus) return true;
+    if (focus === "missingPlacementNote") return !String(entry.placementNote || "").trim();
+    if (focus === "staleDcuiChecked") return isDcuiCheckStale(entry.dcuiChecked);
+    if (focus === "searchFallback") return entry.dcuiStatus === "search_fallback";
+    if (focus === "collectionWithoutIssues") return entry.type === "collection" && (!Array.isArray(entry.issues) || entry.issues.length === 0);
+    if (focus === "missingCover") {
+      const knownCover = isOfficialCoverUrl(entry.cover) || isOfficialCoverUrl(customCovers?.[entry.id]) || !!REAL_COVERS[entry.id];
+      return !knownCover;
+    }
+    if (focus === "duplicateUrlGroups") return !!duplicateUrlIds?.has(entry.id);
+    if (focus === "legacyOptional") return typeof entry.optional !== "undefined";
+    return true;
+  }
+
   function computeMaintenanceStats() {
     const stats = {
       missingPlacementNote: 0,
@@ -1241,7 +1317,8 @@
       if (isDcuiCheckStale(entry.dcuiChecked)) stats.staleDcuiChecked += 1;
       if (entry.dcuiStatus === "search_fallback") stats.searchFallback += 1;
       if (entry.type === "collection" && (!Array.isArray(entry.issues) || entry.issues.length === 0)) stats.collectionWithoutIssues += 1;
-      if (!REAL_COVERS[entry.id] && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
+      const knownCover = isOfficialCoverUrl(entry.cover) || isOfficialCoverUrl(customCovers?.[entry.id]) || !!REAL_COVERS[entry.id];
+      if (!knownCover) stats.missingCover += 1;
       if (typeof entry.optional !== "undefined") stats.legacyOptional += 1;
       const normalized = String(entry.url || "").trim();
       if (!normalized) continue;
@@ -1457,21 +1534,39 @@
 
   function renderMaintenancePanel(host) {
     if (!host) return;
+    const maintenance = readMaintenanceView();
+    if (!maintenance.enabled) return;
     const stats = computeMaintenanceStats();
+    const kpis = [
+      ["missingPlacementNote", stats.missingPlacementNote, "missing placementNote"],
+      ["staleDcuiChecked", stats.staleDcuiChecked, `stale dcuiChecked (>${DCUI_STALE_DAYS}d)`],
+      ["searchFallback", stats.searchFallback, "search_fallback links"],
+      ["collectionWithoutIssues", stats.collectionWithoutIssues, "collection without issues[]"],
+      ["missingCover", stats.missingCover, "entries without known cover"],
+      ["duplicateUrlGroups", stats.duplicateUrlGroups, "duplicate URL groups"],
+      ["legacyOptional", stats.legacyOptional, "legacy optional fields"]
+    ];
     const card = document.createElement("section");
     card.className = "card maintenance-card";
     card.innerHTML = `
       <h2 style="margin-top:0;">Maintenance</h2>
       <div class="maintenance-grid">
-        <div class="maintenance-kpi"><strong>${stats.missingPlacementNote}</strong><span>missing placementNote</span></div>
-        <div class="maintenance-kpi"><strong>${stats.staleDcuiChecked}</strong><span>stale dcuiChecked (&gt;${DCUI_STALE_DAYS}d)</span></div>
-        <div class="maintenance-kpi"><strong>${stats.searchFallback}</strong><span>search_fallback links</span></div>
-        <div class="maintenance-kpi"><strong>${stats.collectionWithoutIssues}</strong><span>collection without issues[]</span></div>
-        <div class="maintenance-kpi"><strong>${stats.missingCover}</strong><span>entries without known cover</span></div>
-        <div class="maintenance-kpi"><strong>${stats.duplicateUrlGroups}</strong><span>duplicate URL groups</span></div>
-        <div class="maintenance-kpi"><strong>${stats.legacyOptional}</strong><span>legacy optional fields</span></div>
+        ${kpis.map(([key, value, label]) => `
+          <button type="button" class="maintenance-kpi${maintenance.focus === key ? " active" : ""}" data-maintenance-focus="${key}" aria-pressed="${maintenance.focus === key ? "true" : "false"}">
+            <strong>${value}</strong><span>${label}</span>
+          </button>
+        `).join("")}
       </div>
+      <p class="muted" style="margin:8px 0 0;">Click a KPI to filter the list. Click again to clear.</p>
     `;
+    card.addEventListener("click", (event) => {
+      const trigger = event.target?.closest?.("[data-maintenance-focus]");
+      if (!trigger) return;
+      const focus = trigger.getAttribute("data-maintenance-focus") || "";
+      const nextFocus = maintenance.focus === focus ? "" : focus;
+      updateMaintenanceView({ enabled: true, focus: nextFocus });
+      render();
+    });
     host.appendChild(card);
   }
 

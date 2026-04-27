@@ -721,7 +721,10 @@
     .manual-cover-fields { margin-top: 8px; display:grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: 8px; align-items: center; }
     .maintenance-card { margin-top: 10px; }
     .maintenance-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-    .maintenance-kpi { border:1px solid rgba(148,163,184,.35); border-radius: 10px; padding: 8px 10px; background: rgba(15,23,42,.4); display:grid; gap:2px; }
+    .maintenance-kpi { border:1px solid rgba(148,163,184,.35); border-radius: 10px; padding: 8px 10px; background: rgba(15,23,42,.4); display:grid; gap:2px; text-align:left; color:inherit; }
+    button.maintenance-kpi { cursor: pointer; width: 100%; font: inherit; }
+    button.maintenance-kpi:hover { border-color: rgba(96,165,250,.85); }
+    button.maintenance-kpi.active { border-color: rgba(56,189,248,.95); background: rgba(2,132,199,.22); }
     .maintenance-kpi strong { font-size: 16px; }
     .maintenance-kpi span { color: var(--muted); font-size: 12px; }
     #main.compact-mode .items { grid-template-columns: 1fr; gap: 8px; }
