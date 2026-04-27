@@ -46,6 +46,7 @@ const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
 let missingOrderCount = 0;
+let legacyOptionalCount = 0;
 const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
   [
     "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
@@ -180,10 +181,11 @@ list.forEach((item, index) => {
   if (typeof item.optional !== "undefined" && typeof item.optional !== "boolean") {
     fail(`${at} has non-boolean 'optional'`);
   }
-  if (typeof item.optional === "undefined") {
-    warnings.push(`${at} has no 'optional' flag (derive from importance instead)`);
-  } else if (item.optional !== (item.importance === "optional")) {
-    fail(`${at} has contradictory optional/importance values`);
+  if (typeof item.optional !== "undefined") {
+    legacyOptionalCount += 1;
+    if (item.optional !== (item.importance === "optional")) {
+      fail(`${at} has contradictory optional/importance values`);
+    }
   }
 
   if (typeof item.readingMode !== "string" || !allowedReadingModes.has(item.readingMode)) {
@@ -306,6 +308,9 @@ for (const warning of warnings) {
 }
 if (missingOrderCount > 0) {
   console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
+}
+if (legacyOptionalCount > 0) {
+  console.warn(`[list-validate] WARN: ${legacyOptionalCount} entries still define legacy 'optional' (prefer only importance)`);
 }
 
 console.log(`[list-validate] ok (${list.length} entries)`);
