@@ -2,11 +2,13 @@
 
 ## P0 – Sofort
 
+Stand: 2026-04-29
+
 - [x] SEO/Sharing-Basics ergänzt (`meta description`, Open Graph, Twitter Card)
 - [x] Smoke-Check als GitHub Action für Push/PR aktiv
 - [x] App-Version + Service-Worker-Cache synchronisiert (`APP_VERSION` auch im Service Worker)
 - [x] `package.json`-Scripts als Standard-Workflow etabliert
-- [ ] Social-Preview testen (inkl. OG-Image als absolute URL prüfen)
+- [~] Social-Preview lokal geprüft (Meta-Tags vorhanden); Produktions-URL für absolutes `og:image` noch festzulegen
 
 ## P1 – Datenqualität
 
