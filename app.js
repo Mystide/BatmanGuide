@@ -405,6 +405,8 @@
   let sessionToken = "";
   let pullDelayMs = AUTO_PULL_BASE_INTERVAL_MS;
   let randomTargetId = "";
+  let continueTargetId = "";
+  let continueTargetTimer = null;
   let filterInputTimer = null;
   let activeCollectionModalId = "";
   let pendingPageSyncToast = null;
@@ -988,6 +990,24 @@
     return entries.find((e) => !ensureItemState(e).done) || null;
   }
 
+  function isContinueCandidate(entry) {
+    const status = ensureStatus(ensureItemState(entry));
+    return status !== READ_STATUS;
+  }
+
+  function rankContinueEntry(entries) {
+    const importanceOrder = ["core", "recommended", "context", "optional"];
+    const inProgress = entries.find((entry) => ensureStatus(ensureItemState(entry)) === "in_progress");
+    if (inProgress) return inProgress;
+    for (const importance of importanceOrder) {
+      const found = entries.find((entry) => (entry.importance || "") === importance && isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+      if (found) return found;
+    }
+    const fallback = entries.find((entry) => isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+    if (fallback) return fallback;
+    return entries.find((entry) => ensureStatus(ensureItemState(entry)) === "dropped") || null;
+  }
+
   function randomUnread(entries) {
     const unread = entries.filter((e) => !ensureItemState(e).done);
     if (!unread.length) return null;
@@ -999,9 +1019,41 @@
     return found || nextUnread(entries);
   }
 
-  function scrollToEntry(id) {
+  function scrollToEntry(id, opts = {}) {
+    const { focus = false } = opts;
     const el = document.querySelector(`[data-id="${CSS.escape(id)}"]`);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (!el) return null;
+    const eraSection = el.closest("details.era");
+    if (eraSection && !eraSection.open) eraSection.open = true;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (focus) {
+      el.setAttribute("tabindex", "-1");
+      el.focus({ preventScroll: true });
+    }
+    return el;
+  }
+
+  function selectContinueEntry() {
+    const visible = getFiltered();
+    const inView = rankContinueEntry(visible);
+    if (inView) return inView;
+    const fullList = [...LIST].sort((a, b) => compareReadingOrder(a, b));
+    return rankContinueEntry(fullList);
+  }
+
+  function activateContinueTarget(entryId) {
+    if (continueTargetTimer) {
+      clearTimeout(continueTargetTimer);
+      continueTargetTimer = null;
+    }
+    continueTargetId = entryId;
+    render();
+    scrollToEntry(entryId, { focus: true });
+    continueTargetTimer = setTimeout(() => {
+      continueTargetId = "";
+      continueTargetTimer = null;
+      render();
+    }, 1800);
   }
 
   function refreshHeader(filtered) {
@@ -1544,7 +1596,7 @@
           const st = ensureItemState(entry);
 
           const item = document.createElement("div");
-          const isContinueTarget = continueId && entry.id === continueId;
+          const isContinueTarget = (continueId && entry.id === continueId) || (continueTargetId && entry.id === continueTargetId);
           const isRandomTarget = randomTargetId && entry.id === randomTargetId;
           const hasSavedCover = hasSavedManualCover(entry.id);
           item.className = `item${st.done ? " done" : ""}${isContinueTarget ? " continue-target" : ""}${isRandomTarget ? " random-target" : ""}${showCoverEditor && hasSavedCover ? " cover-saved" : ""}`;
@@ -2764,8 +2816,12 @@
           return;
         }
         if (action === "continue") {
-          const c = continueEntry(getFiltered());
-          if (c) scrollToEntry(c.id);
+          const c = selectContinueEntry();
+          if (!c) {
+            showSyncToast("No unread entries match the current filters.");
+            return;
+          }
+          activateContinueTarget(c.id);
         }
       };
 

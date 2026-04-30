@@ -104,6 +104,18 @@ try {
   await page.fill("#search", "");
   await sleep(300);
 
+  await page.click('[data-nav-action="continue"]');
+  await sleep(250);
+  const continueTargetCount = await page.locator(".item.continue-target").count();
+  const continueFocusOnItem = await page.evaluate(() => {
+    const active = document.activeElement;
+    return !!active && active.classList?.contains("item");
+  });
+  assert(
+    continueTargetCount >= 1 || continueFocusOnItem,
+    "continue reading did not highlight or focus an entry"
+  );
+
   const preCoreCount = await page.locator(".item").count();
   await page.evaluate(() => {
     const select = document.getElementById("importanceFilter");
