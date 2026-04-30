@@ -29,6 +29,8 @@ jobs:
         run: |
           node --version
           python3 --version
+      - name: Run strict list validation
+        run: npm run validate-list:strict
       - name: Run smoke checks
         run: bash ./scripts/smoke-check.sh
       # Playwright browser-level render smoke provides broader coverage, but it was flaky on PRs; keep push-only and promote to pull_request after stabilization.
