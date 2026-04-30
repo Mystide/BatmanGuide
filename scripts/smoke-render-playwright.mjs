@@ -104,8 +104,17 @@ try {
   await page.fill("#search", "");
   await sleep(300);
 
+  await page.fill("#search", "zzzz-no-match");
+  await sleep(300);
+  const hiddenCount = await page.locator(".item").count();
+  assert.equal(hiddenCount, 0, "expected zero rendered items for no-match search");
+
   await page.click('[data-nav-action="continue"]');
-  await sleep(250);
+  await sleep(350);
+  const searchAfterFallback = await page.inputValue("#search");
+  assert.equal(searchAfterFallback, "", "continue fallback should reset filters to reveal target");
+  const renderedAfterFallback = await page.locator(".item").count();
+  assert(renderedAfterFallback > 0, "continue fallback should render entries after filter adjustment");
   const continueTargetCount = await page.locator(".item.continue-target").count();
   const continueFocusOnItem = await page.evaluate(() => {
     const active = document.activeElement;
