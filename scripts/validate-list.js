@@ -2,6 +2,7 @@
 "use strict";
 
 const path = require("path");
+const requireExplicitOrder = process.argv.includes("--require-order");
 
 const listPath = path.resolve(__dirname, "..", "list.js");
 
@@ -46,6 +47,7 @@ const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
 let missingOrderCount = 0;
+const missingOrderByEra = new Map();
 let legacyOptionalCount = 0;
 const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
   [
@@ -149,7 +151,10 @@ list.forEach((item, index) => {
   }
 
   const explicitOrder = explicitOrderToken(item);
-  if (!explicitOrder) missingOrderCount += 1;
+  if (!explicitOrder) {
+    missingOrderCount += 1;
+    missingOrderByEra.set(idOrder.era, (missingOrderByEra.get(idOrder.era) || 0) + 1);
+  }
   if (explicitOrder && explicitOrder.era !== idOrder.era) {
     fail(`${at} has mismatching explicit order '${item.order}' for id '${item.id}'`);
   }
@@ -310,7 +315,25 @@ for (const warning of warnings) {
   console.warn(`[list-validate] WARN: ${warning}`);
 }
 if (missingOrderCount > 0) {
-  console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
+  const level = requireExplicitOrder ? "FAILED" : "WARN";
+  const summary = `${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`;
+  if (requireExplicitOrder) {
+    console.error(`[list-validate] ${level}: ${summary}`);
+  } else {
+    console.warn(`[list-validate] ${level}: ${summary}`);
+  }
+  const orderedEras = [...missingOrderByEra.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([era, count]) => `Era ${era}=${count}`)
+    .join(", ");
+  if (requireExplicitOrder) {
+    console.error(`[list-validate] ${level}: missing explicit 'order' by era: ${orderedEras}`);
+    process.exit(1);
+  } else {
+    console.warn(`[list-validate] ${level}: missing explicit 'order' by era: ${orderedEras}`);
+  }
+} else {
+  console.log("[list-validate] info: all entries define explicit 'order'");
 }
 if (legacyOptionalCount > 0) {
   console.warn(`[list-validate] WARN: ${legacyOptionalCount} entries still define legacy 'optional' (prefer only importance)`);
