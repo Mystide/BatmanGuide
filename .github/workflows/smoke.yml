@@ -34,12 +34,7 @@ jobs:
       # Playwright browser-level render smoke provides broader coverage, but it was flaky on PRs; keep push-only and promote to pull_request after stabilization.
       - name: Install npm dependencies
         if: github.event_name == 'push'
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
       - name: Cache Playwright browsers
         if: github.event_name == 'push'
         uses: actions/cache@v4
