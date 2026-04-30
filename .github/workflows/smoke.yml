@@ -3,6 +3,8 @@ name: smoke
 on:
   pull_request:
   push:
+    branches:
+      - main
 
 jobs:
   smoke:
