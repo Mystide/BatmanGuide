@@ -320,6 +320,8 @@ if (missingOrderCount > 0) {
     .map(([era, count]) => `Era ${era}=${count}`)
     .join(", ");
   console.warn(`[list-validate] WARN: missing explicit 'order' by era: ${orderedEras}`);
+} else {
+  console.log("[list-validate] info: all entries define explicit 'order'");
 }
 if (legacyOptionalCount > 0) {
   console.warn(`[list-validate] WARN: ${legacyOptionalCount} entries still define legacy 'optional' (prefer only importance)`);
