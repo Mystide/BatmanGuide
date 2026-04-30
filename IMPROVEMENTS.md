@@ -24,7 +24,7 @@ Stand: 2026-04-30
 
 - [ ] `placementNote`-Abdeckung systematisch erhöhen (Warnungen schrittweise abbauen).
 - [ ] `issues[]` bei Collection-Einträgen vervollständigen/konsistent halten.
-- [ ] Striktere Listenvalidierung (`validate-list --require-order`) verbindlich in CI oder Script-Workflow verdrahten (verify/finish).
+- [x] Striktere Listenvalidierung (`validate-list --require-order`) ist verbindlich im Smoke-CI verdrahtet (`npm run validate-list:strict`).
 - [ ] Legacy-Feld `optional` aus `list.js` bereinigen, sodass nur `importance` maßgeblich bleibt (verify/finish).
 
 ## P3 – UI/UX
