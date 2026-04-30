@@ -2,6 +2,7 @@
 "use strict";
 
 const path = require("path");
+const requireExplicitOrder = process.argv.includes("--require-order");
 
 const listPath = path.resolve(__dirname, "..", "list.js");
 
@@ -314,12 +315,23 @@ for (const warning of warnings) {
   console.warn(`[list-validate] WARN: ${warning}`);
 }
 if (missingOrderCount > 0) {
-  console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
+  const level = requireExplicitOrder ? "FAILED" : "WARN";
+  const summary = `${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`;
+  if (requireExplicitOrder) {
+    console.error(`[list-validate] ${level}: ${summary}`);
+  } else {
+    console.warn(`[list-validate] ${level}: ${summary}`);
+  }
   const orderedEras = [...missingOrderByEra.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([era, count]) => `Era ${era}=${count}`)
     .join(", ");
-  console.warn(`[list-validate] WARN: missing explicit 'order' by era: ${orderedEras}`);
+  if (requireExplicitOrder) {
+    console.error(`[list-validate] ${level}: missing explicit 'order' by era: ${orderedEras}`);
+    process.exit(1);
+  } else {
+    console.warn(`[list-validate] ${level}: missing explicit 'order' by era: ${orderedEras}`);
+  }
 } else {
   console.log("[list-validate] info: all entries define explicit 'order'");
 }
