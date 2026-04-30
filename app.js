@@ -1036,9 +1036,11 @@
   function selectContinueEntry() {
     const visible = getFiltered();
     const inView = rankContinueEntry(visible);
-    if (inView) return inView;
+    if (inView) return { entry: inView, fromFiltered: true };
     const fullList = [...LIST].sort((a, b) => compareReadingOrder(a, b));
-    return rankContinueEntry(fullList);
+    const fallback = rankContinueEntry(fullList);
+    if (!fallback) return null;
+    return { entry: fallback, fromFiltered: false };
   }
 
   function activateContinueTarget(entryId) {
@@ -1054,6 +1056,43 @@
       continueTargetTimer = null;
       render();
     }, 1800);
+  }
+
+  function syncEraToggleButton() {
+    const btn = $("btnToggleAllEras");
+    if (!btn) return;
+    const eraSections = [...document.querySelectorAll('details.era[data-era-key]')];
+    if (!eraSections.length) {
+      btn.disabled = true;
+      btn.textContent = "No eras in view";
+      btn.setAttribute("aria-label", "No era sections in view");
+      return;
+    }
+    btn.disabled = false;
+    const allOpen = eraSections.every((section) => section.open);
+    btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+    btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+  }
+
+  function resetFiltersToDefault() {
+    $("search").value = "";
+    $("typeFilter").value = "";
+    $("onlyRemaining").checked = false;
+    $("hideOptional").checked = false;
+    $("sortBy").value = "order";
+    $("trackFilter").value = "";
+    $("statusFilter").value = "";
+    $("characterFilter").value = "";
+    $("eraFilter").value = "";
+    $("importanceFilter").value = "";
+    $("continuityFilter").value = "";
+    $("readingModeFilter").value = "";
+    $("dcuiStatusFilter").value = "";
+    writeFilters();
+    writeFiltersToURL();
+    syncQuickFilterChips();
+    render();
+    syncEraToggleButton();
   }
 
   function refreshHeader(filtered) {
@@ -2509,8 +2548,6 @@
       }
     };
 
-    let syncEraToggleButton = () => {};
-
     runUIStep("restoreFilters", () => {
       populateEraFilter();
       populateCharacterFilter();
@@ -2719,22 +2756,6 @@
     });
 
     runUIStep("eraControls", () => {
-      syncEraToggleButton = () => {
-        const btn = $("btnToggleAllEras");
-        if (!btn) return;
-        const eras = [...groupedByEra(getFiltered()).keys()];
-        if (!eras.length) {
-          btn.disabled = true;
-          btn.textContent = "No eras in view";
-          return;
-        }
-        btn.disabled = false;
-        const updated = loadOpenState();
-        const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
-        btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
-        btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
-      };
-
       const eraJump = $("eraJump");
       if (eraJump) {
         eraJump.addEventListener("change", () => {
@@ -2778,24 +2799,7 @@
 
     runUIStep("clearFilters", () => {
       const clearFilters = () => {
-        $("search").value = "";
-        $("typeFilter").value = "";
-        $("onlyRemaining").checked = false;
-        $("hideOptional").checked = false;
-        $("sortBy").value = "order";
-        $("trackFilter").value = "";
-        $("statusFilter").value = "";
-        $("characterFilter").value = "";
-        $("eraFilter").value = "";
-        $("importanceFilter").value = "";
-        $("continuityFilter").value = "";
-        $("readingModeFilter").value = "";
-        $("dcuiStatusFilter").value = "";
-        writeFilters();
-        writeFiltersToURL();
-        syncQuickFilterChips();
-        render();
-        syncEraToggleButton();
+        resetFiltersToDefault();
       };
       $("btnClearFilters").addEventListener("click", clearFilters);
       $("btnFooterClearFilters")?.addEventListener("click", clearFilters);
@@ -2816,12 +2820,16 @@
           return;
         }
         if (action === "continue") {
-          const c = selectContinueEntry();
-          if (!c) {
-            showSyncToast("No unread entries match the current filters.");
+          const selected = selectContinueEntry();
+          if (!selected?.entry) {
+            showSyncToast("No unread entries found.");
             return;
           }
-          activateContinueTarget(c.id);
+          if (!selected.fromFiltered) {
+            resetFiltersToDefault();
+            showSyncToast("Showing next unread entry outside current filters.");
+          }
+          activateContinueTarget(selected.entry.id);
         }
       };
 
