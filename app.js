@@ -1058,6 +1058,22 @@
     }, 1800);
   }
 
+  function syncEraToggleButton() {
+    const btn = $("btnToggleAllEras");
+    if (!btn) return;
+    const eraSections = [...document.querySelectorAll('details.era[data-era-key]')];
+    if (!eraSections.length) {
+      btn.disabled = true;
+      btn.textContent = "No eras in view";
+      btn.setAttribute("aria-label", "No era sections in view");
+      return;
+    }
+    btn.disabled = false;
+    const allOpen = eraSections.every((section) => section.open);
+    btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
+    btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
+  }
+
   function resetFiltersToDefault() {
     $("search").value = "";
     $("typeFilter").value = "";
@@ -2532,8 +2548,6 @@
       }
     };
 
-    let syncEraToggleButton = () => {};
-
     runUIStep("restoreFilters", () => {
       populateEraFilter();
       populateCharacterFilter();
@@ -2742,22 +2756,6 @@
     });
 
     runUIStep("eraControls", () => {
-      syncEraToggleButton = () => {
-        const btn = $("btnToggleAllEras");
-        if (!btn) return;
-        const eras = [...groupedByEra(getFiltered()).keys()];
-        if (!eras.length) {
-          btn.disabled = true;
-          btn.textContent = "No eras in view";
-          return;
-        }
-        btn.disabled = false;
-        const updated = loadOpenState();
-        const allOpen = eras.every((era) => updated[eraKey(era)] !== false);
-        btn.textContent = allOpen ? "Collapse all eras" : "Expand all eras";
-        btn.setAttribute("aria-label", allOpen ? "Collapse all visible era sections" : "Expand all visible era sections");
-      };
-
       const eraJump = $("eraJump");
       if (eraJump) {
         eraJump.addEventListener("change", () => {
