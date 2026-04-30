@@ -1222,7 +1222,7 @@
 
   function entryLogoFallback(entry) {
     return `
-      <img src="${FIXED_LOGO_URL}" alt="${escapeHtml(entry.title)} cover fallback" loading="lazy" />
+      <img src="${FIXED_LOGO_URL}" alt="${escapeHtml(entry.title)} cover fallback" loading="lazy" decoding="async" fetchpriority="low" width="320" height="480" />
       <span class="cover-fallback-label">${entryCoverLabel(entry)}</span>
     `;
   }
@@ -1504,6 +1504,10 @@
       img.src = normalizeCoverUrl(url);
       img.alt = `${entry.title} cover`;
       img.loading = "lazy";
+      img.decoding = "async";
+      img.fetchPriority = "low";
+      img.width = 320;
+      img.height = 480;
       img.referrerPolicy = "no-referrer";
       img.onload = () => resolve(true);
       img.onerror = () => {
