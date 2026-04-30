@@ -256,6 +256,7 @@
   const CONTINUITY_OPTIONS = [...new Set(LIST.map((entry) => entry.continuity).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const READING_MODE_OPTIONS = orderEnumValues(LIST.map((entry) => entry.readingMode), READING_MODE_ORDER);
   const DCUI_STATUS_OPTIONS = orderEnumValues(LIST.map((entry) => entry.dcuiStatus), DCUI_STATUS_ORDER);
+  const BASE_ORDER_MAP = new Map(LIST.map((entry, index) => [entry.id, index]));
   const SEARCH_BLOB_CACHE = new Map();
   const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
 
@@ -920,11 +921,6 @@
       return true;
     });
 
-    const baseOrder = new Map();
-    for (let i = 0; i < LIST.length; i += 1) {
-      baseOrder.set(LIST[i].id, i);
-    }
-
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -941,10 +937,10 @@
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
         if (ta !== tb) return tb - ta;
-        return compareReadingOrder(a, b, baseOrder);
+        return compareReadingOrder(a, b, BASE_ORDER_MAP);
       });
     } else {
-      filtered.sort((a, b) => compareReadingOrder(a, b, baseOrder));
+      filtered.sort((a, b) => compareReadingOrder(a, b, BASE_ORDER_MAP));
     }
 
     if (t0) recordPerf("filter", perfNow() - t0);
