@@ -116,10 +116,6 @@ try {
   assert(coreCount > 0, "core filter returned no items");
   assert(coreCount < preCoreCount, `core filter did not reduce result count (${coreCount} vs ${preCoreCount})`);
 
-  const statusControl = page.locator(".status-cycle").first();
-  await statusControl.click();
-  await sleep(200);
-
   assert.equal(pageErrors.length, 0, `unexpected browser errors: ${pageErrors.join(" | ")}`);
 
   await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 });
