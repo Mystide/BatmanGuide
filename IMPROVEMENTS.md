@@ -8,7 +8,7 @@ Stand: 2026-04-29
 - [x] Smoke-Check als GitHub Action für Push/PR aktiv
 - [x] App-Version + Service-Worker-Cache synchronisiert (`APP_VERSION` auch im Service Worker)
 - [x] `package.json`-Scripts als Standard-Workflow etabliert
-- [~] Social-Preview lokal geprüft (Meta-Tags vorhanden); Produktions-URL für absolutes `og:image` noch festzulegen
+- [~] Social-Preview lokal geprüft (Meta-Tags vorhanden); Produktions-Host pro Deployment festlegen (derzeit root-relativ für Fork-Kompatibilität)
 
 ## P1 – Datenqualität
 
