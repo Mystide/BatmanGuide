@@ -31,6 +31,7 @@ jobs:
           python3 --version
       - name: Run smoke checks
         run: bash ./scripts/smoke-check.sh
+      # Playwright browser-level render smoke provides broader coverage, but it was flaky on PRs; keep push-only and promote to pull_request after stabilization.
       - name: Install npm dependencies
         if: github.event_name == 'push'
         run: |
@@ -47,7 +48,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('package.json', 'scripts/smoke-render-playwright.mjs') }}
       - name: Install Playwright Chromium
         if: github.event_name == 'push'
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
       - name: Run render smoke test
         if: github.event_name == 'push'
         run: npm run smoke:render
