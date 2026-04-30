@@ -3,11 +3,13 @@ name: smoke
 on:
   pull_request:
   push:
+    branches:
+      - main
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -29,3 +31,23 @@ jobs:
           python3 --version
       - name: Run smoke checks
         run: bash ./scripts/smoke-check.sh
+      - name: Install npm dependencies
+        if: github.event_name == 'push'
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Cache Playwright browsers
+        if: github.event_name == 'push'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package.json', 'scripts/smoke-render-playwright.mjs') }}
+      - name: Install Playwright Chromium
+        if: github.event_name == 'push'
+        run: npx playwright install chromium
+      - name: Run render smoke test
+        if: github.event_name == 'push'
+        run: npm run smoke:render
