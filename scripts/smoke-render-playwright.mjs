@@ -49,6 +49,18 @@ async function waitForServer() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+async function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 try {
   await waitForServer();
 
