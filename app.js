@@ -1036,9 +1036,11 @@
   function selectContinueEntry() {
     const visible = getFiltered();
     const inView = rankContinueEntry(visible);
-    if (inView) return inView;
+    if (inView) return { entry: inView, fromFiltered: true };
     const fullList = [...LIST].sort((a, b) => compareReadingOrder(a, b));
-    return rankContinueEntry(fullList);
+    const fallback = rankContinueEntry(fullList);
+    if (!fallback) return null;
+    return { entry: fallback, fromFiltered: false };
   }
 
   function activateContinueTarget(entryId) {
@@ -1054,6 +1056,27 @@
       continueTargetTimer = null;
       render();
     }, 1800);
+  }
+
+  function resetFiltersToDefault() {
+    $("search").value = "";
+    $("typeFilter").value = "";
+    $("onlyRemaining").checked = false;
+    $("hideOptional").checked = false;
+    $("sortBy").value = "order";
+    $("trackFilter").value = "";
+    $("statusFilter").value = "";
+    $("characterFilter").value = "";
+    $("eraFilter").value = "";
+    $("importanceFilter").value = "";
+    $("continuityFilter").value = "";
+    $("readingModeFilter").value = "";
+    $("dcuiStatusFilter").value = "";
+    writeFilters();
+    writeFiltersToURL();
+    syncQuickFilterChips();
+    render();
+    syncEraToggleButton();
   }
 
   function refreshHeader(filtered) {
@@ -2778,24 +2801,7 @@
 
     runUIStep("clearFilters", () => {
       const clearFilters = () => {
-        $("search").value = "";
-        $("typeFilter").value = "";
-        $("onlyRemaining").checked = false;
-        $("hideOptional").checked = false;
-        $("sortBy").value = "order";
-        $("trackFilter").value = "";
-        $("statusFilter").value = "";
-        $("characterFilter").value = "";
-        $("eraFilter").value = "";
-        $("importanceFilter").value = "";
-        $("continuityFilter").value = "";
-        $("readingModeFilter").value = "";
-        $("dcuiStatusFilter").value = "";
-        writeFilters();
-        writeFiltersToURL();
-        syncQuickFilterChips();
-        render();
-        syncEraToggleButton();
+        resetFiltersToDefault();
       };
       $("btnClearFilters").addEventListener("click", clearFilters);
       $("btnFooterClearFilters")?.addEventListener("click", clearFilters);
@@ -2816,12 +2822,16 @@
           return;
         }
         if (action === "continue") {
-          const c = selectContinueEntry();
-          if (!c) {
-            showSyncToast("No unread entries match the current filters.");
+          const selected = selectContinueEntry();
+          if (!selected?.entry) {
+            showSyncToast("No unread entries found.");
             return;
           }
-          activateContinueTarget(c.id);
+          if (!selected.fromFiltered) {
+            resetFiltersToDefault();
+            showSyncToast("Showing next unread entry outside current filters.");
+          }
+          activateContinueTarget(selected.entry.id);
         }
       };
 
