@@ -6,7 +6,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 1",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-1/91031541-9328-474c-9d6d-a67d249b6783",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -23,7 +22,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 2",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-2/933f327e-71b1-4838-bd9e-440859e8d012",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -40,7 +38,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 3",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-3/be41fa4e-998b-4d0d-b440-6d6e55e57d3a",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -57,7 +54,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 4",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-4/97b32ff3-fa49-4745-ade0-61ad1db164df",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -74,7 +70,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 5",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-5/9a319085-3586-413b-9c59-e54845d2514b",
-    "optional": false,
     "cover": "https://imgix-media.wbdndc.net/ingest/book/preview/91031541-9328-474c-9d6d-a67d249b6783/198d8835-5e2a-46af-8ac0-bd862ef573b1/0.jpg",
     "characters": [
       "batman"
@@ -92,7 +87,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Golden Age Vol. 6",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-golden-age-vol-6/75ee0e49-bb8f-436e-b912-c76e0724f725",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -109,7 +103,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman in the Fifties",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-in-the-fifties/2f00984e-20e7-4976-9518-89e379a858d4",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -126,7 +119,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Silver Age",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-silver-age-batman",
-    "optional": false,
     "hint": "Collection — read everything inside. DCUI order tip: read Batman (1940) issues block first, then Detective Comics block.",
     "characters": [
       "batman"
@@ -154,7 +146,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Bronze Age",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-bronze-age-batman",
-    "optional": false,
     "hint": "Collection — read everything inside. DCUI order tip: Batman (1940) issues → Detective Comics issues → The Brave and the Bold issues.",
     "characters": [
       "batman"
@@ -186,7 +177,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Tales of the Demon",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-tales-of-the-demon/7760d676-d0dd-425a-b864-7f4118616320/c",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -203,7 +193,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Strange Apparitions",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-strange-apparitions",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -220,7 +209,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Where Were You The Night Batman Died?",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-thenightbatmandied",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -237,7 +225,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Crisis on Infinite Earths",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-crisis-on-infinite-earths",
-    "optional": false,
     "hint": "Checkpoint before Post-Crisis era entries.",
     "characters": [
       "batman"
@@ -255,7 +242,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Year One (Deluxe Edition)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-year-one-deluxe-edition/d6e52627-ebab-4b6e-9c59-175d60923237",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -272,7 +258,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Year Two (30th Anniversary Deluxe Edition)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-year-two-30th-anniversary-deluxe-edition/e8f30a67-c2f3-4357-9fb3-a927255018e9",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -289,7 +274,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Year Three (Deluxe Edition)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-year-three-the-deluxe-edition/ef52dadf-1727-4512-b348-fec7b3b91188",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -306,7 +290,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Shaman",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-shaman",
-    "optional": false,
     "hint": "Legends of the Dark Knight #1–5.",
     "characters": [
       "batman"
@@ -341,7 +324,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Prey",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-prey",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -380,7 +362,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Legends of the Dark Knight: Gothic",
     "url": "https://www.dcuniverseinfinite.com/collections/story-legendsofdarkknight-gothic",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -414,7 +395,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Venom",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-venom",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -431,7 +411,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Legends of the Dark Knight: Matt Wagner (Monster Men + Mad Monk + more)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/legends-of-the-dark-knight-matt-wagner/f2a3bcf5-ecc4-494c-88bd-7e44f303dba5/c",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -448,7 +427,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Man Who Laughs (Deluxe Edition)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-man-who-laughs-the-deluxe-edition/2dfa7e71-3882-41ab-8dee-1c1e4d6273f0",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -465,7 +443,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Haunted Knight",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-haunted-knight",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -482,7 +459,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Long Halloween",
     "url": "https://www.dcuniverseinfinite.com/collections/batman-halloween",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -499,7 +475,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Dark Victory",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-dark-victory",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -516,7 +491,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Second Chances",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-second-chances",
-    "optional": false,
     "hint": "Jason Todd becomes Robin.",
     "characters": [
       "batman",
@@ -535,7 +509,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Robin: Year One",
     "url": "https://www.dcuniverseinfinite.com/collections/story-robin-year-one",
-    "optional": false,
     "characters": [
       "robin",
       "batman"
@@ -553,7 +526,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batgirl: Year One",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batgirl-year-one",
-    "optional": false,
     "characters": [
       "batgirl",
       "batman"
@@ -571,7 +543,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Killing Joke (Deluxe)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-killing-joke-deluxe/9e4a9aea-d63a-42d6-a033-d4f84a9ca95c",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -588,7 +559,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: A Death in the Family",
     "url": "https://www.dcuniverseinfinite.com/collections/batman-death-family",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -605,7 +575,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: A Lonely Place of Dying",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-lonelyplacefordying",
-    "optional": false,
     "hint": "Tim Drake becomes Robin.",
     "characters": [
       "robin",
@@ -624,7 +593,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Sword of Azrael",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-sword-of-azrael/ccfcb4a9-a89d-4f6f-9a9e-7f47ef6db5f5",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -642,7 +610,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Knightfall Saga",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-bm-knightfall-saga",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -659,7 +626,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Contagion",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-contagion",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -676,7 +642,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Legacy",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-legacy",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -693,7 +658,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Cataclysm",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-cataclysm",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -710,7 +674,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: No Man's Land Vol. 1",
     "url": "https://www.dcuniverseinfinite.com/collections/story-no-mans-land-vol-1",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -727,7 +690,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: No Man's Land Vol. 2",
     "url": "https://www.dcuniverseinfinite.com/collections/story-no-mans-land-vol-2",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -744,7 +706,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: No Man's Land Vol. 3",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-no-mans-land-vol-3/f90d818d-e8de-4eb3-b651-130b47eb6ecd",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -761,7 +722,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: No Man's Land Vol. 4",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-no-mans-land-vol-4/1578cab4-53be-4828-baf3-3d1a1f2f0b6e",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -778,7 +738,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Road to No Man's Land Vol. 1",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-road-to-no-mans-land-vol-1/4cc044b9-87ac-4ffe-9995-79f36b88a11c",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -796,7 +755,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Road to No Man's Land Vol. 2",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-road-to-no-mans-land-vol-2/d71d3986-c833-41ab-832e-266efa2cd902",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -814,7 +772,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: No Man's Land",
     "url": "https://www.dcuniverseinfinite.com/collections/story-no-mans-land",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -831,7 +788,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: New Gotham",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-new-gotham",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -848,7 +804,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Officer Down",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-officer-down",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -865,7 +820,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Bruce Wayne: Murderer?",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-bruce-wayne-murderer",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -882,7 +836,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Bruce Wayne: Fugitive",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-bruce-wayne-fugitive",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -899,7 +852,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Hush",
     "url": "https://www.dcuniverseinfinite.com/collections/batman-hush",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -916,7 +868,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: War Games",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-war-games",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -933,7 +884,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Under the Hood",
     "url": "https://www.dcuniverseinfinite.com/collections/under-the-hood",
-    "optional": false,
     "characters": [
       "batman",
       "redhood"
@@ -951,7 +901,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Red Hood: The Lost Days",
     "url": "https://www.dcuniverseinfinite.com/comics/book/red-hood-the-lost-days/2f0a9f16-f385-4d16-a64c-c3ce53c8da1d",
-    "optional": false,
     "characters": [
       "redhood",
       "batman"
@@ -970,7 +919,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Batman & Son",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-and-son",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -987,7 +935,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: R.I.P.",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-rip",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1004,7 +951,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Final Crisis",
     "url": "https://www.dcuniverseinfinite.com/collections/story-final-crisis",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1021,7 +967,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Battle for the Cowl",
     "url": "https://www.dcuniverseinfinite.com/collections/story-battle-for-the-cowl",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1038,7 +983,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman & Robin: Batman Reborn",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-robin-reborn",
-    "optional": false,
     "characters": [
       "batman",
       "robin"
@@ -1056,7 +1000,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman and Robin: Batman Must Die!",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-and-robin-batman-must-die/9d7b2ec2-007f-44ef-bf0d-dce95f8333f0",
-    "optional": false,
     "characters": [
       "batman",
       "robin"
@@ -1074,7 +1017,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: The Return of Bruce Wayne",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-return-of-bruce-wayne/916ecfb8-6ee8-4721-9ac9-0993f5f91866",
-    "optional": false,
     "characters": [
       "batman",
       "robin"
@@ -1092,7 +1034,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Black Mirror",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-black-mirror",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1109,7 +1050,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Flashpoint",
     "url": "https://www.dcuniverseinfinite.com/collections/flashpoint-collection",
-    "optional": false,
     "hint": "Checkpoint that leads into New 52.",
     "characters": [
       "batman"
@@ -1127,7 +1067,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Court of Owls",
     "url": "https://www.dcuniverseinfinite.com/collections/batman-court-owls",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1144,7 +1083,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 2: The City of Owls",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-2-the-city-of-owls/88fa44f0-bf65-41a9-b22c-3859a4b8b4a3/c",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1161,7 +1099,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Night of the Owls",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-night-of-owls",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1178,7 +1115,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Death of the Family",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-death-family",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1195,7 +1131,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Zero Year",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-zero-year",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1212,7 +1147,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Endgame",
     "url": "https://www.dcuniverseinfinite.com/collections/story-bm-endgame",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1229,7 +1163,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Superheavy",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-superheavy",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1246,7 +1179,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Bloom",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-bloom",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1263,7 +1195,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Epilogue",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-epilogue",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1280,7 +1211,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Batman Eternal (2014–2015)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/batman-eternal-2014-2015/b719a4b3-b8fd-4e47-9a7c-530a5bad62e9",
-    "optional": false,
     "hint": "Read issues from oldest to newest.",
     "characters": [
       "batman",
@@ -1301,7 +1231,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman by Tom King",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "hint": "Tom King mainline entrypoint. Follow the ordered steps below with issue ranges for a no-guess path.",
     "characters": [
       "batman"
@@ -1319,7 +1248,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 1: I Am Gotham",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-1-i-am-gotham/cd659884-4ca7-4d6a-a17c-f955f61da19c",
-    "optional": false,
     "hint": "Core step: Batman (2016) #1–6.",
     "characters": [
       "batman"
@@ -1337,7 +1265,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 2: I Am Suicide (Tom King)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-2-i-am-suicide/12e9a5c2-2d4b-41d3-a266-46194d21e256",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1355,7 +1282,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 3: I Am Bane",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1373,7 +1299,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman / The Button (Road to Doomsday Clock)",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1391,7 +1316,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 5: The Rules of Engagement",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1409,7 +1333,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 4: The War of Jokes and Riddles",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-4-the-war-of-jokes-and-riddles/4a807fd7-2b31-4d70-a077-de12a7dc77e7",
-    "optional": false,
     "hint": "Core step: Batman (2016) #25–32 (War of Jokes and Riddles).",
     "characters": [
       "batman"
@@ -1427,7 +1350,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 6: Bride or Burglar?",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman",
       "catwoman"
@@ -1446,7 +1368,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 7: The Wedding",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman",
       "catwoman"
@@ -1465,7 +1386,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 8: Cold Days",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1483,7 +1403,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 9: The Tyrant Wing",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman",
       "catwoman"
@@ -1502,7 +1421,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 10: Knightmares",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1520,7 +1438,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman Vol. 11: The Fall and the Fallen",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-tomkings-batman",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1538,7 +1455,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Detective Comics (2016) — Rebirth companion lane",
     "url": "https://www.dcuniverseinfinite.com/comics/series/detective-comics-2016-/2a8f64e9-9f8f-47f4-a6d1-e6f14a3cd59a",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batman",
@@ -1559,7 +1475,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: City of Bane — The Complete Collection",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-city-of-bane-the-complete-collection/0479de1c-9fc3-4ee4-8f81-fed9dfafae7e",
-    "optional": false,
     "hint": "Core finale: Batman (2016) #75–85 (City of Bane).",
     "characters": [
       "batman"
@@ -1577,7 +1492,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "The Joker War Saga",
     "url": "https://www.dcuniverseinfinite.com/comics/book/the-joker-war-saga/03247bfb-3037-4a10-88fa-2395d9604cdb",
-    "optional": true,
     "hint": "Companion omnibus for Joker War tie-ins; optional if you only follow Batman core issues.",
     "characters": [
       "batman"
@@ -1595,7 +1509,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Joker War",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-joker-war",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1613,7 +1526,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Their Dark Designs",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-their-dark-designs",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1631,7 +1543,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Joker War Zone",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-joker-war-zone",
-    "optional": true,
     "characters": [
       "batman"
     ],
@@ -1649,7 +1560,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Infinite Frontier #0 + The Cowardly Lot (setup)",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-infinite-frontier",
-    "optional": false,
     "track": "main",
     "characters": [
       "batman"
@@ -1668,7 +1578,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman: Fear State Saga",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-fear-state-saga/049e526a-07f9-4678-bed9-a3dc6d1e7909/c",
-    "optional": false,
     "hint": "Full crossover book.",
     "characters": [
       "batman"
@@ -1686,7 +1595,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 1: Failsafe",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-1-failsafe/618cd2a7-45cb-4519-b0f1-c43527dab5f7",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1703,7 +1611,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: Shadow War",
     "url": "https://www.dcuniverseinfinite.com/collections/story-bmshadowwar",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1720,7 +1627,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 2: The Bat-Man of Gotham (Zdarsky)",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-2-the-bat-man-of-gotham/13cacf3b-db9a-4cdc-8197-ee704f5d2267",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1737,7 +1643,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman/Catwoman: The Gotham War",
     "url": "https://www.dcuniverseinfinite.com/collections/story-bm-cw-gotham-war",
-    "optional": false,
     "characters": [
       "batman",
       "catwoman"
@@ -1755,7 +1660,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Dying City",
     "url": "https://www.dcuniverseinfinite.com/collections/story-bm-dyingcity",
-    "optional": false,
     "characters": [
       "batman"
     ],
@@ -1772,7 +1676,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "book",
     "title": "Batman Vol. 3: The Joker Year One",
     "url": "https://www.dcuniverseinfinite.com/comics/book/batman-vol-3-the-joker-year-one/7b7f3d4e-53f9-4eec-a1af-3ddc495f95b0",
-    "optional": false,
     "characters": [
       "batman",
       "joker"
@@ -1790,7 +1693,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Batman/Superman: World’s Finest (2022–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/batman-superman-worlds-finest-2022-/a1f0f7cb-0a41-43d5-a4de-cf4efe6f22cc",
-    "optional": true,
     "hint": "Optional companion read with classic Batman/Superman team-ups.",
     "track": "batfamily",
     "characters": [
@@ -1810,7 +1712,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "The Joker (2021–2022)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/the-joker-2021-/6f85d5d9-f7ff-4d90-a6ac-28452917dff8",
-    "optional": true,
     "hint": "Optional Gordon/Joker side story after Joker War era fallout.",
     "track": "batfamily",
     "characters": [
@@ -1830,7 +1731,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Robin (2021–2022)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/robin-2021-/306cd127-df6f-4e64-9f66-58bc8912776f",
-    "optional": true,
     "hint": "Optional Damian Wayne companion thread for this era.",
     "track": "batfamily",
     "characters": [
@@ -1850,7 +1750,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Nightwing: Leaping into the Light",
     "url": "https://www.dcuniverseinfinite.com/collections/story-nightwing-leaping-into-the-light",
-    "optional": true,
     "hint": "Optional Bat-Family companion run in parallel with Batman era books.",
     "track": "batfamily",
     "characters": [
@@ -1870,7 +1769,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batgirls: One Way or Another",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batgirls-one-way-or-another",
-    "optional": true,
     "hint": "Optional Gotham street-level Bat-Family companion.",
     "track": "batfamily",
     "characters": [
@@ -1890,7 +1788,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Catwoman: Dangerous Liaisons",
     "url": "https://www.dcuniverseinfinite.com/collections/story-catwoman-dangerous-liaisons",
-    "optional": true,
     "hint": "Optional Catwoman companion arc for Gotham status quo context.",
     "track": "batfamily",
     "characters": [
@@ -1910,7 +1807,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Red Hood: Task Force Z",
     "url": "https://www.dcuniverseinfinite.com/collections/story-task-force-z",
-    "optional": true,
     "hint": "Optional Red Hood side-read connected to broader Gotham events.",
     "track": "batfamily",
     "characters": [
@@ -1930,7 +1826,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman and Robin (2023) Vol. 1: Father and Son",
     "url": "https://www.dcuniverseinfinite.com/collections/story-batman-and-robin-father-and-son",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batman",
@@ -1950,7 +1845,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Nightwing: Get Grayson",
     "url": "https://www.dcuniverseinfinite.com/collections/story-nightwing-get-grayson",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "nightwing",
@@ -1970,7 +1864,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Nightwing: The Leap",
     "url": "https://www.dcuniverseinfinite.com/collections/story-nightwing-the-leap",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "nightwing",
@@ -1990,7 +1883,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Poison Ivy: The Virtuous Cycle",
     "url": "https://www.dcuniverseinfinite.com/collections/story-poison-ivy-the-virtuous-cycle",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "catwoman",
@@ -2010,7 +1902,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Catwoman: Nine Lives",
     "url": "https://www.dcuniverseinfinite.com/collections/story-catwoman-nine-lives",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "catwoman",
@@ -2030,7 +1921,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Red Hood: Outlaws Reassembled",
     "url": "https://www.dcuniverseinfinite.com/collections/story-red-hood-outlaws-reassembled",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "redhood",
@@ -2050,7 +1940,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Birds of Prey: Megadeath",
     "url": "https://www.dcuniverseinfinite.com/collections/story-birds-of-prey-megadeath",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batgirl",
@@ -2071,7 +1960,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Titans: Out of the Shadows",
     "url": "https://www.dcuniverseinfinite.com/collections/story-titans-out-of-the-shadows",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "nightwing",
@@ -2092,7 +1980,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Batman and Robin (2023–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/batman-and-robin-2023-/d6630fd1-f741-4f07-8af7-44f22ef35d6a",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batman",
@@ -2112,7 +1999,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Nightwing (2021–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/nightwing-2021-/f84b8f84-2660-4db9-a8ce-81b0745f9e8c",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "nightwing",
@@ -2132,7 +2018,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Catwoman (2018–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/catwoman-2018-/9f0e3a8e-5555-4a4f-bd79-102206db5b9e",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "catwoman",
@@ -2152,7 +2037,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Poison Ivy (2022–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/poison-ivy-2022-/a508f57d-9d88-4f40-a03d-73de2dc16d8f",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "catwoman",
@@ -2172,7 +2056,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Birds of Prey (2023–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/birds-of-prey-2023-/f8be4a1a-3f2c-4b5f-90ce-90132db6f7ab",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batgirl",
@@ -2193,7 +2076,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Titans (2023–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/titans-2023-/a41d42ef-09f4-4ab2-b89c-0dcf8f2f4408",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "nightwing",
@@ -2214,7 +2096,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Detective Comics (2016–present) — Ram V / post-Ram V era",
     "url": "https://www.dcuniverseinfinite.com/comics/series/detective-comics-2016-/2a8f64e9-9f8f-47f4-a6d1-e6f14a3cd59a",
-    "optional": true,
     "track": "main",
     "characters": [
       "batman"
@@ -2233,7 +2114,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "The Brave and the Bold (2023)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/the-brave-and-the-bold-2023-/f56f8c84-8ef4-4f55-972a-d34f2c9ed33f",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batman",
@@ -2255,7 +2135,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Batman: The Brave and the Bold (2024–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/batman-the-brave-and-the-bold-2024-/8cc6a328-8ea4-4f7f-921a-21a95d57037f",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "batman",
@@ -2277,7 +2156,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Harley Quinn (2021–present)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/harley-quinn-2021-/117f7b86-0d35-4b5f-84f8-60fe7333aa58",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "joker",
@@ -2298,7 +2176,6 @@ window.BATMAN_GUIDE_LIST = [
     "type": "series",
     "title": "Red Hood: The Hill (2024)",
     "url": "https://www.dcuniverseinfinite.com/comics/series/red-hood-the-hill-2024-/f0c84365-8d3d-4ca8-8f42-b3702a1e0d35",
-    "optional": true,
     "track": "batfamily",
     "characters": [
       "redhood",
