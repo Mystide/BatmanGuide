@@ -50,6 +50,18 @@
     "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
   };
 
+  function getLegacyCoverById(id) {
+    return REAL_COVERS[String(id || "")] || "";
+  }
+
+  function hasLegacyCoverForId(id) {
+    return !!getLegacyCoverById(id);
+  }
+
+  function legacyCoverUrls() {
+    return Object.values(REAL_COVERS);
+  }
+
 
   const KEYS = {
     state: "batman-guide:state:v3",
@@ -244,6 +256,7 @@
   const CONTINUITY_OPTIONS = [...new Set(LIST.map((entry) => entry.continuity).filter(Boolean))].sort((a, b) => a.localeCompare(b));
   const READING_MODE_OPTIONS = orderEnumValues(LIST.map((entry) => entry.readingMode), READING_MODE_ORDER);
   const DCUI_STATUS_OPTIONS = orderEnumValues(LIST.map((entry) => entry.dcuiStatus), DCUI_STATUS_ORDER);
+  const BASE_ORDER_MAP = new Map(LIST.map((entry, index) => [entry.id, index]));
   const SEARCH_BLOB_CACHE = new Map();
   const NORMALIZED_SEARCH_BLOB_CACHE = new Map();
 
@@ -568,6 +581,18 @@
     const status = String(st?.status || "").trim().toLowerCase();
     if (ITEM_STATUSES.includes(status)) return status;
     return st?.done ? READ_STATUS : "unread";
+  }
+
+  function entryStatus(entry) {
+    return ensureStatus(ensureItemState(entry));
+  }
+
+  function isEntryRead(entry) {
+    return entryStatus(entry) === READ_STATUS;
+  }
+
+  function isEntrySkipped(entry) {
+    return entryStatus(entry) === "dropped";
   }
 
   function nextStatus(currentStatus, step = 1) {
@@ -896,11 +921,6 @@
       return true;
     });
 
-    const baseOrder = new Map();
-    for (let i = 0; i < LIST.length; i += 1) {
-      baseOrder.set(LIST[i].id, i);
-    }
-
     if (sortBy === "title") {
       filtered.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === "progress") {
@@ -917,10 +937,10 @@
         const ta = Date.parse(ensureItemState(a).touchedAt || "") || 0;
         const tb = Date.parse(ensureItemState(b).touchedAt || "") || 0;
         if (ta !== tb) return tb - ta;
-        return compareReadingOrder(a, b, baseOrder);
+        return compareReadingOrder(a, b, BASE_ORDER_MAP);
       });
     } else {
-      filtered.sort((a, b) => compareReadingOrder(a, b, baseOrder));
+      filtered.sort((a, b) => compareReadingOrder(a, b, BASE_ORDER_MAP));
     }
 
     if (t0) recordPerf("filter", perfNow() - t0);
@@ -991,21 +1011,20 @@
   }
 
   function isContinueCandidate(entry) {
-    const status = ensureStatus(ensureItemState(entry));
-    return status !== READ_STATUS;
+    return !isEntryRead(entry);
   }
 
   function rankContinueEntry(entries) {
     const importanceOrder = ["core", "recommended", "context", "optional"];
-    const inProgress = entries.find((entry) => ensureStatus(ensureItemState(entry)) === "in_progress");
+    const inProgress = entries.find((entry) => entryStatus(entry) === "in_progress");
     if (inProgress) return inProgress;
     for (const importance of importanceOrder) {
-      const found = entries.find((entry) => (entry.importance || "") === importance && isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+      const found = entries.find((entry) => (entry.importance || "") === importance && isContinueCandidate(entry) && !isEntrySkipped(entry));
       if (found) return found;
     }
-    const fallback = entries.find((entry) => isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+    const fallback = entries.find((entry) => isContinueCandidate(entry) && !isEntrySkipped(entry));
     if (fallback) return fallback;
-    return entries.find((entry) => ensureStatus(ensureItemState(entry)) === "dropped") || null;
+    return entries.find((entry) => isEntrySkipped(entry)) || null;
   }
 
   function randomUnread(entries) {
@@ -1151,7 +1170,7 @@
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
     setText("randomText", `Random: ${randomEntry ? randomEntry.title : "-"}`);
 
-    const requiredRemaining = filtered.filter((entry) => !isOptionalEntry(entry) && !ensureItemState(entry).done).length;
+    const requiredRemaining = filtered.filter((entry) => !isOptionalEntry(entry) && !isEntryRead(entry)).length;
     setText("statVisible", String(s.total));
     setText("statDone", String(s.done));
     setText("statRemaining", String(Math.max(0, s.total - s.done)));
@@ -1257,7 +1276,7 @@
     if (Array.isArray(entry?.covers)) {
       for (const candidate of entry.covers) push(candidate);
     }
-    push(REAL_COVERS[entry.id]);
+    push(getLegacyCoverById(entry.id));
 
     const url = String(entry?.url || "");
     const id = extractDcuiId(url);
@@ -1304,7 +1323,7 @@
 
   function isOfficialCoverUrl(url) {
     const value = String(url || "");
-    return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
+    return value.includes("imgix-media.wbdndc.net") || !!legacyCoverUrls().find((x) => x === value);
   }
 
   function isDcuiCheckStale(dcuiChecked) {
@@ -1332,7 +1351,7 @@
       if (isDcuiCheckStale(entry.dcuiChecked)) stats.staleDcuiChecked += 1;
       if (entry.dcuiStatus === "search_fallback") stats.searchFallback += 1;
       if (entry.type === "collection" && (!Array.isArray(entry.issues) || entry.issues.length === 0)) stats.collectionWithoutIssues += 1;
-      if (!REAL_COVERS[entry.id] && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
+      if (!hasLegacyCoverForId(entry.id) && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
       if (typeof entry.optional !== "undefined") stats.legacyOptional += 1;
       const normalized = String(entry.url || "").trim();
       if (!normalized) continue;
@@ -1521,7 +1540,7 @@
 
   async function applyBestCover(coverEl, entry) {
     const manual = getManualCoverUrl(entry.id);
-    const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
+    const primary = normalizeCoverUrl(entry?.cover) || getLegacyCoverById(entry.id);
     const cached = coverCache[entry.id];
     const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
 
@@ -2380,7 +2399,7 @@
 
 
   async function upgradeCoversFromDcui() {
-    const missing = LIST.filter((entry) => !REAL_COVERS[entry.id] && !isOfficialCoverUrl(coverCache[entry.id]));
+    const missing = LIST.filter((entry) => !hasLegacyCoverForId(entry.id) && !isOfficialCoverUrl(coverCache[entry.id]));
     for (const entry of missing.slice(0, 18)) {
       await resolveOfficialCover(entry, { force: true });
     }

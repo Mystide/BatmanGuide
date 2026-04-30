@@ -72,12 +72,20 @@ try {
   page.on("pageerror", (error) => pageErrors.push(String(error?.message || error)));
 
   const seenRequests = new Set();
+  const perf = {
+    initialRenderMs: 0,
+    searchMs: 0,
+    continueMs: 0,
+    coreFilterMs: 0,
+    reloadMs: 0
+  };
   page.on("requestfinished", (request) => {
     const url = request.url();
     if (url.includes("/BatmanGuide/app.js")) seenRequests.add("app.js");
     if (url.includes("/BatmanGuide/list.js")) seenRequests.add("list.js");
   });
 
+  const initialRenderStart = Date.now();
   await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
 
   await page.evaluate(() => {
@@ -89,6 +97,7 @@ try {
 
   await page.waitForSelector(".era", { timeout: 10000 });
   await page.waitForSelector(".item", { timeout: 10000 });
+  perf.initialRenderMs = Date.now() - initialRenderStart;
 
   const eraCount = await page.locator(".era").count();
   assert(eraCount >= 1, "expected at least one era section");
@@ -96,9 +105,11 @@ try {
   const initialItemCount = await page.locator(".item").count();
   assert(initialItemCount >= 20, `expected at least 20 rendered items, got ${initialItemCount}`);
 
+  const searchStart = Date.now();
   await page.fill("#search", "Hush");
-  await sleep(300);
+  await page.locator(".item .title", { hasText: /hush/i }).first().waitFor({ state: "visible", timeout: 5000 });
   const hushVisible = await page.locator(".item .title", { hasText: /hush/i }).count();
+  perf.searchMs = Date.now() - searchStart;
   assert(hushVisible >= 1, "search for 'Hush' returned no rendered results");
 
   await page.fill("#search", "");
@@ -109,8 +120,20 @@ try {
   const hiddenCount = await page.locator(".item").count();
   assert.equal(hiddenCount, 0, "expected zero rendered items for no-match search");
 
+  const continueStart = Date.now();
   await page.click('[data-nav-action="continue"]');
-  await sleep(350);
+  await withTimeout((async () => {
+    while (true) {
+      const continueTargetCount = await page.locator(".item.continue-target").count();
+      const continueFocusOnItem = await page.evaluate(() => {
+        const active = document.activeElement;
+        return !!active && active.classList?.contains("item");
+      });
+      if (continueTargetCount >= 1 || continueFocusOnItem) break;
+      await sleep(40);
+    }
+  })(), 5000, "continue fallback highlight/focus");
+  perf.continueMs = Date.now() - continueStart;
   const searchAfterFallback = await page.inputValue("#search");
   assert.equal(searchAfterFallback, "", "continue fallback should reset filters to reveal target");
   const renderedAfterFallback = await page.locator(".item").count();
@@ -126,25 +149,38 @@ try {
   );
 
   const preCoreCount = await page.locator(".item").count();
+  const coreFilterStart = Date.now();
   await page.evaluate(() => {
     const select = document.getElementById("importanceFilter");
     if (!select) throw new Error("importanceFilter not found");
     select.value = "core";
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
-  await sleep(300);
+  await withTimeout((async () => {
+    while (true) {
+      const countNow = await page.locator(".item").count();
+      if (countNow !== preCoreCount) break;
+      await sleep(40);
+    }
+  })(), 5000, "core filter rerender");
   const coreCount = await page.locator(".item").count();
+  perf.coreFilterMs = Date.now() - coreFilterStart;
   assert(coreCount > 0, "core filter returned no items");
   assert(coreCount < preCoreCount, `core filter did not reduce result count (${coreCount} vs ${preCoreCount})`);
 
   assert.equal(pageErrors.length, 0, `unexpected browser errors: ${pageErrors.join(" | ")}`);
 
+  const reloadStart = Date.now();
   await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 });
   await page.waitForSelector(".item", { timeout: 10000 });
+  perf.reloadMs = Date.now() - reloadStart;
   const reloadCount = await page.locator(".item").count();
   assert(reloadCount >= 20, `expected list render after reload, got ${reloadCount}`);
 
   await browser.close();
+  console.log(
+    `[smoke:render] perf: initialRender=${perf.initialRenderMs}ms search=${perf.searchMs}ms continue=${perf.continueMs}ms coreFilter=${perf.coreFilterMs}ms reload=${perf.reloadMs}ms items=${initialItemCount} reloadItems=${reloadCount}`
+  );
   console.log(`[smoke:render] ok (eras=${eraCount}, items=${initialItemCount}, reloadItems=${reloadCount})`);
 } catch (error) {
   console.error(`[smoke:render] FAILED: ${error && error.message ? error.message : error}`);
