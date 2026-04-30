@@ -31,6 +31,8 @@ Stand: 2026-04-29
 - [x] Nightly-Link-Check vorhanden
 - [x] Nightly-Link-Check mit Report-Artefakt archiviert
 - [ ] A11y-Smoke-Checks (z. B. axe/pa11y) ergänzen
+- [ ] Playwright-Render-Smoke stabilisieren und anschließend für `pull_request` aktivieren
+- [ ] Zuverlässigen Status-Interaktionstest ergänzen, sobald Selektoren/Timing stabil sind
 - [x] Link-Check toleranter gemacht (HEAD → GET Fallback bei 403/405/ERR)
 
 ## Laufende technische Pflege
