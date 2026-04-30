@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.04.27-1";
+  const APP_VERSION = "2026.04.30-1";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -3178,27 +3178,41 @@
     if (!("serviceWorker" in navigator)) return;
 
     let refreshing = false;
+    let updatePromptShown = false;
+    let updateAccepted = false;
+
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) return;
+      if (!updateAccepted || refreshing) return;
       refreshing = true;
       window.location.reload();
     });
 
+    const showUpdatePrompt = (registration) => {
+      if (updatePromptShown || !registration || !registration.waiting || !navigator.serviceWorker.controller) return;
+      const toast = $("pwaUpdateToast");
+      const button = $("pwaUpdateBtn");
+      if (!toast || !button) return;
+
+      updatePromptShown = true;
+      toast.classList.add("show");
+      button.addEventListener("click", () => {
+        if (!registration.waiting || updateAccepted) return;
+        updateAccepted = true;
+        button.setAttribute("aria-disabled", "true");
+        button.textContent = "Updating...";
+        registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      }, { once: true });
+    };
+
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
       .then((registration) => {
-        const promoteUpdate = () => {
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: "SKIP_WAITING" });
-          }
-        };
-
-        if (registration.waiting) promoteUpdate();
+        if (registration.waiting) showUpdatePrompt(registration);
 
         registration.addEventListener("updatefound", () => {
           const worker = registration.installing;
           if (!worker) return;
           worker.addEventListener("statechange", () => {
-            if (worker.state === "installed") promoteUpdate();
+            if (worker.state === "installed") showUpdatePrompt(registration);
           });
         });
 

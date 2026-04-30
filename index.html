@@ -282,6 +282,18 @@
       opacity: 1;
       transform: translateY(0);
     }
+    .pwa-update-toast {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+      right: 16px;
+      bottom: 62px;
+    }
+    .pwa-update-toast .btn {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
     .era { margin-top: 14px; }
     details {
       border: 1px solid var(--border);
@@ -1424,6 +1436,10 @@
     <div class="build-info" id="buildVersion">Build -</div>
   </main>
   <div id="syncToast" class="sync-toast" role="status" aria-live="polite"></div>
+  <div id="pwaUpdateToast" class="sync-toast pwa-update-toast" role="status" aria-live="polite" aria-atomic="true">
+    <span>New version available</span>
+    <button id="pwaUpdateBtn" class="btn primary" type="button">Update</button>
+  </div>
 
   <script src="list.js"></script>
   <script src="app.js"></script>
