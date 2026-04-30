@@ -6,7 +6,8 @@
     "smoke": "bash scripts/smoke-check.sh",
     "links": "node scripts/check-links.js --max 30",
     "links:full": "node scripts/check-links.js --concurrency 4 --timeout-ms 15000 --include-covers",
-    "smoke:render": "node scripts/smoke-render-playwright.mjs"
+    "smoke:render": "node scripts/smoke-render-playwright.mjs",
+    "validate-list:strict": "node scripts/validate-list.js --require-order"
   },
   "devDependencies": {
     "playwright": "^1.54.0"
