@@ -50,6 +50,18 @@
     "E7-05": "https://covers.openlibrary.org/b/isbn/9781779525871-M.jpg"
   };
 
+  function getLegacyCoverById(id) {
+    return REAL_COVERS[String(id || "")] || "";
+  }
+
+  function hasLegacyCoverForId(id) {
+    return !!getLegacyCoverById(id);
+  }
+
+  function legacyCoverUrls() {
+    return Object.values(REAL_COVERS);
+  }
+
 
   const KEYS = {
     state: "batman-guide:state:v3",
@@ -1257,7 +1269,7 @@
     if (Array.isArray(entry?.covers)) {
       for (const candidate of entry.covers) push(candidate);
     }
-    push(REAL_COVERS[entry.id]);
+    push(getLegacyCoverById(entry.id));
 
     const url = String(entry?.url || "");
     const id = extractDcuiId(url);
@@ -1304,7 +1316,7 @@
 
   function isOfficialCoverUrl(url) {
     const value = String(url || "");
-    return value.includes("imgix-media.wbdndc.net") || !!Object.values(REAL_COVERS).find((x) => x === value);
+    return value.includes("imgix-media.wbdndc.net") || !!legacyCoverUrls().find((x) => x === value);
   }
 
   function isDcuiCheckStale(dcuiChecked) {
@@ -1332,7 +1344,7 @@
       if (isDcuiCheckStale(entry.dcuiChecked)) stats.staleDcuiChecked += 1;
       if (entry.dcuiStatus === "search_fallback") stats.searchFallback += 1;
       if (entry.type === "collection" && (!Array.isArray(entry.issues) || entry.issues.length === 0)) stats.collectionWithoutIssues += 1;
-      if (!REAL_COVERS[entry.id] && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
+      if (!hasLegacyCoverForId(entry.id) && !isOfficialCoverUrl(customCovers?.[entry.id])) stats.missingCover += 1;
       if (typeof entry.optional !== "undefined") stats.legacyOptional += 1;
       const normalized = String(entry.url || "").trim();
       if (!normalized) continue;
@@ -1521,7 +1533,7 @@
 
   async function applyBestCover(coverEl, entry) {
     const manual = getManualCoverUrl(entry.id);
-    const primary = normalizeCoverUrl(entry?.cover) || REAL_COVERS[entry.id];
+    const primary = normalizeCoverUrl(entry?.cover) || getLegacyCoverById(entry.id);
     const cached = coverCache[entry.id];
     const fallbackCached = normalizeCoverUrl(fallbackCoverCache[entry.id]);
 
@@ -2380,7 +2392,7 @@
 
 
   async function upgradeCoversFromDcui() {
-    const missing = LIST.filter((entry) => !REAL_COVERS[entry.id] && !isOfficialCoverUrl(coverCache[entry.id]));
+    const missing = LIST.filter((entry) => !hasLegacyCoverForId(entry.id) && !isOfficialCoverUrl(coverCache[entry.id]));
     for (const entry of missing.slice(0, 18)) {
       await resolveOfficialCover(entry, { force: true });
     }
