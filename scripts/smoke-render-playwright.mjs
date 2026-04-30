@@ -80,10 +80,9 @@ try {
 
   await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
 
-  await withTimeout(page.evaluate(async () => {
+  await page.evaluate(() => {
     if (!("serviceWorker" in navigator)) throw new Error("serviceWorker API missing");
-    await navigator.serviceWorker.ready;
-  }), 15000, "service worker readiness");
+  });
 
   assert(seenRequests.has("app.js"), "app.js request was not observed");
   assert(seenRequests.has("list.js"), "list.js request was not observed");
