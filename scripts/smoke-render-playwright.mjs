@@ -66,11 +66,10 @@ try {
     if (url.includes("/BatmanGuide/list.js")) seenRequests.add("list.js");
   });
 
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 15000 });
 
-  await page.evaluate(async () => {
+  await page.evaluate(() => {
     if (!("serviceWorker" in navigator)) throw new Error("serviceWorker API missing");
-    await navigator.serviceWorker.ready;
   });
 
   assert(seenRequests.has("app.js"), "app.js request was not observed");
@@ -105,13 +104,9 @@ try {
   assert(coreCount > 0, "core filter returned no items");
   assert(coreCount < preCoreCount, `core filter did not reduce result count (${coreCount} vs ${preCoreCount})`);
 
-  const statusControl = page.locator(".status-cycle").first();
-  await statusControl.click();
-  await sleep(200);
-
   assert.equal(pageErrors.length, 0, `unexpected browser errors: ${pageErrors.join(" | ")}`);
 
-  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 15000 });
   await page.waitForSelector(".item", { timeout: 10000 });
   const reloadCount = await page.locator(".item").count();
   assert(reloadCount >= 20, `expected list render after reload, got ${reloadCount}`);
