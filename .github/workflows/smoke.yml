@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
+          cache: 'npm'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
@@ -34,6 +35,11 @@ jobs:
           else
             npm install
           fi
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package.json', 'scripts/smoke-render-playwright.mjs') }}
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - name: Run smoke checks
