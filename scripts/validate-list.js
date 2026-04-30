@@ -46,6 +46,7 @@ const seenUrls = new Map();
 let previousOrder = null;
 const warnings = [];
 let missingOrderCount = 0;
+const missingOrderByEra = new Map();
 let legacyOptionalCount = 0;
 const INTENTIONAL_DUPLICATE_URL_GROUPS = new Map([
   [
@@ -149,7 +150,11 @@ list.forEach((item, index) => {
   }
 
   const explicitOrder = explicitOrderToken(item);
-  if (!explicitOrder) missingOrderCount += 1;
+  if (!explicitOrder) {
+    missingOrderCount += 1;
+    const eraKey = `Era ${idOrder.era}`;
+    missingOrderByEra.set(eraKey, (missingOrderByEra.get(eraKey) || 0) + 1);
+  }
   if (explicitOrder && explicitOrder.era !== idOrder.era) {
     fail(`${at} has mismatching explicit order '${item.order}' for id '${item.id}'`);
   }
@@ -311,6 +316,15 @@ for (const warning of warnings) {
 }
 if (missingOrderCount > 0) {
   console.warn(`[list-validate] WARN: ${missingOrderCount} entries have no explicit 'order' yet (legacy ID order fallback active)`);
+  const orderedEras = [...missingOrderByEra.entries()]
+    .sort((a, b) => {
+      const eraA = Number(String(a[0]).replace("Era ", ""));
+      const eraB = Number(String(b[0]).replace("Era ", ""));
+      return eraA - eraB;
+    })
+    .map(([era, count]) => `${era}=${count}`)
+    .join(", ");
+  console.warn(`[list-validate] WARN: missing explicit 'order' by era: ${orderedEras}`);
 }
 if (legacyOptionalCount > 0) {
   console.warn(`[list-validate] WARN: ${legacyOptionalCount} entries still define legacy 'optional' (prefer only importance)`);
