@@ -582,6 +582,18 @@
     return st?.done ? READ_STATUS : "unread";
   }
 
+  function entryStatus(entry) {
+    return ensureStatus(ensureItemState(entry));
+  }
+
+  function isEntryRead(entry) {
+    return entryStatus(entry) === READ_STATUS;
+  }
+
+  function isEntrySkipped(entry) {
+    return entryStatus(entry) === "dropped";
+  }
+
   function nextStatus(currentStatus, step = 1) {
     const current = ensureStatus({ status: currentStatus });
     const index = Math.max(0, ITEM_STATUSES.indexOf(current));
@@ -1003,21 +1015,20 @@
   }
 
   function isContinueCandidate(entry) {
-    const status = ensureStatus(ensureItemState(entry));
-    return status !== READ_STATUS;
+    return !isEntryRead(entry);
   }
 
   function rankContinueEntry(entries) {
     const importanceOrder = ["core", "recommended", "context", "optional"];
-    const inProgress = entries.find((entry) => ensureStatus(ensureItemState(entry)) === "in_progress");
+    const inProgress = entries.find((entry) => entryStatus(entry) === "in_progress");
     if (inProgress) return inProgress;
     for (const importance of importanceOrder) {
-      const found = entries.find((entry) => (entry.importance || "") === importance && isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+      const found = entries.find((entry) => (entry.importance || "") === importance && isContinueCandidate(entry) && !isEntrySkipped(entry));
       if (found) return found;
     }
-    const fallback = entries.find((entry) => isContinueCandidate(entry) && ensureStatus(ensureItemState(entry)) !== "dropped");
+    const fallback = entries.find((entry) => isContinueCandidate(entry) && !isEntrySkipped(entry));
     if (fallback) return fallback;
-    return entries.find((entry) => ensureStatus(ensureItemState(entry)) === "dropped") || null;
+    return entries.find((entry) => isEntrySkipped(entry)) || null;
   }
 
   function randomUnread(entries) {
@@ -1163,7 +1174,7 @@
     const randomEntry = randomTargetId ? filtered.find((e) => e.id === randomTargetId) : null;
     setText("randomText", `Random: ${randomEntry ? randomEntry.title : "-"}`);
 
-    const requiredRemaining = filtered.filter((entry) => !isOptionalEntry(entry) && !ensureItemState(entry).done).length;
+    const requiredRemaining = filtered.filter((entry) => !isOptionalEntry(entry) && !isEntryRead(entry)).length;
     setText("statVisible", String(s.total));
     setText("statDone", String(s.done));
     setText("statRemaining", String(Math.max(0, s.total - s.done)));
