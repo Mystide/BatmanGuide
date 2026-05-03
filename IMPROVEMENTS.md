@@ -18,7 +18,7 @@ Stand: 2026-05-03
 
 - [ ] Playwright-Render-Smoke weiter stabilisieren und Kriterien für Reaktivierung auf `pull_request` festlegen (derzeit absichtlich nur auf `push`).
 - [ ] Zuverlässigen Status-Interaktionstest ergänzen (explizit als Ersatz für den früheren flaky Status-Cycle-Test).
-- [ ] PWA-Update-Hinweis für Nutzer finalisieren (sichtbare Update-Benachrichtigung/Reload-Flow).
+- [x] PWA-Update-Hinweis inkl. sichtbarer Update-Benachrichtigung und Reload-Flow ist umgesetzt.
 
 ## P2 – Data quality
 
@@ -36,7 +36,7 @@ Stand: 2026-05-03
 ## P4 – CI/testing
 
 - [ ] A11y-Smoke-Checks ergänzen (z. B. axe/pa11y, mindestens für Kernansicht + Filterdialog).
-- [ ] Klaren Test-Matrix-Plan dokumentieren: was läuft auf PR vs. nur auf Push/Nightly und warum.
+- [x] Test-/CI-Matrix ist in `TESTING.md` dokumentiert (lokale Commands, PR-vs-Push inkl. Push-only Playwright, Nightly Link-Check, Failure-Guidance).
 
 ## P5 – Technical cleanup
 
