@@ -183,13 +183,6 @@
   });
 
 
-  function defaultFilters() {
-    return FILTER_FIELDS.reduce((acc, field) => {
-      acc[field.key] = field.defaultValue;
-      return acc;
-    }, {});
-  }
-
   const FILTER_FIELDS = [
     { key: "search", domId: "search", defaultValue: "", inputType: "value" },
     { key: "type", domId: "typeFilter", defaultValue: "", inputType: "value" },
@@ -205,6 +198,13 @@
     { key: "readingMode", domId: "readingModeFilter", defaultValue: "", inputType: "value" },
     { key: "dcuiStatus", domId: "dcuiStatusFilter", defaultValue: "", inputType: "value" }
   ];
+
+  function defaultFilters() {
+    return FILTER_FIELDS.reduce((acc, field) => {
+      acc[field.key] = field.defaultValue;
+      return acc;
+    }, {});
+  }
 
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
   const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
