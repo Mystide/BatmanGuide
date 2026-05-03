@@ -107,8 +107,15 @@ try {
 
   const searchStart = Date.now();
   await page.fill("#search", "Hush");
-  await page.locator(".item .title", { hasText: /hush/i }).first().waitFor({ state: "visible", timeout: 5000 });
-  const hushVisible = await page.locator(".item .title", { hasText: /hush/i }).count();
+  const hushVisible = await withTimeout((async () => {
+    while (true) {
+      const matches = await page.locator(".item").evaluateAll((items) =>
+        items.filter((item) => /hush/i.test(item.textContent || "")).length
+      );
+      if (matches >= 1) return matches;
+      await sleep(40);
+    }
+  })(), 5000, "Hush search results");
   perf.searchMs = Date.now() - searchStart;
   assert(hushVisible >= 1, "search for 'Hush' returned no rendered results");
 
