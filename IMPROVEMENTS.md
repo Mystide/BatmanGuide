@@ -1,6 +1,6 @@
 # Verbesserungen & Roadmap
 
-Stand: 2026-04-30
+Stand: 2026-05-03
 
 ## P0 – Stable foundation / done
 
@@ -18,7 +18,7 @@ Stand: 2026-04-30
 
 - [ ] Playwright-Render-Smoke weiter stabilisieren und Kriterien für Reaktivierung auf `pull_request` festlegen (derzeit absichtlich nur auf `push`).
 - [ ] Zuverlässigen Status-Interaktionstest ergänzen (explizit als Ersatz für den früheren flaky Status-Cycle-Test).
-- [ ] PWA-Update-Hinweis für Nutzer finalisieren (sichtbare Update-Benachrichtigung/Reload-Flow).
+- [x] PWA-Update-Hinweis inkl. sichtbarer Update-Benachrichtigung und Reload-Flow ist umgesetzt.
 
 ## P2 – Data quality
 
@@ -36,10 +36,11 @@ Stand: 2026-04-30
 ## P4 – CI/testing
 
 - [ ] A11y-Smoke-Checks ergänzen (z. B. axe/pa11y, mindestens für Kernansicht + Filterdialog).
-- [ ] Klaren Test-Matrix-Plan dokumentieren: was läuft auf PR vs. nur auf Push/Nightly und warum.
+- [x] Test-/CI-Matrix ist in `TESTING.md` dokumentiert (lokale Commands, PR-vs-Push inkl. Push-only Playwright, Nightly Link-Check, Failure-Guidance).
 
 ## P5 – Technical cleanup
 
-- [ ] `REAL_COVERS` schrittweise aus `app.js` nach datengetriebener Quelle (`list.js`) migrieren; `app.js` nur noch als Legacy-Fallback.
+- [x] Legacy-Coverdaten (`REAL_COVERS`) aus `app.js` in `covers.js` ausgelagert; `app.js` liest `window.BATMAN_GUIDE_COVERS` defensiv als Fallback.
+- [ ] Optional/Future: Coverdaten perspektivisch in `list.js` integrieren (nur falls Datenmodell/Ownership klar vereinheitlicht werden soll).
 - [ ] `innerHTML`-Hotspots gezielt auf DOM-API migrieren (priorisiert nach XSS-/Wartungsrisiko).
 - [ ] Offline-/Fehlerzustände im UI klarer kommunizieren (z. B. bei fehlendem Netz, Sync-Fehlern, leeren Ergebnissen).
