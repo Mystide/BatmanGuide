@@ -199,6 +199,22 @@
     dcuiStatus: ""
   });
 
+  const FILTER_FIELDS = [
+    { key: "search", domId: "search", defaultValue: "", inputType: "value" },
+    { key: "type", domId: "typeFilter", defaultValue: "", inputType: "value" },
+    { key: "onlyRemaining", domId: "onlyRemaining", defaultValue: false, inputType: "checkbox" },
+    { key: "hideOptional", domId: "hideOptional", defaultValue: false, inputType: "checkbox" },
+    { key: "sortBy", domId: "sortBy", defaultValue: "order", inputType: "value" },
+    { key: "track", domId: "trackFilter", defaultValue: "", inputType: "value" },
+    { key: "status", domId: "statusFilter", defaultValue: "", inputType: "value" },
+    { key: "character", domId: "characterFilter", defaultValue: "", inputType: "value" },
+    { key: "era", domId: "eraFilter", defaultValue: "", inputType: "value" },
+    { key: "importance", domId: "importanceFilter", defaultValue: "", inputType: "value" },
+    { key: "continuity", domId: "continuityFilter", defaultValue: "", inputType: "value" },
+    { key: "readingMode", domId: "readingModeFilter", defaultValue: "", inputType: "value" },
+    { key: "dcuiStatus", domId: "dcuiStatusFilter", defaultValue: "", inputType: "value" }
+  ];
+
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
   const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
   const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
@@ -251,22 +267,21 @@
     return loadJSON(KEYS.filters, defaultFilters());
   }
 
+  function collectFiltersFromDOM() {
+    const next = {};
+    for (const field of FILTER_FIELDS) {
+      const el = $(field.domId);
+      if (field.inputType === "checkbox") {
+        next[field.key] = !!el?.checked;
+      } else {
+        next[field.key] = el?.value || field.defaultValue;
+      }
+    }
+    return next;
+  }
+
   function writeFilters() {
-    void saveJSON(KEYS.filters, {
-      search: $("search").value || "",
-      type: $("typeFilter").value || "",
-      onlyRemaining: !!$("onlyRemaining").checked,
-      hideOptional: !!$("hideOptional").checked,
-      sortBy: $("sortBy").value || "order",
-      track: $("trackFilter").value || "",
-      status: $("statusFilter").value || "",
-      character: $("characterFilter").value || "",
-      era: $("eraFilter").value || "",
-      importance: $("importanceFilter").value || "",
-      continuity: $("continuityFilter").value || "",
-      readingMode: $("readingModeFilter").value || "",
-      dcuiStatus: $("dcuiStatusFilter").value || ""
-    });
+    void saveJSON(KEYS.filters, collectFiltersFromDOM());
   }
 
   function readFiltersFromURL() {
@@ -2625,7 +2640,7 @@
         syncEraToggleButton();
       };
 
-      for (const id of ["search", "typeFilter", "onlyRemaining", "hideOptional", "sortBy", "trackFilter", "statusFilter", "characterFilter", "eraFilter", "importanceFilter", "continuityFilter", "readingModeFilter", "dcuiStatusFilter"]) {
+      for (const id of FILTER_FIELDS.map((field) => field.domId)) {
         const el = $(id);
         const shouldDebounce = id === "search";
         el.addEventListener("input", () => {
