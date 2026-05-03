@@ -24,7 +24,7 @@ mkdirSync(targetDir, { recursive: true });
 const port = Number(process.env.SMOKE_PORT || 4173);
 const baseUrl = `http://127.0.0.1:${port}/BatmanGuide/`;
 
-const filesToCopy = ["index.html", "app.js", "list.js", "sw.js", "manifest.webmanifest"];
+const filesToCopy = ["index.html", "app.js", "list.js", "covers.js", "sw.js", "manifest.webmanifest"];
 for (const rel of filesToCopy) {
   cpSync(path.join(repoRoot, rel), path.join(targetDir, rel), { recursive: false, force: true });
 }
@@ -83,6 +83,7 @@ try {
     const url = request.url();
     if (url.includes("/BatmanGuide/app.js")) seenRequests.add("app.js");
     if (url.includes("/BatmanGuide/list.js")) seenRequests.add("list.js");
+    if (url.includes("/BatmanGuide/covers.js")) seenRequests.add("covers.js");
   });
 
   const initialRenderStart = Date.now();
@@ -94,6 +95,7 @@ try {
 
   assert(seenRequests.has("app.js"), "app.js request was not observed");
   assert(seenRequests.has("list.js"), "list.js request was not observed");
+  assert(seenRequests.has("covers.js"), "covers.js request was not observed");
 
   await page.waitForSelector(".era", { timeout: 10000 });
   await page.waitForSelector(".item", { timeout: 10000 });
