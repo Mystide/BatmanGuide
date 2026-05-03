@@ -1,10 +1,11 @@
-const APP_VERSION = "2026.04.30-1";
+const APP_VERSION = "2026.05.03-1";
 const CACHE = `batman-guide-cache-${APP_VERSION}`;
 const APP_SHELL = [
   "./",
   "./index.html",
   "./app.js",
   "./list.js",
+  "./covers.js",
   "./manifest.webmanifest",
   "./batman-logo.png",
   "./assets/lettering/batmanletters1.png",
