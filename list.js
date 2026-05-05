@@ -10,7 +10,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1010,
-    "placementNote": "Kept first as the foundational starting point for Batman's published history in this guide.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -27,7 +26,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1020,
-    "placementNote": "Placed directly after Vol. 1 to continue the same early-era material in publication sequence.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -44,7 +42,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1030,
-    "placementNote": "Useful here as background before later Golden Age volumes and era transitions.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -61,7 +58,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1040,
-    "placementNote": "Placed here to maintain a steady Golden Age progression before the later compilations.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -79,7 +75,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1050,
-    "placementNote": "Kept in this slot as part of the core early-era run before moving toward the 1950s material.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -96,7 +91,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1060,
-    "placementNote": "Placed late in the Golden Age block to bridge the main volumes into the final era-specific entry.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -113,7 +107,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 1070,
-    "placementNote": "Kept here as a capstone to the Golden Age section before the Silver Age collection.",
     "importance": "core",
     "continuity": "golden-age",
     "readingMode": "read_all",
@@ -141,7 +134,6 @@ window.BATMAN_GUIDE_LIST = [
       }
     ],
     "order": 2010,
-    "placementNote": "Placed here as the first Silver Age stop, following the Golden Age endpoint and era break.",
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
@@ -173,7 +165,6 @@ window.BATMAN_GUIDE_LIST = [
       }
     ],
     "order": 3010,
-    "placementNote": "Useful here as the broad Bronze Age baseline before specific spotlight stories in this era.",
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
@@ -190,7 +181,6 @@ window.BATMAN_GUIDE_LIST = [
       "batman"
     ],
     "order": 3020,
-    "placementNote": "Placed after the Bronze Age overview so this focused arc reads with its era context already in place.",
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",

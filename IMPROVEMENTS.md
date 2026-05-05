@@ -22,7 +22,7 @@ Stand: 2026-05-03
 
 ## P2 – Data quality
 
-- [ ] `placementNote`-Abdeckung systematisch erhöhen (Warnungen schrittweise abbauen).
+- [ ] Reihenfolge-Qualität primär über `order` pflegen; `placementNote` nur für seltene Sonderfälle nutzen.
 - [ ] `issues[]` bei Collection-Einträgen vervollständigen/konsistent halten.
 - [x] Striktere Listenvalidierung (`validate-list --require-order`) ist verbindlich im Smoke-CI verdrahtet (`npm run validate-list:strict`).
 - [x] Legacy-Feld `optional` aus `list.js` bereinigen, sodass nur `importance` maßgeblich bleibt (verify/finish).
