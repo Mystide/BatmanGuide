@@ -217,10 +217,6 @@ list.forEach((item, index) => {
     }
   }
 
-  if (typeof item.placementNote === "undefined") {
-    warnings.push(`${at} has no placementNote`);
-  }
-
   if (!/^https?:\/\//.test(item.url)) {
     fail(`${at} has invalid url '${item.url}'`);
   }
