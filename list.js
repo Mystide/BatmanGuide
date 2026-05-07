@@ -137,7 +137,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -168,7 +168,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -200,7 +200,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -216,7 +216,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -233,7 +233,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "checkpoint",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -315,7 +315,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -353,7 +353,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -386,7 +386,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -402,7 +402,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -450,7 +450,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -466,7 +466,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -482,7 +482,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -500,7 +500,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -517,7 +517,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -534,7 +534,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -566,7 +566,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -584,7 +584,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -617,7 +617,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -633,7 +633,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -649,7 +649,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -665,7 +665,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -681,7 +681,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -697,7 +697,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -779,7 +779,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -795,7 +795,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -811,7 +811,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -827,7 +827,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -843,7 +843,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -859,7 +859,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -875,7 +875,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -892,7 +892,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -926,7 +926,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -942,7 +942,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -958,7 +958,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -974,7 +974,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -991,7 +991,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1041,7 +1041,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1058,7 +1058,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "checkpoint",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1074,7 +1074,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1106,7 +1106,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1122,7 +1122,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1138,7 +1138,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1154,7 +1154,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1170,7 +1170,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1186,7 +1186,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1202,7 +1202,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "new-52",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1239,7 +1239,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1290,7 +1290,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1307,7 +1307,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "checkpoint",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1324,7 +1324,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1359,7 +1359,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1377,7 +1377,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1394,7 +1394,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1412,7 +1412,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1429,7 +1429,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1446,7 +1446,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1517,7 +1517,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1534,7 +1534,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1551,7 +1551,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "rebirth",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1569,7 +1569,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1618,7 +1618,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1651,7 +1651,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1667,7 +1667,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1760,7 +1760,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1779,7 +1779,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1798,7 +1798,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1817,7 +1817,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1836,7 +1836,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1855,7 +1855,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1874,7 +1874,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1893,7 +1893,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1912,7 +1912,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1931,7 +1931,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1951,7 +1951,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
@@ -1971,7 +1971,7 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "optional",
     "continuity": "infinite-frontier",
     "readingMode": "read_all",
-    "dcuiStatus": "direct",
+    "dcuiStatus": "collection",
     "dcuiChecked": "2026-04-26"
   },
   {
