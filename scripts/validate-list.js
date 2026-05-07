@@ -225,10 +225,10 @@ list.forEach((item, index) => {
   const isCollectionUrl = normalizedTopLevelUrl.includes("/collections/");
   const isSearchUrl = normalizedTopLevelUrl.includes("/search");
   if (isCollectionUrl && item.dcuiStatus !== "collection") {
-    warnings.push(`${at} has collection URL but dcuiStatus='${item.dcuiStatus}'`);
+    fail(`${at} has collection URL but dcuiStatus='${item.dcuiStatus}'`);
   }
   if (isSearchUrl && item.dcuiStatus !== "search_fallback") {
-    warnings.push(`${at} has search URL but dcuiStatus='${item.dcuiStatus}'`);
+    fail(`${at} has search URL but dcuiStatus='${item.dcuiStatus}'`);
   }
   if (item.dcuiStatus === "missing") {
     warnings.push(`${at} uses legacy dcuiStatus='missing' (prefer 'unavailable')`);
