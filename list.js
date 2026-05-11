@@ -456,9 +456,9 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-07",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: The Long Halloween",
-    "url": "https://www.dcuniverseinfinite.com/collections/batman-halloween",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-long-halloween/aa57b104-91e7-4c64-a161-37c46fad658e",
     "characters": [
       "batman"
     ],
@@ -466,15 +466,15 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-08",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Dark Victory",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-batman-dark-victory",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-dark-victory-new-edition/77eb438b-5c53-4f2c-a655-1990c33efeca",
     "characters": [
       "batman"
     ],
@@ -482,8 +482,8 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-08A",
@@ -849,9 +849,9 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-25",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Hush",
-    "url": "https://www.dcuniverseinfinite.com/collections/batman-hush",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-complete-hush/85674889-e749-4bc3-bdc1-7f518353bf6d",
     "characters": [
       "batman"
     ],
@@ -859,8 +859,8 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-26",
@@ -881,9 +881,9 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-27",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Under the Hood",
-    "url": "https://www.dcuniverseinfinite.com/collections/under-the-hood",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-under-the-red-hood/b478fbee-6231-40d6-a3d6-0fb864cc3eb2/c",
     "characters": [
       "batman",
       "redhood"
@@ -892,8 +892,8 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-28",
@@ -1031,9 +1031,9 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-35",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Black Mirror",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-batman-black-mirror",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-the-black-mirror/0cc4d034-a736-4ae1-b3f6-fd834309f751",
     "characters": [
       "batman"
     ],
@@ -1041,8 +1041,8 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-36",
