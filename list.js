@@ -321,40 +321,19 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-03A",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Prey",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-batman-prey",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-prey/51634977-4643-4bbd-93c4-02e84b2d0fd0",
+    "hint": "Collected edition; includes Prey plus related follow-up material.",
     "characters": [
       "batman"
-    ],
-    "issues": [
-      {
-        "title": "Legends of the Dark Knight (1989) #11",
-        "url": "https://www.dcuniverseinfinite.com/comics/book/batman-legends-of-the-dark-knight-1989-2007-1/34b279b6-3843-4b91-842f-1c157da1ff54/c"
-      },
-      {
-        "title": "Legends of the Dark Knight (1989) #12",
-        "url": "https://www.dcuniverseinfinite.com/comics/book/batman-legends-of-the-dark-knight-1989-2/786c207c-bda5-4f12-96f3-d8d490a97909/c"
-      },
-      {
-        "title": "Legends of the Dark Knight (1989) #13",
-        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2313"
-      },
-      {
-        "title": "Legends of the Dark Knight (1989) #14",
-        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2314"
-      },
-      {
-        "title": "Legends of the Dark Knight (1989) #15",
-        "url": "https://www.dcuniverseinfinite.com/search?text=Legends%20of%20the%20Dark%20Knight%201989%20%2315"
-      }
     ],
     "order": 4031,
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-03B",
@@ -488,9 +467,9 @@ window.BATMAN_GUIDE_LIST = [
   {
     "id": "E4-08A",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batman: Second Chances",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-batman-second-chances",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batman-second-chances/f340bb40-7144-4fce-9189-2e3aa43a7d70/c",
     "hint": "Jason Todd becomes Robin.",
     "characters": [
       "batman",
@@ -500,15 +479,15 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-09",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Robin: Year One",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-robin-year-one",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/robin-year-one/cde6b8cd-c0dd-42e6-a8eb-0f19db6a6f4c/c",
     "characters": [
       "robin",
       "batman"
@@ -517,15 +496,15 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-10",
     "era": "Era 4 — Post-Crisis (1986–2011)",
-    "type": "collection",
+    "type": "book",
     "title": "Batgirl: Year One",
-    "url": "https://www.dcuniverseinfinite.com/collections/story-batgirl-year-one",
+    "url": "https://www.dcuniverseinfinite.com/comics/book/batgirl-year-one-2023-edition/bbb7ce65-66c0-448f-8561-4d497ead59f6",
     "characters": [
       "batgirl",
       "batman"
@@ -534,8 +513,8 @@ window.BATMAN_GUIDE_LIST = [
     "importance": "core",
     "continuity": "post-crisis",
     "readingMode": "read_all",
-    "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiStatus": "direct",
+    "dcuiChecked": "2026-05-11"
   },
   {
     "id": "E4-11",
