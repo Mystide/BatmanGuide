@@ -1,0 +1,547 @@
+{
+  "version": 1,
+  "id": "E2-01",
+  "collectionUrl": "https://www.dcuniverseinfinite.com/collections/edt-silver-age-batman",
+  "source": {
+    "capturedAt": "2026-05-12",
+    "method": "local-playwright-dcui-visible-metadata"
+  },
+  "summary": {
+    "totalItems": 101,
+    "itemsWithUrls": 101,
+    "unresolvedItems": 0,
+    "groups": 2,
+    "expectedTotalItems": 101,
+    "actualTotalItems": 101,
+    "incompleteGroups": 0,
+    "extractionComplete": true
+  },
+  "groups": [
+    {
+      "kind": "series",
+      "title": "Batman (1940) Issues (22)",
+      "expectedCount": 22,
+      "actualCount": 22,
+      "isComplete": true,
+      "items": [
+        {
+          "position": 1,
+          "title": "Batman (1940-) #139",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-139/759a6bc5-0c56-401a-8619-8c6363b42d25/edt-silver-age-batman-books"
+        },
+        {
+          "position": 2,
+          "title": "Batman (1940-) #153",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-153/840dcbd3-14e8-40a8-a28c-577c39cde899/edt-silver-age-batman-books"
+        },
+        {
+          "position": 3,
+          "title": "Batman (1940-) #156",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-156/38271c22-788f-4c99-9930-9b352c16bf35/edt-silver-age-batman-books"
+        },
+        {
+          "position": 4,
+          "title": "Batman (1940-) #159",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-159/f83efc79-7e64-476a-a6e6-3a7c67af7cd7/edt-silver-age-batman-books"
+        },
+        {
+          "position": 5,
+          "title": "Batman (1940-) #164",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-164/1be07019-4ee5-40f1-8d80-8777f36610f9/edt-silver-age-batman-books"
+        },
+        {
+          "position": 6,
+          "title": "Batman (1940-) #165",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-165/9189bee2-ffa9-4338-b185-6c39a3c0c7cb/edt-silver-age-batman-books"
+        },
+        {
+          "position": 7,
+          "title": "Batman (1940-) #166",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-166/68d3e683-82f4-4b5a-8203-e9476653246c/edt-silver-age-batman-books"
+        },
+        {
+          "position": 8,
+          "title": "Batman (1940-) #167",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-167/14c5b366-b89b-4599-b0cb-d8643801fb48/edt-silver-age-batman-books"
+        },
+        {
+          "position": 9,
+          "title": "Batman (1940-) #168",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-168/b1e7dd5a-cdbd-4c2e-afe1-b3e069ad1124/edt-silver-age-batman-books"
+        },
+        {
+          "position": 10,
+          "title": "Batman (1940-) #169",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-169/d400ad70-7e90-4f65-8ac4-ec92324910b7/edt-silver-age-batman-books"
+        },
+        {
+          "position": 11,
+          "title": "Batman (1940-) #170",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-170/13a453d3-b34d-4779-bb45-e9a77c3241fa/edt-silver-age-batman-books"
+        },
+        {
+          "position": 12,
+          "title": "Batman (1940-) #171",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-171/4df44e78-d57c-4c5f-aa67-00c09f1d51f4/edt-silver-age-batman-books"
+        },
+        {
+          "position": 13,
+          "title": "Batman (1940-) #179",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-179/9dd26f18-2d29-49a8-a97c-cf84a4e4a949/edt-silver-age-batman-books"
+        },
+        {
+          "position": 14,
+          "title": "Batman (1940-) #181",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-181/6f8ce1a5-5ddc-40a4-9248-d93b96b8b4ae/edt-silver-age-batman-books"
+        },
+        {
+          "position": 15,
+          "title": "Batman (1940-) #183",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-183/ff4ef56d-4310-4d0d-bf8a-c8744854e584/edt-silver-age-batman-books"
+        },
+        {
+          "position": 16,
+          "title": "Batman (1940-) #189",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-189/01636402-7537-4d03-9098-a5f0cd2d53db/edt-silver-age-batman-books"
+        },
+        {
+          "position": 17,
+          "title": "Batman (1940-) #190",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-190/393f1df4-2a42-455a-8614-389224d242ba/edt-silver-age-batman-books"
+        },
+        {
+          "position": 18,
+          "title": "Batman (1940-) #197",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-197/b31a38a0-2b62-44b1-9d52-5e434d943967/edt-silver-age-batman-books"
+        },
+        {
+          "position": 19,
+          "title": "Batman (1940-) #200",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-200/097d05ac-69e1-486d-8f9b-24d94e394fbb/edt-silver-age-batman-books"
+        },
+        {
+          "position": 20,
+          "title": "Batman (1968-) #203",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1968-203/f3900023-4eb4-4c37-a86f-e07ac7fde377/edt-silver-age-batman-books"
+        },
+        {
+          "position": 21,
+          "title": "Batman (1968-) #210",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1968-210/e2b7733c-e530-4c89-85f0-bc6595790eb3/edt-silver-age-batman-books"
+        },
+        {
+          "position": 22,
+          "title": "Batman (1940-) #216",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/batman-1940-216/3e154acd-7e62-49fe-98b1-1c2804f30aaf/edt-silver-age-batman-books"
+        }
+      ]
+    },
+    {
+      "kind": "series",
+      "title": "Detective Comics Issues (79)",
+      "expectedCount": 79,
+      "actualCount": 79,
+      "isComplete": true,
+      "items": [
+        {
+          "position": 1,
+          "title": "Detective Comics (1937-) #298",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-298/7c69f446-9a45-44c1-adf2-a59077d35bc3/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 2,
+          "title": "Detective Comics (1937-) #299",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-299/78699ebc-6fcd-40d1-bed0-ad2af4d3ecc9/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 3,
+          "title": "Detective Comics (1937-) #300",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-300/e8941c21-2981-4edb-9f68-8fdf8a038bb4/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 4,
+          "title": "Detective Comics (1937-) #301",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-301/11c692d1-5ea1-45eb-b2f7-aba0e445a95c/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 5,
+          "title": "Detective Comics (1937-) #302",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-302/2564ddb7-2ee7-44a8-b590-39193243a890/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 6,
+          "title": "Detective Comics (1937-) #303",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-303/459d38a9-16fc-4be4-b751-4a44c244b439/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 7,
+          "title": "Detective Comics (1937-) #304",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-304/3ce60cb3-46c9-490b-bdd2-d1cd94698805/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 8,
+          "title": "Detective Comics (1937-) #305",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-305/2cc6c589-8751-4c9b-aed8-67d70f646df3/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 9,
+          "title": "Detective Comics (1937-) #306",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-306/637d6d9b-b50e-487f-867a-b350784259d9/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 10,
+          "title": "Detective Comics (1937-) #307",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-307/27b31e8a-a76e-4c5b-a90b-d3cb8c946466/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 11,
+          "title": "Detective Comics (1937-) #308",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-308/c5a230fb-0924-44cf-9fe5-becd4e824733/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 12,
+          "title": "Detective Comics (1937-) #309",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-309/01734037-c34e-4539-b442-c586fd09afb5/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 13,
+          "title": "Detective Comics (1937-) #310",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-310/c54b1b55-d1e4-4031-8ffb-b0fcfacdbd7c/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 14,
+          "title": "Detective Comics (1937-) #311",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-311/c89c7381-7faf-4bf2-9a96-11b3318bf44d/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 15,
+          "title": "Detective Comics (1937-) #312",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-312/924798c3-dd7a-48d0-b1b4-a945bd7748ab/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 16,
+          "title": "Detective Comics (1937-) #313",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-313/8c18852d-1fdc-4951-9fbd-8fc5478e3541/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 17,
+          "title": "Detective Comics (1937-) #314",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-314/bbb6536d-4ba7-450b-abbe-ddaa6295002f/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 18,
+          "title": "Detective Comics (1937-) #315",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-315/67888670-e1e9-439a-9b61-f92f2eb2e935/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 19,
+          "title": "Detective Comics (1937-) #316",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-316/6533e97c-4e3a-45e8-adc5-3f5b5ead8161/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 20,
+          "title": "Detective Comics (1937-) #317",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-317/b9c19baa-5de8-438a-9bea-1b61b541d6c8/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 21,
+          "title": "Detective Comics (1937-) #318",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-318/3e357f8c-cbd9-4893-b455-3275e21bc3a3/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 22,
+          "title": "Detective Comics (1937-) #319",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-319/83f77050-4d3b-4548-8aaf-762b4fa0e147/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 23,
+          "title": "Detective Comics (1937-) #320",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-320/e71530d5-428c-4e61-a98a-da08a65881c4/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 24,
+          "title": "Detective Comics (1937-) #321",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-321/c0047ee5-c255-43d4-a9bb-da19bb991ca0/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 25,
+          "title": "Detective Comics (1937-) #322",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-322/c3519702-ec35-4cca-b6e3-b44bcf4e7790/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 26,
+          "title": "Detective Comics (1937-) #323",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-323/aec747ab-f44a-4dfc-b4fa-131cdd3d8812/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 27,
+          "title": "Detective Comics (1937-) #324",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-324/1be1e766-cda9-46c3-9165-83b555344788/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 28,
+          "title": "Detective Comics (1937-) #325",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-325/72f59e66-0258-420f-8332-caf4c3009517/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 29,
+          "title": "Detective Comics (1937-) #326",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-326/5ec818bc-a361-4052-9e8e-29a6d358ced1/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 30,
+          "title": "Detective Comics (1937-) #327",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-327/d60f7071-383c-421d-93f2-ef26d78155f2/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 31,
+          "title": "Detective Comics (1937-) #328",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-328/a2d70213-46a0-41f9-a142-acda15a3eca6/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 32,
+          "title": "Detective Comics (1937-) #329",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-329/0206b965-31e1-4d1b-9790-936178003f30/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 33,
+          "title": "Detective Comics (1937-) #330",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-330/e0d8eda1-7ebb-4fbc-9054-60e3a0f84670/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 34,
+          "title": "Detective Comics (1937-) #331",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-331/af9f4103-8822-4d7b-8d76-7ce552b7604d/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 35,
+          "title": "Detective Comics (1937-) #332",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-332/8814790b-e185-4a61-8220-79c15af170bf/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 36,
+          "title": "Detective Comics (1937-) #333",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-333/8adacddd-935b-49a3-b757-3cc30e113c98/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 37,
+          "title": "Detective Comics (1937-) #334",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-334/e9366854-04ce-4ad9-83a9-8831a4cb3a8a/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 38,
+          "title": "Detective Comics (1937-) #335",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-335/0a1aef1f-48bf-4b27-9af0-6340e72bd4a2/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 39,
+          "title": "Detective Comics (1937-) #336",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-336/45af31fb-9007-49d5-8eeb-3a78fde4aaff/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 40,
+          "title": "Detective Comics (1937-) #337",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-337/ee27e34d-e894-46ca-aebc-51cf0bc0878b/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 41,
+          "title": "Detective Comics (1937-) #338",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-338/6cbb9542-1d2f-4b64-92e3-c258a913b930/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 42,
+          "title": "Detective Comics (1937-) #339",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-339/10f2d9a6-e6f9-4766-b300-b15fd1e91379/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 43,
+          "title": "Detective Comics (1937-) #340",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-340/8f5fb3d7-65d9-4330-b0ac-7e1598a0fd1f/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 44,
+          "title": "Detective Comics (1937-) #341",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-341/b06200b9-4b95-466e-8194-04cf9c8ca587/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 45,
+          "title": "Detective Comics (1937-) #342",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-342/e107ba84-8b59-42ce-b76b-f07e9b2fb332/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 46,
+          "title": "Detective Comics (1937-) #344",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-344/879a4246-b719-4fb7-85af-6b75901fe384/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 47,
+          "title": "Doom Patrol (2001-) #17",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/doom-patrol-2001-17/bf294370-9568-4636-89c3-ee622ca76841/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 48,
+          "title": "Detective Comics (1937-) #345",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-345/99123055-13d0-4d8d-87ff-dc6853883fa1/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 49,
+          "title": "Detective Comics (1937-) #346",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-346/24b06ee9-c944-4a8b-b4a2-761e55e7016f/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 50,
+          "title": "Detective Comics (1937-) #347",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-347/1be72647-6769-4dcb-acf4-322a18cf9335/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 51,
+          "title": "Detective Comics (1937-) #348",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-348/91a315d0-faef-44ba-bbec-8b31eb8f1583/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 52,
+          "title": "Detective Comics (1937-) #349",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-349/2d0e8bdc-0459-4236-9177-cdc608a85456/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 53,
+          "title": "Detective Comics (1937-) #350",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-350/331e0242-acaf-4cee-9b05-96ed0f294095/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 54,
+          "title": "Detective Comics (1937-) #351",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-351/a2e447c0-1685-4dc8-8ca7-5f1893705510/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 55,
+          "title": "Detective Comics (1937-) #352",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-352/6b846e8c-d6e5-48c4-ad70-bc6e88e99b27/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 56,
+          "title": "Detective Comics (1937-) #353",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-353/09d36004-e22c-4908-a5b6-56e1bb738665/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 57,
+          "title": "Detective Comics (1937-) #359",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-359/88602564-cb19-401a-a39d-974bee13ad76/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 58,
+          "title": "Detective Comics (1937-) #360",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-360/a2ef2abc-a911-41d6-84fe-967c79c3aab7/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 59,
+          "title": "Detective Comics (1937-) #361",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-361/df9ba62d-4418-4689-adce-b9f50e2db8dc/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 60,
+          "title": "Detective Comics (1937-) #362",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-362/6f255593-3f39-40e4-993c-bceb678f04b4/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 61,
+          "title": "Detective Comics (1937-) #363",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-363/d093a250-d20f-4074-b1c9-e559908d9b22/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 62,
+          "title": "Detective Comics (1937-) #364",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-364/bd261a7d-8345-464d-829f-0de3136f087b/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 63,
+          "title": "Detective Comics (1937-) #365",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-365/7d3c85f2-8ed3-4af7-8317-f9e7cf5ee3bd/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 64,
+          "title": "Detective Comics (1937-) #366",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-366/3f9a2b5b-b5f6-4c89-8100-c9eb416d4ea7/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 65,
+          "title": "Detective Comics (1937-) #367",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-367/f5c2d9be-06a9-4c35-9c48-768e872f1cf7/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 66,
+          "title": "Detective Comics (1937-) #368",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-368/576d61dd-1b10-4177-95c4-fca6303c506a/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 67,
+          "title": "Detective Comics (1937-) #369",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-369/fec44383-f592-4f25-90b6-547e39f10373/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 68,
+          "title": "Detective Comics (1937-) #370",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-370/9d83591a-6cd3-4836-8997-4180b740fc15/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 69,
+          "title": "Detective Comics (1937-) #371",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-371/3b12c628-1368-4a8f-8a2b-eeb5bf16f2e5/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 70,
+          "title": "Detective Comics (1937-) #372",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-372/52f0e5fc-2c60-47d1-b476-8f2085a945b2/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 71,
+          "title": "Detective Comics (1937-) #373",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-373/4dcefe7a-1299-4425-9029-1bf8351549a3/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 72,
+          "title": "Detective Comics (1937-) #374",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-374/4bd02f33-fd46-4a62-90c9-a7c424feafe2/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 73,
+          "title": "Detective Comics (1937-) #385",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-385/63b4033d-0e66-462f-91a0-3cceb4fd47a3/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 74,
+          "title": "Detective Comics (1937-) #388",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-388/9efa188b-ff2f-4c92-898e-94bb4c569463/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 75,
+          "title": "Detective Comics (1937-) #389",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-389/6b2be75a-b0c4-418e-9d9e-472cfc79dfa2/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 76,
+          "title": "Detective Comics (1937-) #390",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-390/02c3c4ec-b54c-4573-8292-4cc3c6b69d19/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 77,
+          "title": "Detective Comics (1937-) #391",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-391/aa397fc6-aea2-4ffd-80ec-9ea24f731e68/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 78,
+          "title": "Detective Comics (1937-) #392",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-392/6f062745-e8ac-470f-bc5d-ab14e91a23df/edt-silver-age-batman-books2"
+        },
+        {
+          "position": 79,
+          "title": "Detective Comics (1937-) #393",
+          "url": "https://www.dcuniverseinfinite.com/comics/book/detective-comics-1937-393/0d7d31a8-7d96-4879-b4ff-62fe70184ba4/edt-silver-age-batman-books2"
+        }
+      ]
+    }
+  ],
+  "ungroupedItems": [],
+  "unresolvedItems": [],
+  "warnings": []
+}
