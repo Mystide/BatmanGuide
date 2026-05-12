@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.05.12-2";
+  const APP_VERSION = "2026.05.12-3";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -220,6 +220,8 @@
   const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
 
   const collectionDataCache = new Map();
+  const collectionIssueCoverCache = new Map();
+  const collectionIssueCoverInFlight = new Map();
 
   function collectionIssueStableKey(issue) {
     const url = String(issue?.url || "").trim();
@@ -698,6 +700,47 @@
 
   function flattenCollectionIssues(groupsResult) {
     return Array.isArray(groupsResult?.groups) ? groupsResult.groups.flatMap((group) => group.items || []) : [];
+  }
+
+  function collectionIssueCoverCandidates(issue) {
+    const candidates = [];
+    const push = (url) => {
+      const normalized = normalizeCoverUrl(url);
+      if (!normalized) return;
+      if (!candidates.includes(normalized)) candidates.push(normalized);
+    };
+    push(issue?.coverUrl);
+    push(issue?.thumbnail);
+    push(issue?.image);
+    const issueUrl = String(issue?.url || "").trim();
+    const match = issueUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+    if (match) {
+      const id = match[0];
+      push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/cover.jpg`);
+      push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/cover.jpg`);
+    }
+    return candidates;
+  }
+
+  async function resolveCollectionIssueCover(issue) {
+    const stableKey = collectionIssueStableKey(issue);
+    if (collectionIssueCoverCache.has(stableKey)) return collectionIssueCoverCache.get(stableKey);
+    if (collectionIssueCoverInFlight.has(stableKey)) return collectionIssueCoverInFlight.get(stableKey);
+    const task = (async () => {
+      const candidates = collectionIssueCoverCandidates(issue);
+      for (const candidate of candidates) {
+        if (await imageIsLoadable(candidate)) {
+          collectionIssueCoverCache.set(stableKey, candidate);
+          return candidate;
+        }
+      }
+      collectionIssueCoverCache.set(stableKey, "");
+      return "";
+    })().finally(() => {
+      collectionIssueCoverInFlight.delete(stableKey);
+    });
+    collectionIssueCoverInFlight.set(stableKey, task);
+    return task;
   }
 
   function collectionIssueStats(entry, st = ensureItemState(entry)) {
@@ -2045,30 +2088,47 @@
 
     grouped.groups.forEach((group) => {
       const groupLi = document.createElement("li");
-      groupLi.innerHTML = `<strong>${escapeHtml(group.title)}</strong>`;
+      groupLi.className = "collection-group";
+      groupLi.innerHTML = `<h3 class="collection-group-title">${escapeHtml(group.title)}</h3>`;
       list.appendChild(groupLi);
 
+      const groupItems = document.createElement("ul");
+      groupItems.className = "collection-group-items";
       group.items.forEach((issue) => {
         const li = document.createElement("li");
+        li.className = "collection-issue-row";
         const checked = readIssueChecked(st, issue);
         const stableKey = collectionIssueStableKey(issue);
         const number = Number.isFinite(issue.position) ? `${issue.position}. ` : "";
         li.innerHTML = `
-          <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
-            <span class="row" style="gap:10px; min-width:0;">
-              <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
-              <span>${escapeHtml(`${number}${issue.title}`)}</span>
+          <label class="collection-issue-main">
+            <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
+            <span class="collection-issue-cover fallback-logo" data-role="issue-cover">
+              <span class="collection-issue-cover-fallback">${escapeHtml(issue.title.split(" ")[0] || "Issue")}</span>
             </span>
-            ${issue.url ? `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
+            <span class="collection-issue-text">
+              <span class="collection-issue-position">${escapeHtml(number)}</span>
+              <span class="collection-issue-title">${escapeHtml(issue.title)}</span>
+            </span>
           </label>
+          ${issue.url ? `<a class="collection-issue-open" href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
         `;
         li.querySelector('[data-action="issue-done"]')?.addEventListener("change", (e) => {
           st.issueStates[stableKey] = !!e.target.checked;
           persistCollectionState(entry, st);
           renderCollectionModal(entry);
         });
-        list.appendChild(li);
+        groupItems.appendChild(li);
+        const coverEl = li.querySelector('[data-role="issue-cover"]');
+        if (coverEl) {
+          void resolveCollectionIssueCover(issue).then((coverUrl) => {
+            if (!coverUrl || activeCollectionModalRenderToken !== modalToken) return;
+            coverEl.classList.remove("fallback-logo");
+            coverEl.innerHTML = `<img src="${escapeAttr(coverUrl)}" alt="${escapeAttr(issue.title)} cover" loading="lazy" decoding="async" />`;
+          });
+        }
       });
+      groupLi.appendChild(groupItems);
     });
   }
 
