@@ -14,19 +14,20 @@ import process from "node:process";
 import { chromium } from "playwright";
 
 function parseArgs(argv) {
-  const args = { id: "", url: "", out: "" };
+  const args = { id: "", url: "", out: "", clickExpand: false };
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === "--id") args.id = String(argv[i + 1] || "").trim();
     if (token === "--url") args.url = String(argv[i + 1] || "").trim();
     if (token === "--out") args.out = String(argv[i + 1] || "").trim();
+    if (token === "--click-expand") args.clickExpand = true;
   }
   return args;
 }
 
 function usageAndExit(message = "") {
   if (message) console.error(`[dcui-export] ${message}`);
-  console.error("Usage: node tools/export-dcui-collection.mjs --id <list-id> --url <dcui-collection-url> --out <output-json>");
+  console.error("Usage: node tools/export-dcui-collection.mjs --id <list-id> --url <dcui-collection-url> --out <output-json> [--click-expand]");
   process.exit(1);
 }
 
@@ -94,8 +95,95 @@ async function autoScrollUntilStable(page) {
     if (stableRounds >= stableRoundsTarget) break;
   }
 
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-  await page.waitForTimeout(400);
+}
+
+async function tryExpandControls(page) {
+  const labels = [
+    "view all",
+    "see all",
+    "show more",
+    "load more",
+    "next"
+  ];
+  const maxClicks = 20;
+  let totalCandidates = 0;
+  let clicks = 0;
+
+  // Optional-only expansion pass. Keep conservative and non-blocking; avoid issue/book links.
+  for (const label of labels) {
+    if (clicks >= maxClicks) break;
+    const locator = page.locator("button, [role='button'], a", { hasText: new RegExp(label, "i") });
+    let count = 0;
+    try {
+      count = await locator.count({ timeout: 1200 });
+    } catch {
+      count = 0;
+    }
+    if (!count) continue;
+    totalCandidates += count;
+    const clickedForLabel = await page.evaluate(({ textNeedle, maxPerLabel }) => {
+      const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
+      const nodes = [...document.querySelectorAll("button, [role='button'], a")];
+      let clicked = 0;
+      for (const node of nodes) {
+        if (clicked >= maxPerLabel) break;
+        const text = normalize(node.textContent || node.getAttribute("aria-label"));
+        if (!text.includes(textNeedle)) continue;
+        const href = node.getAttribute("href") || "";
+        if (/\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href)) continue;
+        const ariaDisabled = normalize(node.getAttribute("aria-disabled"));
+        if (node.hasAttribute("disabled") || ariaDisabled === "true") continue;
+        try {
+          node.scrollIntoView({ block: "center", inline: "nearest" });
+          node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+          clicked += 1;
+        } catch {
+          // Ignore stale/unusable nodes.
+        }
+      }
+      return clicked;
+    }, { textNeedle: label.toLowerCase(), maxPerLabel: Math.min(5, maxClicks - clicks) });
+    if (clickedForLabel > 0) {
+      clicks += clickedForLabel;
+      await page.waitForTimeout(250);
+    }
+  }
+  return { totalCandidates, clicks };
+}
+
+async function scrollHorizontalContainers(page) {
+  return page.evaluate(async () => {
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const isVisible = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+    const candidates = [...document.querySelectorAll("div,section,ul,ol")].filter((el) => {
+      if (!isVisible(el)) return false;
+      const style = window.getComputedStyle(el);
+      const overflowXScrollable = /(auto|scroll)/i.test(style.overflowX);
+      const hasHorizontalOverflow = (el.scrollWidth - el.clientWidth) > 24;
+      return overflowXScrollable || hasHorizontalOverflow;
+    });
+
+    let totalMoves = 0;
+    for (const el of candidates) {
+      let stable = 0;
+      let prevLeft = -1;
+      for (let round = 0; round < 24; round += 1) {
+        const step = Math.max(240, Math.floor(el.clientWidth * 0.85));
+        el.scrollBy({ left: step, behavior: "instant" });
+        await sleep(120);
+        const left = Math.round(el.scrollLeft);
+        if (left === prevLeft) stable += 1;
+        else stable = 0;
+        prevLeft = left;
+        totalMoves += 1;
+        if (stable >= 2) break;
+      }
+    }
+    return { candidates: candidates.length, totalMoves };
+  });
 }
 
 async function extractVisibleMetadata(page, collectionUrl) {
@@ -195,8 +283,16 @@ function detectGroupKind(title) {
   return "other";
 }
 
+function parseExpectedCount(title) {
+  const t = String(title || "");
+  const match = t.match(/\((\d+)\)\s*$/);
+  if (!match) return null;
+  const n = Number.parseInt(match[1], 10);
+  return Number.isFinite(n) ? n : null;
+}
+
 async function main() {
-  const { id, url, out } = parseArgs(process.argv);
+  const { id, url, out, clickExpand } = parseArgs(process.argv);
   if (!id) usageAndExit("Missing --id");
   if (!url) usageAndExit("Missing --url");
   if (!out) usageAndExit("Missing --out");
@@ -212,7 +308,18 @@ async function main() {
 
   try {
     await waitForManualAccess(page, collectionUrl);
+    // DCUI collections can be split into lazy-loaded vertical sections plus horizontal carousels.
+    // These heuristics intentionally attempt both styles of loading and may need selector updates over time.
     await autoScrollUntilStable(page);
+    for (let round = 0; round < 3; round += 1) {
+      const scrolled = await scrollHorizontalContainers(page);
+      console.log(`[dcui-export] Horizontal pass ${round + 1}: containers=${scrolled.candidates}, moves=${scrolled.totalMoves}`);
+      if (clickExpand) {
+        const expanded = await tryExpandControls(page);
+        console.log(`[dcui-export] Expand pass ${round + 1}: candidates=${expanded.totalCandidates}, clicks=${expanded.clicks}`);
+      }
+      await autoScrollUntilStable(page);
+    }
 
     const pageTitle = await page.title();
     const { collectionTitle, linkedItems, groupsRaw } = await extractVisibleMetadata(page, collectionUrl);
@@ -234,6 +341,9 @@ async function main() {
 
     const groups = [];
     const groupedUrlSet = new Set();
+    let expectedTotalItems = 0;
+    let actualTotalItems = 0;
+    const incompleteGroups = [];
     for (const raw of groupsRaw) {
       const items = [];
       raw.items.forEach((item, idx) => {
@@ -244,9 +354,27 @@ async function main() {
         }
       });
       if (items.length > 0) {
+        const expectedCount = parseExpectedCount(raw.title);
+        const actualCount = items.length;
+        const isComplete = expectedCount == null ? null : actualCount >= expectedCount;
+        if (expectedCount != null) expectedTotalItems += expectedCount;
+        actualTotalItems += actualCount;
+        console.log(`[dcui-export] Group: ${raw.title}`);
+        console.log(`[dcui-export]   expectedCount=${expectedCount == null ? "n/a" : expectedCount}`);
+        console.log(`[dcui-export]   actualCount=${actualCount}`);
+        console.log(`[dcui-export]   isComplete=${isComplete == null ? "unknown" : isComplete}`);
+        if (expectedCount != null && actualCount < expectedCount) {
+          const warning = `Group '${raw.title}' incomplete: extracted ${actualCount} of ${expectedCount} items.`;
+          warnings.push(warning);
+          incompleteGroups.push(raw.title);
+          console.warn(`[dcui-export] WARNING: ${warning}`);
+        }
         groups.push({
           kind: detectGroupKind(raw.title),
           title: raw.title,
+          ...(expectedCount != null ? { expectedCount } : {}),
+          actualCount,
+          ...(isComplete != null ? { isComplete } : {}),
           items
         });
       }
@@ -288,7 +416,11 @@ async function main() {
         totalItems: itemsWithUrls + unresolvedItems.length,
         itemsWithUrls,
         unresolvedItems: unresolvedItems.length,
-        groups: groups.length
+        groups: groups.length,
+        expectedTotalItems: expectedTotalItems || null,
+        actualTotalItems,
+        incompleteGroups: incompleteGroups.length,
+        extractionComplete: incompleteGroups.length === 0
       },
       groups,
       ungroupedItems,
@@ -305,6 +437,7 @@ async function main() {
     console.log(`[dcui-export] Groups detected: ${groups.length}`);
     console.log(`[dcui-export] Linked items found: ${itemsWithUrls}`);
     console.log(`[dcui-export] Unresolved items: ${unresolvedItems.length}`);
+    console.log(`[dcui-export] extractionComplete: ${output.summary.extractionComplete}`);
     console.log(`[dcui-export] Output: ${outPath}`);
   } finally {
     await context.close();
