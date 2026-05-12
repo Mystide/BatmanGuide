@@ -119,26 +119,16 @@ window.BATMAN_GUIDE_LIST = [
     "type": "collection",
     "title": "Batman: The Silver Age",
     "url": "https://www.dcuniverseinfinite.com/collections/edt-silver-age-batman",
-    "hint": "Collection — read everything inside. DCUI order tip: read Batman (1940) issues block first, then Detective Comics block.",
+    "hint": "Collection — detailed DCUI-exported issue data is available in data/collections/batman-the-silver-age.json.",
     "characters": [
       "batman"
-    ],
-    "issues": [
-      {
-        "title": "Batman (1940) — Silver Age block",
-        "url": "https://www.dcuniverseinfinite.com/search?text=Batman%201940%20Silver%20Age"
-      },
-      {
-        "title": "Detective Comics (1937) — Silver Age block",
-        "url": "https://www.dcuniverseinfinite.com/search?text=Detective%20Comics%201937%20Silver%20Age"
-      }
     ],
     "order": 2010,
     "importance": "core",
     "continuity": "pre-crisis",
     "readingMode": "read_all",
     "dcuiStatus": "collection",
-    "dcuiChecked": "2026-04-26"
+    "dcuiChecked": "2026-05-12"
   },
   {
     "id": "E3-01",
