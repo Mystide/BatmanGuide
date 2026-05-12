@@ -1,4 +1,4 @@
-const APP_VERSION = "2026.05.03-1";
+const APP_VERSION = "2026.05.12-1";
 const CACHE = `batman-guide-cache-${APP_VERSION}`;
 const APP_SHELL = [
   "./",
@@ -9,6 +9,7 @@ const APP_SHELL = [
   "./manifest.webmanifest",
   "./batman-logo.png",
   "./assets/lettering/batmanletters1.png",
+  "./data/collections/batman-the-silver-age.json",
 ];
 
 const NETWORK_FIRST_PATHS = new Set(["/", "/index.html", "/app.js", "/list.js", "/manifest.webmanifest", "/sw.js"]);
