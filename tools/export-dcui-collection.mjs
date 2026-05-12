@@ -99,7 +99,7 @@ async function autoScrollUntilStable(page) {
 }
 
 // Keep exactly one expansion helper; avoid duplicate declarations from bad merges.
-async function tryExpandControls(page) {
+async function tryExpandControls(page, incompleteGroupTitles = []) {
   const labels = [
     "view all",
     "see all",
@@ -118,7 +118,8 @@ async function tryExpandControls(page) {
     skipped_no_group_heading: 0,
     skipped_outside_issue_group: 0,
     click_failed: 0,
-    no_reason_unknown: 0
+    no_reason_unknown: 0,
+    skipped_group_complete: 0
   };
 
   // Optional-only expansion pass. Keep conservative and non-blocking; avoid issue/book links.
@@ -133,17 +134,21 @@ async function tryExpandControls(page) {
     }
     if (!count) continue;
     totalCandidates += count;
-    const resultForLabel = await page.evaluate(({ textNeedle, maxPerLabel }) => {
+    const resultForLabel = await page.evaluate(({ textNeedle, maxPerLabel, incompleteTitles }) => {
       const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
-      const looksLikeGroupHeading = (s) => /\b(issues|series|storyline|saga|section|part)\b/i.test(s) || /\(\d+\)\s*$/.test(s);
+      const parseExpectedCountLocal = (s) => {
+        const m = String(s || "").match(/\((\d+)\)\s*$/);
+        return m ? Number.parseInt(m[1], 10) : null;
+      };
+      const isRealIssueHeading = (s) => /\bissues\b/i.test(s) && parseExpectedCountLocal(s) != null && !/privacy|cookie|policy|terms|footer|navigation/i.test(s);
       const nearestHeadingFor = (node) => {
         const headings = [...document.querySelectorAll("h1,h2,h3,h4,[role='heading']")]
-          .map((h) => ({ text: normalize(h.textContent), top: h.getBoundingClientRect().top + window.scrollY }))
-          .filter((h) => h.text);
+          .map((h) => ({ text: normalize(h.textContent), raw: String(h.textContent || "").replace(/\s+/g, " ").trim(), top: h.getBoundingClientRect().top + window.scrollY }))
+          .filter((h) => h.text && isRealIssueHeading(h.raw));
         const nodeTop = node.getBoundingClientRect().top + window.scrollY;
         let nearest = null;
         for (const h of headings) if (h.top <= nodeTop && (!nearest || h.top > nearest.top)) nearest = h;
-        return nearest ? nearest.text : "";
+        return nearest ? nearest.raw : "";
       };
       const nodes = [...document.querySelectorAll("button, [role='button'], a")];
       let clicked = 0;
@@ -154,7 +159,8 @@ async function tryExpandControls(page) {
         skipped_no_group_heading: 0,
         skipped_outside_issue_group: 0,
         click_failed: 0,
-        no_reason_unknown: 0
+        no_reason_unknown: 0,
+        skipped_group_complete: 0
       };
       for (const node of nodes) {
         if (clicked >= maxPerLabel) break;
@@ -188,8 +194,11 @@ async function tryExpandControls(page) {
           }
           if (!heading) {
             skipped.skipped_no_group_heading += 1;
-          } else if (!looksLikeGroupHeading(heading)) {
+          } else if (!isRealIssueHeading(heading)) {
             skipped.skipped_outside_issue_group += 1;
+            continue;
+          } else if (!incompleteTitles.includes(heading)) {
+            skipped.skipped_group_complete += 1;
             continue;
           }
         }
@@ -202,7 +211,7 @@ async function tryExpandControls(page) {
         }
       }
       return { clicked, skipped };
-    }, { textNeedle: label.toLowerCase(), maxPerLabel: Math.min(5, maxClicks - clicks) });
+    }, { textNeedle: label.toLowerCase(), maxPerLabel: Math.min(5, maxClicks - clicks), incompleteTitles: incompleteGroupTitles });
     clicks += resultForLabel.clicked;
     for (const [k, v] of Object.entries(resultForLabel.skipped || {})) skipped[k] = (skipped[k] || 0) + v;
     if (resultForLabel.clicked > 0) {
@@ -295,13 +304,18 @@ async function extractVisibleMetadata(page, collectionUrl) {
 
     // Group detection heuristics: closest heading text above anchor cards.
     // DCUI DOM may change; these selectors/heuristics likely need future adjustment.
+    const parseExpectedCountLocal = (title) => {
+      const m = String(title || "").match(/\((\d+)\)\s*$/);
+      return m ? Number.parseInt(m[1], 10) : null;
+    };
+    const isRealIssueHeading = (title) => /\bissues\b/i.test(title) && parseExpectedCountLocal(title) != null && !/privacy|cookie|policy|terms|footer|navigation/i.test(title);
     const headings = [...document.querySelectorAll("h1,h2,h3,h4,[role='heading']")]
       .map((h) => ({
         el: h,
         title: normalize(h.textContent),
         top: h.getBoundingClientRect().top + window.scrollY
       }))
-      .filter((x) => x.title);
+      .filter((x) => x.title && isRealIssueHeading(x.title));
 
     const byGroup = new Map();
     const getGroupKey = (title) => title || "__ungrouped__";
@@ -353,6 +367,14 @@ function parseExpectedCount(title) {
   return Number.isFinite(n) ? n : null;
 }
 
+function isRealIssueGroupHeading(title) {
+  const t = String(title || "").trim();
+  if (!t) return false;
+  if (/privacy|cookie|policy|terms|footer|navigation/i.test(t)) return false;
+  if (!/\bissues\b/i.test(t)) return false;
+  return parseExpectedCount(t) != null;
+}
+
 async function collectDomDiagnostics(page, collectionUrl, groups) {
   return page.evaluate(({ baseUrl, groupsMeta }) => {
     const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim();
@@ -361,11 +383,22 @@ async function collectDomDiagnostics(page, collectionUrl, groups) {
     };
     const isComic = (href) => /\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href);
     const getTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+    const parseExpectedCountLocal = (title) => {
+      const m = String(title || "").match(/\((\d+)\)\s*$/);
+      return m ? Number.parseInt(m[1], 10) : null;
+    };
+    const isPrivacyish = (title) => /privacy|cookie|policy|terms|footer|navigation/i.test(title);
+    const isRealIssueHeading = (title) => /\bissues\b/i.test(title) && parseExpectedCountLocal(title) != null && !isPrivacyish(title);
     const headingNodes = [...document.querySelectorAll("h1,h2,h3,h4,[role='heading']")];
     const headings = headingNodes.map((h) => ({ text: normalize(h.textContent), top: Math.round(getTop(h)) })).filter((h) => h.text);
+    const realIssueGroupHeadings = headings.filter((h) => isRealIssueHeading(h.text)).map((h) => ({ ...h, expectedCount: parseExpectedCountLocal(h.text) }));
+    const ignoredHeadings = headings.filter((h) => !isRealIssueHeading(h.text)).map((h) => ({
+      ...h,
+      reason: isPrivacyish(h.text) ? "privacy_cookie_footer" : "no_expected_count"
+    }));
     const nearestHeading = (elTop) => {
       let nearest = null;
-      for (const h of headings) if (h.top <= elTop && (!nearest || h.top > nearest.top)) nearest = h;
+      for (const h of realIssueGroupHeadings) if (h.top <= elTop && (!nearest || h.top > nearest.top)) nearest = h;
       return nearest ? nearest.text : "";
     };
 
@@ -410,6 +443,17 @@ async function collectDomDiagnostics(page, collectionUrl, groups) {
       };
     }).filter((x) => x.text || x.ariaLabel || x.href);
 
+    const seeMoreControls = controls
+      .filter((c) => normalize(c.text).toLowerCase() === "see more" || normalize(c.ariaLabel).toLowerCase() === "see more")
+      .map((c) => {
+        let decision = "eligible";
+        const href = (c.href || "").trim();
+        if (href && href !== "#") decision = "skipped_non_empty_navigation_href";
+        else if (c.disabled) decision = "skipped_disabled";
+        else if (!c.nearestHeading) decision = "skipped_no_group_heading";
+        return { ...c, nearestRealIssueGroup: c.nearestHeading || "", decision };
+      });
+
     const groups = groupsMeta.map((g) => ({
       groupTitle: g.title,
       expectedCount: g.expectedCount ?? null,
@@ -422,8 +466,11 @@ async function collectDomDiagnostics(page, collectionUrl, groups) {
       currentUrl: window.location.href,
       viewport: { width: window.innerWidth, height: window.innerHeight },
       headings,
+      realIssueGroupHeadings,
+      ignoredHeadings,
       scrollableContainers: scrollables,
       controls,
+      seeMoreControls,
       comicLinks: links,
       groups
     };
@@ -457,7 +504,9 @@ async function main() {
       const scrolled = await scrollHorizontalContainers(page);
       console.log(`[dcui-export] Horizontal pass ${round + 1}: containers=${scrolled.candidates}, moves=${scrolled.totalMoves}`);
       const snapshot = await extractVisibleMetadata(page, collectionUrl);
-      const counts = snapshot.groupsRaw.map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
+      const counts = snapshot.groupsRaw
+        .filter((g) => isRealIssueGroupHeading(g.title))
+        .map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
       const incomplete = counts.filter((g) => g.expectedCount != null && g.actualCount < g.expectedCount);
       const currentTotalLinks = snapshot.linkedItems.length;
       const groupSignature = counts.map((g) => `${g.title}:${g.actualCount}/${g.expectedCount ?? "?"}`).join("|");
@@ -473,7 +522,8 @@ async function main() {
         break;
       }
 
-      const expanded = await tryExpandControls(page);
+      const incompleteTitles = incomplete.map((g) => g.title);
+      const expanded = await tryExpandControls(page, incompleteTitles);
       console.log(`[dcui-export] Expand pass ${round + 1}: candidates=${expanded.totalCandidates}, clicks=${expanded.clicks}`);
       console.log(`[dcui-export] Expand skips: ${JSON.stringify(expanded.skipped)}`);
       await page.waitForTimeout(500);
@@ -481,7 +531,9 @@ async function main() {
 
       const after = await extractVisibleMetadata(page, collectionUrl);
       const afterTotal = after.linkedItems.length;
-      const afterCounts = after.groupsRaw.map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
+      const afterCounts = after.groupsRaw
+        .filter((g) => isRealIssueGroupHeading(g.title))
+        .map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
       const afterSig = afterCounts.map((g) => `${g.title}:${g.actualCount}/${g.expectedCount ?? "?"}`).join("|");
 
       const madeProgress = afterTotal > currentTotalLinks || afterSig !== groupSignature;
