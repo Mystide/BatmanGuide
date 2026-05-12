@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.05.12-1";
+  const APP_VERSION = "2026.05.12-2";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -234,6 +234,13 @@
     return st.issueStates?.[stableKey] === true || (!!titleKey && st.issueStates?.[titleKey] === true);
   }
 
+
+  function hasCollectionIssueSource(entry) {
+    if (entry?.type !== "collection") return false;
+    const hasInlineIssues = Array.isArray(entry?.issues) && entry.issues.length > 0;
+    const hasExternalPath = String(entry?.collectionDataPath || "").trim().length > 0;
+    return hasInlineIssues || hasExternalPath;
+  }
   const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "unavailable", "missing"];
 
   function orderEnumValues(values, preferredOrder = []) {
@@ -1778,7 +1785,7 @@
           coverTitle.className = "cover-title";
           coverTitle.textContent = entry.title;
           cover.append(coverLink, coverTitle);
-          const hasTopActions = !!entryIssueStats.total;
+          const hasTopActions = hasCollectionIssueSource(entry);
           if (hasTopActions) {
             const itemActions = document.createElement("div");
             itemActions.className = "item-actions";
