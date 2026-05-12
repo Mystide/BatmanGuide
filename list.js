@@ -128,7 +128,8 @@ window.BATMAN_GUIDE_LIST = [
     "continuity": "pre-crisis",
     "readingMode": "read_all",
     "dcuiStatus": "collection",
-    "dcuiChecked": "2026-05-12"
+    "dcuiChecked": "2026-05-12",
+    "collectionDataPath": "data/collections/batman-the-silver-age.json"
   },
   {
     "id": "E3-01",

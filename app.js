@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.05.03-1";
+  const APP_VERSION = "2026.05.12-1";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -218,6 +218,22 @@
   const ERA_OPTIONS = [...new Set(LIST.map((entry) => entry.era).filter(Boolean))];
   const IMPORTANCE_ORDER = ["core", "recommended", "context", "optional"];
   const READING_MODE_ORDER = ["read_all", "selected_issues", "checkpoint", "context"];
+
+  const collectionDataCache = new Map();
+
+  function collectionIssueStableKey(issue) {
+    const url = String(issue?.url || "").trim();
+    if (url) return `url:${url}`;
+    return `title:${String(issue?.title || "").trim()}`;
+  }
+
+  function readIssueChecked(st, issue) {
+    if (!st?.issueStates || typeof st.issueStates !== "object") return false;
+    const stableKey = collectionIssueStableKey(issue);
+    const titleKey = String(issue?.title || "").trim();
+    return st.issueStates?.[stableKey] === true || (!!titleKey && st.issueStates?.[titleKey] === true);
+  }
+
   const DCUI_STATUS_ORDER = ["direct", "collection", "search_fallback", "unavailable", "missing"];
 
   function orderEnumValues(values, preferredOrder = []) {
@@ -399,6 +415,7 @@
   let continueTargetTimer = null;
   let filterInputTimer = null;
   let activeCollectionModalId = "";
+  let activeCollectionModalRenderToken = "";
   let pendingPageSyncToast = null;
   let syncToastTimer = null;
   let focusCoverRenderToken = 0;
@@ -628,25 +645,68 @@
     return !!entry.optional;
   }
 
-  function collectionIssues(entry) {
-    if (!Array.isArray(entry?.issues)) return [];
-    return entry.issues
-      .filter((issue) => issue && typeof issue === "object")
-      .map((issue) => {
-        const title = String(issue.title || "").trim();
-        if (!title) return null;
-        const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
-        const url = safeExternalUrl(issue.url || fallbackSearchUrl);
-        return { title, url };
-      })
-      .filter(Boolean);
+  function normalizeCollectionIssue(issue, fallbackPosition = null) {
+    if (!issue || typeof issue !== "object") return null;
+    const title = String(issue.title || "").trim();
+    if (!title) return null;
+    const fallbackSearchUrl = `https://www.dcuniverseinfinite.com/search?text=${encodeURIComponent(title)}`;
+    const safeUrl = issue.url ? safeExternalUrl(issue.url) : "";
+    return {
+      title,
+      url: safeUrl || fallbackSearchUrl,
+      position: Number.isFinite(Number(issue.position)) ? Number(issue.position) : fallbackPosition
+    };
+  }
+
+  async function collectionIssueGroups(entry) {
+    if (Array.isArray(entry?.issues)) {
+      const items = entry.issues.map((issue, index) => normalizeCollectionIssue(issue, index + 1)).filter(Boolean);
+      return { groups: [{ title: "Issues", items }] };
+    }
+    const dataPath = String(entry?.collectionDataPath || "").trim();
+    if (!dataPath) return { groups: [] };
+
+    let payload = collectionDataCache.get(dataPath);
+    if (!payload) {
+      const response = await fetch(dataPath, { cache: "force-cache" });
+      if (!response.ok) throw new Error(`Collection data HTTP ${response.status}`);
+      payload = await response.json();
+      collectionDataCache.set(dataPath, payload);
+    }
+
+    if (!Array.isArray(payload?.groups)) throw new Error("Malformed collection groups");
+    const groups = payload.groups
+      .filter((group) => group && typeof group === "object")
+      .map((group) => ({
+        title: String(group.title || "Issues").trim() || "Issues",
+        items: Array.isArray(group.items)
+          ? group.items.map((item, index) => normalizeCollectionIssue(item, index + 1)).filter(Boolean)
+          : []
+      }))
+      .filter((group) => group.items.length > 0);
+
+    if (!groups.length) throw new Error("Collection groups missing items");
+    return { groups };
+  }
+
+  function flattenCollectionIssues(groupsResult) {
+    return Array.isArray(groupsResult?.groups) ? groupsResult.groups.flatMap((group) => group.items || []) : [];
   }
 
   function collectionIssueStats(entry, st = ensureItemState(entry)) {
-    const issues = collectionIssues(entry);
+    let issues = [];
+    if (Array.isArray(entry?.issues)) {
+      issues = entry.issues.map((issue, index) => normalizeCollectionIssue(issue, index + 1)).filter(Boolean);
+    } else {
+      const dataPath = String(entry?.collectionDataPath || "").trim();
+      const payload = dataPath ? collectionDataCache.get(dataPath) : null;
+      if (Array.isArray(payload?.groups)) {
+        issues = payload.groups.flatMap((group) => Array.isArray(group?.items) ? group.items : []).map((item, index) => normalizeCollectionIssue(item, index + 1)).filter(Boolean);
+      }
+    }
     if (!issues.length) return { total: 0, done: 0, nextTitle: "" };
-    const done = issues.filter((issue) => st.issueStates?.[issue.title] === true).length;
-    const nextIssue = issues.find((issue) => st.issueStates?.[issue.title] !== true);
+    const done = issues.filter((issue) => readIssueChecked(st, issue)).length;
+    const nextIssue = issues.find((issue) => !readIssueChecked(st, issue));
     return { total: issues.length, done, nextTitle: nextIssue?.title || "" };
   }
 
@@ -1949,36 +2009,59 @@
     setModalOpen($("collectionModal"), false);
   }
 
-  function renderCollectionModal(entry) {
+  async function renderCollectionModal(entry) {
+    const modalToken = `${entry.id}:${Date.now()}`;
+    activeCollectionModalRenderToken = modalToken;
     const st = ensureItemState(entry);
-    const issues = collectionIssues(entry);
-    const progress = collectionIssueStats(entry, st);
     setText("collectionModalTitle", entry.title);
-    setText("collectionModalStatus", progress.nextTitle ? `Next issue: ${progress.nextTitle} • ${progress.done}/${progress.total} read` : `${progress.done}/${progress.total} read`);
+    setText("collectionModalStatus", "Loading collection issues…");
 
     const list = $("collectionModalList");
     if (!list) return;
     list.innerHTML = "";
-    issues.forEach((issue) => {
-      const li = document.createElement("li");
-      const checked = st.issueStates?.[issue.title] === true;
-      const isSearch = /\/search\?/i.test(issue.url);
-      const label = isSearch ? `${issue.title} (search)` : issue.title;
-      li.innerHTML = `
-        <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
-          <span class="row" style="gap:10px; min-width:0;">
-            <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
-            <span>${escapeHtml(label)}</span>
-          </span>
-          <a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>
-        </label>
-      `;
-      li.querySelector('[data-action="issue-done"]').addEventListener("change", (e) => {
-        st.issueStates[issue.title] = !!e.target.checked;
-        persistCollectionState(entry, st);
-        renderCollectionModal(entry);
+
+    let grouped;
+    try {
+      grouped = await collectionIssueGroups(entry);
+    } catch {
+      if (activeCollectionModalRenderToken !== modalToken) return;
+      setText("collectionModalStatus", "Detailed collection data could not be loaded.");
+      list.innerHTML = '<li>Detailed collection data could not be loaded.</li>';
+      return;
+    }
+    if (activeCollectionModalRenderToken !== modalToken) return;
+
+    const issues = flattenCollectionIssues(grouped);
+    const done = issues.filter((issue) => readIssueChecked(st, issue)).length;
+    const nextIssue = issues.find((issue) => !readIssueChecked(st, issue));
+    setText("collectionModalStatus", nextIssue ? `Next issue: ${nextIssue.title} • ${done}/${issues.length} read` : `${done}/${issues.length} read`);
+
+    grouped.groups.forEach((group) => {
+      const groupLi = document.createElement("li");
+      groupLi.innerHTML = `<strong>${escapeHtml(group.title)}</strong>`;
+      list.appendChild(groupLi);
+
+      group.items.forEach((issue) => {
+        const li = document.createElement("li");
+        const checked = readIssueChecked(st, issue);
+        const stableKey = collectionIssueStableKey(issue);
+        const number = Number.isFinite(issue.position) ? `${issue.position}. ` : "";
+        li.innerHTML = `
+          <label class="row" style="justify-content:space-between; gap:10px; width:100%;">
+            <span class="row" style="gap:10px; min-width:0;">
+              <input type="checkbox" data-action="issue-done" ${checked ? "checked" : ""} />
+              <span>${escapeHtml(`${number}${issue.title}`)}</span>
+            </span>
+            ${issue.url ? `<a href="${escapeAttr(issue.url)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
+          </label>
+        `;
+        li.querySelector('[data-action="issue-done"]')?.addEventListener("change", (e) => {
+          st.issueStates[stableKey] = !!e.target.checked;
+          persistCollectionState(entry, st);
+          renderCollectionModal(entry);
+        });
+        list.appendChild(li);
       });
-      list.appendChild(li);
     });
   }
 
@@ -2899,22 +2982,32 @@
         const entry = activeCollectionEntry();
         if (!entry) return;
         const st = ensureItemState(entry);
-        collectionIssues(entry).forEach((issue) => {
-          st.issueStates[issue.title] = true;
+        collectionIssueGroups(entry).then((grouped) => {
+          flattenCollectionIssues(grouped).forEach((issue) => {
+            st.issueStates[collectionIssueStableKey(issue)] = true;
+          });
+          persistCollectionState(entry, st);
+          renderCollectionModal(entry);
+        }).catch(() => {
+          setText("collectionModalStatus", "Detailed collection data could not be loaded.");
         });
-        persistCollectionState(entry, st);
-        renderCollectionModal(entry);
       });
 
       $("btnCollectionClear")?.addEventListener("click", () => {
         const entry = activeCollectionEntry();
         if (!entry) return;
         const st = ensureItemState(entry);
-        collectionIssues(entry).forEach((issue) => {
-          delete st.issueStates[issue.title];
+        collectionIssueGroups(entry).then((grouped) => {
+          flattenCollectionIssues(grouped).forEach((issue) => {
+            const stableKey = collectionIssueStableKey(issue);
+            delete st.issueStates[stableKey];
+            delete st.issueStates[issue.title];
+          });
+          persistCollectionState(entry, st);
+          renderCollectionModal(entry);
+        }).catch(() => {
+          setText("collectionModalStatus", "Detailed collection data could not be loaded.");
         });
-        persistCollectionState(entry, st);
-        renderCollectionModal(entry);
       });
 
       window.addEventListener("keydown", (e) => {
