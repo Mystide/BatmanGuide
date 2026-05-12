@@ -14,20 +14,21 @@ import process from "node:process";
 import { chromium } from "playwright";
 
 function parseArgs(argv) {
-  const args = { id: "", url: "", out: "", clickExpand: false };
+  const args = { id: "", url: "", out: "", clickExpand: false, debugDom: false };
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === "--id") args.id = String(argv[i + 1] || "").trim();
     if (token === "--url") args.url = String(argv[i + 1] || "").trim();
     if (token === "--out") args.out = String(argv[i + 1] || "").trim();
     if (token === "--click-expand") args.clickExpand = true;
+    if (token === "--debug-dom") args.debugDom = true;
   }
   return args;
 }
 
 function usageAndExit(message = "") {
   if (message) console.error(`[dcui-export] ${message}`);
-  console.error("Usage: node tools/export-dcui-collection.mjs --id <list-id> --url <dcui-collection-url> --out <output-json> [--click-expand]");
+  console.error("Usage: node tools/export-dcui-collection.mjs --id <list-id> --url <dcui-collection-url> --out <output-json> [--click-expand] [--debug-dom]");
   process.exit(1);
 }
 
@@ -293,8 +294,85 @@ function parseExpectedCount(title) {
   return Number.isFinite(n) ? n : null;
 }
 
+async function collectDomDiagnostics(page, collectionUrl, groups) {
+  return page.evaluate(({ baseUrl, groupsMeta }) => {
+    const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim();
+    const abs = (href) => {
+      try { return new URL(href || "", baseUrl).toString(); } catch { return ""; }
+    };
+    const isComic = (href) => /\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href);
+    const getTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+    const headingNodes = [...document.querySelectorAll("h1,h2,h3,h4,[role='heading']")];
+    const headings = headingNodes.map((h) => ({ text: normalize(h.textContent), top: Math.round(getTop(h)) })).filter((h) => h.text);
+    const nearestHeading = (elTop) => {
+      let nearest = null;
+      for (const h of headings) if (h.top <= elTop && (!nearest || h.top > nearest.top)) nearest = h;
+      return nearest ? nearest.text : "";
+    };
+
+    const links = [...document.querySelectorAll("a[href]")].map((a) => {
+      const href = abs(a.getAttribute("href"));
+      if (!isComic(href)) return null;
+      const top = Math.round(getTop(a));
+      return { title: normalize(a.textContent || a.getAttribute("aria-label") || a.getAttribute("title")), href, nearestHeading: nearestHeading(top) };
+    }).filter(Boolean);
+
+    const scrollables = [...document.querySelectorAll("div,section,ul,ol")].filter((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return false;
+      const style = window.getComputedStyle(el);
+      return /(auto|scroll)/i.test(style.overflowX) || (el.scrollWidth - el.clientWidth) > 24;
+    }).map((el) => ({
+      tagName: el.tagName,
+      className: normalize(el.className),
+      role: normalize(el.getAttribute("role")),
+      ariaLabel: normalize(el.getAttribute("aria-label")),
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+      scrollLeft: Math.round(el.scrollLeft),
+      visibleTextSample: normalize(el.textContent).slice(0, 180),
+      descendantComicLinks: el.querySelectorAll("a[href*='/comics/'], a[href*='/issue/']").length
+    }));
+
+    const controls = [...document.querySelectorAll("button, [role='button'], a[href], [tabindex]")].map((el) => {
+      const r = el.getBoundingClientRect();
+      const top = Math.round(getTop(el));
+      return {
+        tagName: el.tagName,
+        text: normalize(el.textContent),
+        ariaLabel: normalize(el.getAttribute("aria-label")),
+        title: normalize(el.getAttribute("title")),
+        role: normalize(el.getAttribute("role")),
+        className: normalize(el.className),
+        disabled: el.hasAttribute("disabled") || normalize(el.getAttribute("aria-disabled")) === "true",
+        href: normalize(el.getAttribute("href")),
+        bbox: { x: Math.round(r.x), y: Math.round(r.y), width: Math.round(r.width), height: Math.round(r.height) },
+        nearestHeading: nearestHeading(top)
+      };
+    }).filter((x) => x.text || x.ariaLabel || x.href);
+
+    const groups = groupsMeta.map((g) => ({
+      groupTitle: g.title,
+      expectedCount: g.expectedCount ?? null,
+      actualDetectedLinks: g.actualCount,
+      appearsIncomplete: g.expectedCount != null ? g.actualCount < g.expectedCount : null
+    }));
+
+    return {
+      pageTitle: document.title,
+      currentUrl: window.location.href,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      headings,
+      scrollableContainers: scrollables,
+      controls,
+      comicLinks: links,
+      groups
+    };
+  }, { baseUrl: collectionUrl, groupsMeta: groups.map((g) => ({ title: g.title, expectedCount: g.expectedCount ?? null, actualCount: g.actualCount })) });
+}
+
 async function main() {
-  const { id, url, out, clickExpand } = parseArgs(process.argv);
+  const { id, url, out, clickExpand, debugDom } = parseArgs(process.argv);
   if (!id) usageAndExit("Missing --id");
   if (!url) usageAndExit("Missing --url");
   if (!out) usageAndExit("Missing --out");
@@ -433,6 +511,16 @@ async function main() {
     const outPath = path.resolve(process.cwd(), out);
     await fs.mkdir(path.dirname(outPath), { recursive: true });
     await fs.writeFile(outPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+    if (debugDom) {
+      const diagnostics = await collectDomDiagnostics(page, collectionUrl, groups);
+      diagnostics.collectionTitle = collectionTitle || "";
+      diagnostics.exportSummary = output.summary;
+      const ext = path.extname(outPath);
+      const base = ext ? outPath.slice(0, -ext.length) : outPath;
+      const debugOut = `${base}.debug.json`;
+      await fs.writeFile(debugOut, `${JSON.stringify(diagnostics, null, 2)}\n`, "utf8");
+      console.log(`[dcui-export] Debug DOM output: ${debugOut}`);
+    }
 
     console.log(`[dcui-export] Page title: ${pageTitle}`);
     console.log(`[dcui-export] Collection title: ${collectionTitle || "(not detected)"}`);
