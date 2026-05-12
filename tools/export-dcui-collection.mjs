@@ -111,6 +111,15 @@ async function tryExpandControls(page) {
   const maxClicks = 20;
   let totalCandidates = 0;
   let clicks = 0;
+  const skipped = {
+    skipped_non_empty_navigation_href: 0,
+    skipped_disabled: 0,
+    skipped_not_exact_see_more: 0,
+    skipped_no_group_heading: 0,
+    skipped_outside_issue_group: 0,
+    click_failed: 0,
+    no_reason_unknown: 0
+  };
 
   // Optional-only expansion pass. Keep conservative and non-blocking; avoid issue/book links.
   for (const label of labels) {
@@ -124,7 +133,7 @@ async function tryExpandControls(page) {
     }
     if (!count) continue;
     totalCandidates += count;
-    const clickedForLabel = await page.evaluate(({ textNeedle, maxPerLabel }) => {
+    const resultForLabel = await page.evaluate(({ textNeedle, maxPerLabel }) => {
       const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
       const looksLikeGroupHeading = (s) => /\b(issues|series|storyline|saga|section|part)\b/i.test(s) || /\(\d+\)\s*$/.test(s);
       const nearestHeadingFor = (node) => {
@@ -138,39 +147,69 @@ async function tryExpandControls(page) {
       };
       const nodes = [...document.querySelectorAll("button, [role='button'], a")];
       let clicked = 0;
+      const skipped = {
+        skipped_non_empty_navigation_href: 0,
+        skipped_disabled: 0,
+        skipped_not_exact_see_more: 0,
+        skipped_no_group_heading: 0,
+        skipped_outside_issue_group: 0,
+        click_failed: 0,
+        no_reason_unknown: 0
+      };
       for (const node of nodes) {
         if (clicked >= maxPerLabel) break;
         const text = normalize(node.textContent || node.getAttribute("aria-label"));
         const exactSeeMore = textNeedle === "see more" && text === "see more";
         const broadMatch = textNeedle !== "see more" && text.includes(textNeedle);
-        if (!exactSeeMore && !broadMatch) continue;
+        if (!exactSeeMore && !broadMatch) {
+          if (textNeedle === "see more" && text.includes("more")) skipped.skipped_not_exact_see_more += 1;
+          continue;
+        }
         const href = node.getAttribute("href") || "";
-        if (href && href.trim() && href !== "#" && href.toLowerCase() !== "javascript:void(0)") continue;
-        if (/\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href)) continue;
+        if (/\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href) || /\/browse|\/login|\/register/i.test(href)) {
+          skipped.skipped_non_empty_navigation_href += 1;
+          continue;
+        }
+        if (href && href.trim() && href !== "#" && href.toLowerCase() !== "javascript:void(0)") {
+          skipped.skipped_non_empty_navigation_href += 1;
+          continue;
+        }
         const ariaDisabled = normalize(node.getAttribute("aria-disabled"));
-        if (node.hasAttribute("disabled") || ariaDisabled === "true") continue;
+        if (node.hasAttribute("disabled") || ariaDisabled === "true") {
+          skipped.skipped_disabled += 1;
+          continue;
+        }
         const className = normalize(node.className);
         const heading = nearestHeadingFor(node);
         if (textNeedle === "see more") {
-          if (!className.includes("dcc-button")) continue;
-          if (!looksLikeGroupHeading(heading)) continue;
+          if (!className.includes("dcc-button")) {
+            skipped.skipped_outside_issue_group += 1;
+            continue;
+          }
+          if (!heading) {
+            skipped.skipped_no_group_heading += 1;
+          } else if (!looksLikeGroupHeading(heading)) {
+            skipped.skipped_outside_issue_group += 1;
+            continue;
+          }
         }
         try {
           node.scrollIntoView({ block: "center", inline: "nearest" });
           node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
           clicked += 1;
         } catch {
-          // Ignore stale/unusable nodes.
+          skipped.click_failed += 1;
         }
       }
-      return clicked;
+      return { clicked, skipped };
     }, { textNeedle: label.toLowerCase(), maxPerLabel: Math.min(5, maxClicks - clicks) });
-    if (clickedForLabel > 0) {
-      clicks += clickedForLabel;
+    clicks += resultForLabel.clicked;
+    for (const [k, v] of Object.entries(resultForLabel.skipped || {})) skipped[k] = (skipped[k] || 0) + v;
+    if (resultForLabel.clicked > 0) {
       await page.waitForTimeout(250);
     }
   }
-  return { totalCandidates, clicks };
+  return { totalCandidates, clicks, skipped };
 }
 
 // Keep exactly one horizontal-scroll helper; avoid duplicate declarations from bad merges.
@@ -411,14 +450,48 @@ async function main() {
     // DCUI collections can be split into lazy-loaded vertical sections plus horizontal carousels.
     // These heuristics intentionally attempt both styles of loading and may need selector updates over time.
     await autoScrollUntilStable(page);
-    for (let round = 0; round < 3; round += 1) {
+    const maxExpandIterations = clickExpand ? 12 : 3;
+    let prevTotalLinks = -1;
+    let prevGroupSignature = "";
+    for (let round = 0; round < maxExpandIterations; round += 1) {
       const scrolled = await scrollHorizontalContainers(page);
       console.log(`[dcui-export] Horizontal pass ${round + 1}: containers=${scrolled.candidates}, moves=${scrolled.totalMoves}`);
-      if (clickExpand) {
-        const expanded = await tryExpandControls(page);
-        console.log(`[dcui-export] Expand pass ${round + 1}: candidates=${expanded.totalCandidates}, clicks=${expanded.clicks}`);
+      const snapshot = await extractVisibleMetadata(page, collectionUrl);
+      const counts = snapshot.groupsRaw.map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
+      const incomplete = counts.filter((g) => g.expectedCount != null && g.actualCount < g.expectedCount);
+      const currentTotalLinks = snapshot.linkedItems.length;
+      const groupSignature = counts.map((g) => `${g.title}:${g.actualCount}/${g.expectedCount ?? "?"}`).join("|");
+      console.log(`[dcui-export] Group snapshot: ${groupSignature || "none"}`);
+
+      if (!clickExpand) {
+        await autoScrollUntilStable(page);
+        continue;
       }
+
+      if (incomplete.length === 0) {
+        console.log("[dcui-export] All expected groups complete; stopping expand loop.");
+        break;
+      }
+
+      const expanded = await tryExpandControls(page);
+      console.log(`[dcui-export] Expand pass ${round + 1}: candidates=${expanded.totalCandidates}, clicks=${expanded.clicks}`);
+      console.log(`[dcui-export] Expand skips: ${JSON.stringify(expanded.skipped)}`);
+      await page.waitForTimeout(500);
       await autoScrollUntilStable(page);
+
+      const after = await extractVisibleMetadata(page, collectionUrl);
+      const afterTotal = after.linkedItems.length;
+      const afterCounts = after.groupsRaw.map((g) => ({ title: g.title, expectedCount: parseExpectedCount(g.title), actualCount: g.items.length }));
+      const afterSig = afterCounts.map((g) => `${g.title}:${g.actualCount}/${g.expectedCount ?? "?"}`).join("|");
+
+      const madeProgress = afterTotal > currentTotalLinks || afterSig !== groupSignature;
+      const stalled = expanded.clicks === 0 || (!madeProgress && prevTotalLinks === afterTotal && prevGroupSignature === afterSig);
+      prevTotalLinks = afterTotal;
+      prevGroupSignature = afterSig;
+      if (stalled) {
+        console.log("[dcui-export] Expand loop stalled; no further progress detected.");
+        break;
+      }
     }
 
     const pageTitle = await page.title();
