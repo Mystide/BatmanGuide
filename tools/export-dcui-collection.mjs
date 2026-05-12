@@ -44,6 +44,27 @@ function normalizeDcuiUrl(raw, baseUrl) {
   }
 }
 
+
+function normalizeCoverUrl(raw, baseUrl) {
+  if (!raw) return "";
+  try {
+    const u = new URL(raw, baseUrl);
+    if (!/^https?:$/i.test(u.protocol)) return "";
+    const lowerHost = u.hostname.toLowerCase();
+    const lowerPath = u.pathname.toLowerCase();
+    const rejectNeedles = ["logo", "icon", "sprite", "placeholder", "tracking", "pixel", "avatar"];
+    if (rejectNeedles.some((needle) => lowerPath.includes(needle))) return "";
+    if (lowerHost === "imgix-media.wbdndc.net" && lowerPath.includes("/ingest/book/preview/")) {
+      u.search = "";
+      u.hash = "";
+      return u.toString();
+    }
+    return u.toString();
+  } catch {
+    return "";
+  }
+}
+
 function toYyyyMmDd(d = new Date()) {
   return d.toISOString().slice(0, 10);
 }
@@ -286,6 +307,44 @@ async function extractVisibleMetadata(page, collectionUrl) {
       return "";
     };
 
+    const parseSrcset = (srcset) => String(srcset || "").split(",").map((part) => part.trim().split(/\s+/)[0]).filter(Boolean);
+    const collectCoverCandidates = (root) => {
+      const out = [];
+      const push = (value) => { if (value) out.push(value); };
+      const inspect = (node) => {
+        if (!node) return;
+        if (node.tagName === "IMG") {
+          push(node.currentSrc);
+          push(node.src);
+          push(node.getAttribute("src"));
+          push(node.getAttribute("data-src"));
+          push(node.getAttribute("data-lazy-src"));
+          push(node.getAttribute("data-original"));
+          parseSrcset(node.getAttribute("srcset")).forEach(push);
+        }
+        if (node.tagName === "SOURCE") {
+          push(node.src);
+          push(node.getAttribute("src"));
+          parseSrcset(node.getAttribute("srcset")).forEach(push);
+        }
+        const bg = String(window.getComputedStyle(node).backgroundImage || "");
+        const m = bg.match(/url\((['"]?)(.*?)\1\)/i);
+        if (m && m[2]) push(m[2]);
+      };
+      inspect(root);
+      root.querySelectorAll("img,source,picture source,[style*='background-image']").forEach(inspect);
+      return out;
+    };
+    const chooseBestCoverCandidate = (rawCandidates) => {
+      const scored = rawCandidates.map((raw) => {
+        const normalized = String(raw || "").trim();
+        if (!normalized) return null;
+        const resolution = normalized.match(/(\d{2,4})w/i);
+        return { raw: normalized, score: resolution ? Number.parseInt(resolution[1], 10) : 0 };
+      }).filter(Boolean).sort((a, b) => b.score - a.score);
+      return scored[0]?.raw || "";
+    };
+
     const anchors = [...document.querySelectorAll("a[href]")].filter((a) => {
       const href = ABS(a.getAttribute("href") || "");
       return isLikelyIssueUrl(href);
@@ -299,7 +358,10 @@ async function extractVisibleMetadata(page, collectionUrl) {
       const title = pickTitleFromAnchor(a);
       if (!title) continue;
       seen.add(url);
-      linkedItems.push({ title, url });
+      const container = a.closest("article,li,div,section,[role='listitem'],[class*='card'],[class*='tile']") || a;
+      const coverRaw = chooseBestCoverCandidate([...collectCoverCandidates(a), ...collectCoverCandidates(container)]);
+      const coverUrl = coverRaw ? ABS(coverRaw) : "";
+      linkedItems.push({ title, url, coverUrl });
     }
 
     // Group detection heuristics: closest heading text above anchor cards.
@@ -334,7 +396,10 @@ async function extractVisibleMetadata(page, collectionUrl) {
       const groupTitle = nearest ? nearest.title : "";
       const key = getGroupKey(groupTitle);
       if (!byGroup.has(key)) byGroup.set(key, []);
-      byGroup.get(key).push({ title, url });
+      const container = a.closest("article,li,div,section,[role='listitem'],[class*='card'],[class*='tile']") || a;
+      const coverRaw = chooseBestCoverCandidate([...collectCoverCandidates(a), ...collectCoverCandidates(container)]);
+      const coverUrl = coverRaw ? ABS(coverRaw) : "";
+      byGroup.get(key).push({ title, url, coverUrl });
     }
 
     const groupsRaw = [];
@@ -561,7 +626,8 @@ async function main() {
         unresolvedItems.push({ position, title, reason: "missing_or_non_dcui_url" });
         return null;
       }
-      return { position, title, url: normalizedUrl };
+      const normalizedCoverUrl = normalizeCoverUrl(item.coverUrl, collectionUrl);
+      return { position, title, url: normalizedUrl, ...(normalizedCoverUrl ? { coverUrl: normalizedCoverUrl } : {}) };
     };
 
     const groups = [];
@@ -627,7 +693,9 @@ async function main() {
       });
     }
 
-    const itemsWithUrls = groups.reduce((sum, g) => sum + g.items.length, 0) + ungroupedItems.length;
+    const allResolvedItems = [...groups.flatMap((g) => g.items), ...ungroupedItems];
+    const itemsWithUrls = allResolvedItems.length;
+    const itemsWithCovers = allResolvedItems.filter((item) => !!item.coverUrl).length;
 
     const output = {
       version: 1,
@@ -640,6 +708,8 @@ async function main() {
       summary: {
         totalItems: itemsWithUrls + unresolvedItems.length,
         itemsWithUrls,
+        itemsWithCovers,
+        itemsMissingCovers: Math.max(0, itemsWithUrls - itemsWithCovers),
         unresolvedItems: unresolvedItems.length,
         groups: groups.length,
         expectedTotalItems: expectedTotalItems || null,

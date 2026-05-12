@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "2026.05.12-3";
+  const APP_VERSION = "2026.05.12-4";
   const BUILD_ID = `batman-guide-${APP_VERSION}`;
   const LIST = Array.isArray(window.BATMAN_GUIDE_LIST) ? window.BATMAN_GUIDE_LIST : [];
 
@@ -712,13 +712,6 @@
     push(issue?.coverUrl);
     push(issue?.thumbnail);
     push(issue?.image);
-    const issueUrl = String(issue?.url || "").trim();
-    const match = issueUrl.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
-    if (match) {
-      const id = match[0];
-      push(`https://imgix-media.wbdndc.net/ingest/book/preview/${id}/cover.jpg`);
-      push(`https://imgix-media.wbdndc.net/ingest/series/preview/${id}/cover.jpg`);
-    }
     return candidates;
   }
 
@@ -2124,7 +2117,7 @@
           void resolveCollectionIssueCover(issue).then((coverUrl) => {
             if (!coverUrl || activeCollectionModalRenderToken !== modalToken) return;
             coverEl.classList.remove("fallback-logo");
-            coverEl.innerHTML = `<img src="${escapeAttr(coverUrl)}" alt="${escapeAttr(issue.title)} cover" loading="lazy" decoding="async" />`;
+            coverEl.innerHTML = `<img src="${escapeAttr(coverUrl)}" alt="${escapeAttr(issue.title)} cover" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`;
           });
         }
       });
