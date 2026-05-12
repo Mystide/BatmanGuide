@@ -103,6 +103,7 @@ async function tryExpandControls(page) {
   const labels = [
     "view all",
     "see all",
+    "see more",
     "show more",
     "load more",
     "next"
@@ -125,16 +126,35 @@ async function tryExpandControls(page) {
     totalCandidates += count;
     const clickedForLabel = await page.evaluate(({ textNeedle, maxPerLabel }) => {
       const normalize = (s) => String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
+      const looksLikeGroupHeading = (s) => /\b(issues|series|storyline|saga|section|part)\b/i.test(s) || /\(\d+\)\s*$/.test(s);
+      const nearestHeadingFor = (node) => {
+        const headings = [...document.querySelectorAll("h1,h2,h3,h4,[role='heading']")]
+          .map((h) => ({ text: normalize(h.textContent), top: h.getBoundingClientRect().top + window.scrollY }))
+          .filter((h) => h.text);
+        const nodeTop = node.getBoundingClientRect().top + window.scrollY;
+        let nearest = null;
+        for (const h of headings) if (h.top <= nodeTop && (!nearest || h.top > nearest.top)) nearest = h;
+        return nearest ? nearest.text : "";
+      };
       const nodes = [...document.querySelectorAll("button, [role='button'], a")];
       let clicked = 0;
       for (const node of nodes) {
         if (clicked >= maxPerLabel) break;
         const text = normalize(node.textContent || node.getAttribute("aria-label"));
-        if (!text.includes(textNeedle)) continue;
+        const exactSeeMore = textNeedle === "see more" && text === "see more";
+        const broadMatch = textNeedle !== "see more" && text.includes(textNeedle);
+        if (!exactSeeMore && !broadMatch) continue;
         const href = node.getAttribute("href") || "";
+        if (href && href.trim() && href !== "#" && href.toLowerCase() !== "javascript:void(0)") continue;
         if (/\/comics\/(book|series)\//i.test(href) || /\/issue\//i.test(href)) continue;
         const ariaDisabled = normalize(node.getAttribute("aria-disabled"));
         if (node.hasAttribute("disabled") || ariaDisabled === "true") continue;
+        const className = normalize(node.className);
+        const heading = nearestHeadingFor(node);
+        if (textNeedle === "see more") {
+          if (!className.includes("dcc-button")) continue;
+          if (!looksLikeGroupHeading(heading)) continue;
+        }
         try {
           node.scrollIntoView({ block: "center", inline: "nearest" });
           node.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
