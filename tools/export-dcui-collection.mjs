@@ -97,6 +97,7 @@ async function autoScrollUntilStable(page) {
 
 }
 
+// Keep exactly one expansion helper; avoid duplicate declarations from bad merges.
 async function tryExpandControls(page) {
   const labels = [
     "view all",
@@ -151,78 +152,7 @@ async function tryExpandControls(page) {
   return { totalCandidates, clicks };
 }
 
-async function scrollHorizontalContainers(page) {
-  return page.evaluate(async () => {
-    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    const isVisible = (el) => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0;
-    };
-    const candidates = [...document.querySelectorAll("div,section,ul,ol")].filter((el) => {
-      if (!isVisible(el)) return false;
-      const style = window.getComputedStyle(el);
-      const overflowXScrollable = /(auto|scroll)/i.test(style.overflowX);
-      const hasHorizontalOverflow = (el.scrollWidth - el.clientWidth) > 24;
-      return overflowXScrollable || hasHorizontalOverflow;
-    });
-
-    let totalMoves = 0;
-    for (const el of candidates) {
-      let stable = 0;
-      let prevLeft = -1;
-      for (let round = 0; round < 24; round += 1) {
-        const step = Math.max(240, Math.floor(el.clientWidth * 0.85));
-        el.scrollBy({ left: step, behavior: "instant" });
-        await sleep(120);
-        const left = Math.round(el.scrollLeft);
-        if (left === prevLeft) stable += 1;
-        else stable = 0;
-        prevLeft = left;
-        totalMoves += 1;
-        if (stable >= 2) break;
-      }
-    }
-    return { candidates: candidates.length, totalMoves };
-  });
-}
-
-async function tryExpandControls(page) {
-  const labels = [
-    "view all",
-    "see all",
-    "show more",
-    "load more",
-    "next",
-    "more"
-  ];
-  const maxClicks = 30;
-  let clicks = 0;
-
-  // Click conservative expansion controls only; avoid issue/book links.
-  for (const label of labels) {
-    if (clicks >= maxClicks) break;
-    const locator = page.locator("button, [role='button'], a").filter({ hasText: new RegExp(label, "i") });
-    const count = Math.min(await locator.count(), 8);
-    for (let i = 0; i < count && clicks < maxClicks; i += 1) {
-      const el = locator.nth(i);
-      const href = await el.getAttribute("href");
-      const looksLikeIssueLink = !!href && /\/comics\/(book|series)\//i.test(href);
-      if (looksLikeIssueLink) continue;
-      const disabled = await el.getAttribute("disabled");
-      const ariaDisabled = await el.getAttribute("aria-disabled");
-      if (disabled != null || String(ariaDisabled).toLowerCase() === "true") continue;
-      try {
-        await el.scrollIntoViewIfNeeded();
-        await el.click({ timeout: 1200 });
-        clicks += 1;
-        await page.waitForTimeout(250);
-      } catch {
-        // Ignore non-clickable controls.
-      }
-    }
-  }
-}
-
+// Keep exactly one horizontal-scroll helper; avoid duplicate declarations from bad merges.
 async function scrollHorizontalContainers(page) {
   return page.evaluate(async () => {
     const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
